@@ -5,7 +5,7 @@ var builder = WebApplication.CreateBuilder(args);
 // Add services to the container.
 builder.Services.AddControllersWithViews();
 
-//Henter connection string fra “appsettings.json” filen 
+//Henter connection string fra ï¿½appsettings.jsonï¿½ filen 
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
 
 //Oppretter en instans av MySqlConnection 
