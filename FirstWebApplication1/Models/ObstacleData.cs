@@ -15,5 +15,16 @@ namespace FirstWebApplication1.Models
         [Required(ErrorMessage = "Description is required")]
         [StringLength(1000, ErrorMessage = "Max 1000 characters")]
         public string? ObstacleDescription { get; set; }
+
+
+
+        [Required]
+        public double Longitude { get; set; }
+
+        [Required]
+
+        public double Latitude { get; set; }
+
+        string? GeoJson { get; set; }
     }
 }

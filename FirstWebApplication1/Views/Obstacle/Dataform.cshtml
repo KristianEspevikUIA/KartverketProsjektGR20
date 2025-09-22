@@ -6,7 +6,7 @@
 
 <section class="mx-auto max-w-2xl">
     <div class="bg-white rounded-2xl shadow-sm ring-1 ring-gray-200 p-6">
-        <header class="mb-6">   
+        <header class="mb-6">
             <h1 class="text-2xl font-semibold">Obstacle Registration Form</h1>
             <p class="text-gray-600">Please register an obstacle:</p>
         </header>
@@ -15,7 +15,7 @@
             <!-- Obstacle Name -->
             <div class="sm:col-span-2">
                 <label asp-for="ObstacleName" class="block text-sm font-medium text-gray-800 mb-1">Obstacle Name</label>
-                <input asp-for="ObstacleName" 
+                <input asp-for="ObstacleName"
                        class="block w-full rounded-lg border-gray-300 focus:border-indigo-600 focus:ring-indigo-600 px-3 py-2"
                        placeholder="Wall, Ramp" />
                 <span asp-validation-for="ObstacleName" class="text-sm text-red-600"></span>
@@ -33,16 +33,24 @@
             </div>
 
             <!-- Description -->
-            <div>
-                <div class="sm:col-span-2">
-                    <label asp-for="ObstacleDescription" class="block text-sm font-medium text-gray-800 mb-1">
-                        Obstacle Description
-                    </label>
-                    <textarea asp-for="ObstacleDescription" rows="4"
-                              class="block w-full rounded-lg border-gray-300 focus:border-indigo-600 focus:ring-indigo-600 px-3 py-2"
-                              placeholder="Describe the obstacle, materials, location, etc."></textarea>
-                    <span asp-validation-for="ObstacleDescription" class="text-sm text-red-600"></span>
-                </div>
+            <div class="sm:col-span-2">
+                <label asp-for="ObstacleDescription" class="block text-sm font-medium text-gray-800 mb-1">
+                    Obstacle Description
+                </label>
+                <textarea asp-for="ObstacleDescription" rows="4"
+                          class="block w-full rounded-lg border-gray-300 focus:border-indigo-600 focus:ring-indigo-600 px-3 py-2"
+                          placeholder="Describe the obstacle, materials, location, etc."></textarea>
+                <span asp-validation-for="ObstacleDescription" class="text-sm text-red-600"></span>
+            </div>
+
+            <!-- Map -->
+            <div class="sm:col-span-2">
+                <label class="block text-sm font-medium text-gray-800 mb-1">Klikk på kartet for å velge posisjon</label>
+                <div id="map" style="height: 300px; border: 1px solid #ccc;" class="rounded-lg"></div>
+                <input asp-for="Latitude" class="block w-full rounded-lg border-gray-300 mt-2 px-3 py-2" readonly />
+                <input asp-for="Longitude" class="block w-full rounded-lg border-gray-300 mt-2 px-3 py-2" readonly />
+                <span asp-validation-for="Latitude" class="text-sm text-red-600"></span>
+                <span asp-validation-for="Longitude" class="text-sm text-red-600"></span>
             </div>
 
             <div class="pt-2">
@@ -56,6 +64,34 @@
 </section>
 
 @section Scripts {
-    <!-- If you use client-side validation, keep the standard validation partial -->
+    <!-- Standard validation scripts -->
     <partial name="_ValidationScriptsPartial" />
+
+    <!-- Leaflet CSS & JS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+
+    <script>
+        // Opprett kart
+        var map = L.map('map').setView([59.91, 10.75], 12);
+
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '© OpenStreetMap'
+        }).addTo(map);
+
+        var marker;
+
+        // Når bruker klikker, sett marker og fyll inn felter
+        map.on('click', function (e) {
+            if (marker) {
+                marker.setLatLng(e.latlng);
+            } else {
+                marker = L.marker(e.latlng).addTo(map);
+            }
+
+            document.querySelector('[name="Latitude"]').value = e.latlng.lat.toFixed(6);
+            document.querySelector('[name="Longitude"]').value = e.latlng.lng.toFixed(6);
+        });
+    </script>
 }
+
