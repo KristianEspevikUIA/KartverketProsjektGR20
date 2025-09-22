@@ -9,7 +9,7 @@ namespace FirstWebApplication1.Models
         public string? ObstacleName { get; set; }
 
         [Required(ErrorMessage = "Height is required")]
-        [Range(15, 300, ErrorMessage = "Height must be between 15 and 300 meters")]
+        [Range(16, 300, ErrorMessage = "Height must be between 15 and 300 meters")]
         public double? ObstacleHeight { get; set; }
 
         [Required(ErrorMessage = "Description is required")]
