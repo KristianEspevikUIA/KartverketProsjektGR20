@@ -4,7 +4,7 @@
     ViewData["Title"] = "Register Obstacle";
 }
 
-<section class="mx-auto max-w-2xl">
+<section class="mx-auto max-w-2xl pb-12">
     <div class="bg-white rounded-2xl shadow-sm ring-1 ring-gray-200 p-6">
         <header class="mb-6">
             <h1 class="text-2xl font-semibold">Obstacle Registration Form</h1>
@@ -51,11 +51,10 @@
                 <input asp-for="Longitude" class="block w-full rounded-lg border-gray-300 mt-2 px-3 py-2" readonly />
                 <span asp-validation-for="Latitude" class="text-sm text-red-600"></span>
                 <span asp-validation-for="Longitude" class="text-sm text-red-600"></span>
-            </div>
 
-            <div class="pt-2">
+                <!-- Submit button placed just under the map -->
                 <button type="submit"
-                        class="inline-flex items-center justify-center rounded-lg bg-indigo-600 px-4 py-2 text-white hover:bg-indigo-700 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600">
+                        class="mt-4 inline-flex items-center justify-center rounded-lg bg-indigo-600 px-4 py-2 text-white hover:bg-indigo-700 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600">
                     Submit Data
                 </button>
             </div>
@@ -94,4 +93,3 @@
         });
     </script>
 }
-
