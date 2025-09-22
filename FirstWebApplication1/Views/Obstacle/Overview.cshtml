@@ -5,7 +5,7 @@
 }
 
 <section class="mx-auto max-w-2xl">
-    <div class="bg-white rounded-2xl shadow-sm ring-1 ring-gray-200 p-6 space-y-4">
+    <div class="bg-white rounded-2xl shadow-sm ring-1 ring-gray-200 p-6 space-y-6">
         <header>
             <h1 class="text-2xl font-semibold">Overview</h1>
             <p class="text-gray-600 mt-1">Thank you for registering an obstacle:</p>
@@ -24,9 +24,22 @@
 
             <div class="sm:col-span-3">
                 <dt class="text-sm font-medium text-gray-600">Description</dt>
-                <dd class="mt-1 text-base text-gray-900 break-words sm:col-span-3">@Model.ObstacleDescription</dd>
+                <dd class="mt-1 text-base text-gray-900 break-words">@Model.ObstacleDescription</dd>
+            </div>
+
+            <div class="sm:col-span-1">
+                <dt class="text-sm font-medium text-gray-600">Latitude</dt>
+                <dd class="mt-1 text-base text-gray-900">@Model.Latitude</dd>
+            </div>
+
+            <div class="sm:col-span-1">
+                <dt class="text-sm font-medium text-gray-600">Longitude</dt>
+                <dd class="mt-1 text-base text-gray-900">@Model.Longitude</dd>
             </div>
         </dl>
+
+        <!-- Kartet -->
+        <div id="map" class="rounded-lg border border-gray-200" style="height: 300px;"></div>
 
         <div class="pt-2">
             <a asp-controller="Home" asp-action="Index"
@@ -36,3 +49,14 @@
         </div>
     </div>
 </section>
+
+@section Scripts {
+    <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+    <script>
+        var map = L.map('map').setView([@Model.Latitude, @Model.Longitude], 14);
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
+        L.marker([@Model.Latitude, @Model.Longitude]).addTo(map)
+            .bindPopup("@Model.ObstacleName").openPopup();
+    </script>
+}
