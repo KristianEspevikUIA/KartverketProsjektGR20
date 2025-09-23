@@ -1,28 +1,29 @@
-﻿using FirstWebApplication1.Models;
-using Microsoft.AspNetCore.Mvc;
+﻿using FirstWebApplication1.Models; // Importerer modellene (her: ObstacleData)
+using Microsoft.AspNetCore.Mvc; // Gir tilgang til ASP.NET Core MVC-funksjonalitet
 
 namespace FirstWebApplication1.Controllers
 {
+    // Kontroller for håndtering av skjema knyttet til hindringsdata (ObstacleData)
     public class ObstacleController : Controller
     {
-        [HttpGet]
+        [HttpGet] // Håndterer GET-forespørsel når siden lastes første gang
         public IActionResult DataForm()
         {
-            return View();
+            return View(); // Viser DataForm-view uten modell (tomt skjema)
         }
 
         // Blir kalt etter at vi trykker på "Submit Data" knapp i DataForm viewet
-        [HttpPost]
+        [HttpPost] // Håndterer POST-forespørsel etter innsending av skjema
         public IActionResult DataForm(ObstacleData obstacledata)
         {
-            if (!ModelState.IsValid)
+            if (!ModelState.IsValid) // Sjekker om modellen (inputdata) er gyldig i henhold til valideringsregler
             {
                 // Viser DataForm på nytt dersom modellen ikke er gyldig
                 return View(obstacledata);
             }
 
             // Gyldig data: vis Overview med modellen
-            return View("Overview", obstacledata);
+            return View("Overview", obstacledata); // Sender brukeren til Overview-viewet med innsendte data
         }
     }
 }
