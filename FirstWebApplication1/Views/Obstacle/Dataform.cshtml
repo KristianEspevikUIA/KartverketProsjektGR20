@@ -6,14 +6,19 @@
 
 <section class="mx-auto max-w-2xl pb-12">
     <div class="bg-white rounded-2xl shadow-sm ring-1 ring-gray-200 p-6">
+        <!-- Header with page title and description -->
         <header class="mb-6">
             <h1 class="text-2xl font-semibold">Obstacle Registration Form</h1>
             <p class="text-gray-600">Please register an obstacle:</p>
         </header>
 
+        <!-- Form to submit obstacle data -->
+        <!-- asp-action="DataForm" means it will post to the DataForm action in the controller -->
+
         <form asp-action="DataForm" method="post" class="space-y-5">
             <!-- Obstacle Name -->
             <div class="sm:col-span-2">
+                <!-- Input bound to ObstacleName property -->
                 <label asp-for="ObstacleName" class="block text-sm font-medium text-gray-800 mb-1">Obstacle Name</label>
                 <input asp-for="ObstacleName"
                        class="block w-full rounded-lg border-gray-300 focus:border-indigo-600 focus:ring-indigo-600 px-3 py-2"
@@ -26,6 +31,7 @@
                 <label asp-for="ObstacleHeight" class="block text-sm font-medium text-gray-800 mb-1">
                     Obstacle Height (meters)
                 </label>
+                <!-- Number input with min value 15 and decimal support -->
                 <input asp-for="ObstacleHeight" type="number" step="0.01" min="15"
                        class="block w-full rounded-lg border-gray-300 focus:border-indigo-600 focus:ring-indigo-600 px-3 py-2"
                        placeholder="e.g. 25" />
@@ -37,6 +43,7 @@
                 <label asp-for="ObstacleDescription" class="block text-sm font-medium text-gray-800 mb-1">
                     Obstacle Description
                 </label>
+                <!-- Textarea bound to ObstacleDescription property -->
                 <textarea asp-for="ObstacleDescription" rows="4"
                           class="block w-full rounded-lg border-gray-300 focus:border-indigo-600 focus:ring-indigo-600 px-3 py-2"
                           placeholder="Short description of the obstacle"></textarea>
@@ -66,12 +73,12 @@
     <!-- Standard validation scripts -->
     <partial name="_ValidationScriptsPartial" />
 
-    <!-- Leaflet CSS & JS -->
+    <!-- Leaflet CSS and JS -->
     <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
     <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
 
     <script>
-        // Opprett kart
+        // create map 
         var map = L.map('map').setView([59.91, 10.75], 12);
 
         L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
@@ -80,14 +87,14 @@
 
         var marker;
 
-        // Når bruker klikker, sett marker og fyll inn felter
+        // When user clicks on map, place or move the marker
         map.on('click', function (e) {
             if (marker) {
                 marker.setLatLng(e.latlng);
             } else {
                 marker = L.marker(e.latlng).addTo(map);
             }
-
+            // Update Latitude and Longitude input fields with chosen coordinates
             document.querySelector('[name="Latitude"]').value = e.latlng.lat.toFixed(6);
             document.querySelector('[name="Longitude"]').value = e.latlng.lng.toFixed(6);
         });
