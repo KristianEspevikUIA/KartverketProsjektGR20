@@ -67,36 +67,15 @@
             </div>
         </form>
     </div>
-</section>
+    @section Scripts {
+        <!-- Standard valideringsscript -->
+        <partial name="_ValidationScriptsPartial" />
 
-@section Scripts {
-    <!-- Standard validation scripts -->
-    <partial name="_ValidationScriptsPartial" />
+        <!-- Leaflet CSS og JS -->
+        <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+        <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
 
-    <!-- Leaflet CSS and JS -->
-    <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
-    <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
-
-    <script>
-        // create map 
-        var map = L.map('map').setView([59.91, 10.75], 12);
-
-        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-            attribution: '© OpenStreetMap'
-        }).addTo(map);
-
-        var marker;
-
-        // When user clicks on map, place or move the marker
-        map.on('click', function (e) {
-            if (marker) {
-                marker.setLatLng(e.latlng);
-            } else {
-                marker = L.marker(e.latlng).addTo(map);
-            }
-            // Update Latitude and Longitude input fields with chosen coordinates
-            document.querySelector('[name="Latitude"]').value = e.latlng.lat.toFixed(6);
-            document.querySelector('[name="Longitude"]').value = e.latlng.lng.toFixed(6);
-        });
-    </script>
+        <!-- Din egendefinerte kart- og geolokasjonskode -->
+        <script src="~/js/geolocation.js"></script>
+    }
 }
