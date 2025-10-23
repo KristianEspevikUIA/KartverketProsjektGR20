@@ -1,5 +1,6 @@
 using MySqlConnector;
-
+using System.Globalization;
+using Microsoft.AspNetCore.Localization;
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
@@ -12,6 +13,11 @@ var connectionString = builder.Configuration.GetConnectionString("DefaultConnect
 builder.Services.AddSingleton(new MySqlConnection(connectionString));
 
 var app = builder.Build();
+// --- Fix culture for macOS parsing of latitude/longitude ---
+var defaultCulture = new CultureInfo("en-US");
+CultureInfo.DefaultThreadCurrentCulture = defaultCulture;
+CultureInfo.DefaultThreadCurrentUICulture = defaultCulture;
+// ------------------------------------------------------------
 
 // Configure the HTTP request pipeline.
 if (!app.Environment.IsDevelopment())
