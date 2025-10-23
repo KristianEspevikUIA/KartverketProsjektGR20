@@ -1,58 +1,130 @@
-﻿@model FirstWebApplication1.Models.ObstacleData
+﻿@using System.Globalization
+@model FirstWebApplication1.Models.ObstacleData
 
 @{
     ViewData["Title"] = "Overview";
+    var vertices = Model.LineCoordinates;
+    var start = Model.StartCoordinate;
+    var end = Model.EndCoordinate;
+    var hasLine = Model.HasLine;
+    var lineLength = Model.LineLengthMeters;
+    var fallbackLat = start?.Latitude ?? Model.Latitude ?? 59.91;
+    var fallbackLng = start?.Longitude ?? Model.Longitude ?? 10.75;
 }
 
 <section class="mx-auto max-w-2xl mb-16">
     <div class="bg-white rounded-2xl shadow-sm ring-1 ring-gray-200 p-6 pb-12 space-y-6">
-        <!-- Header with title and intro text -->
         <header>
             <h1 class="text-2xl font-semibold">Overview</h1>
             <p class="text-gray-600 mt-1">Thank you for registering an obstacle:</p>
         </header>
 
-
-        <!-- displaying obstacle details -->
         <dl class="grid grid-cols-1 sm:grid-cols-3 gap-4">
-
-            <!-- obstacle name -->
             <div class="sm:col-span-1">
                 <dt class="text-sm font-medium text-gray-600">Obstacle Name</dt>
                 <dd class="mt-1 text-base text-gray-900 break-words">@Model.ObstacleName</dd>
             </div>
 
-            <!-- Obstacle Height -->
             <div class="sm:col-span-1">
                 <dt class="text-sm font-medium text-gray-600">Height (m)</dt>
                 <dd class="mt-1 text-base text-gray-900">@Model.ObstacleHeight</dd>
             </div>
 
-            <!-- Obstacle Description -->
             <div class="sm:col-span-3">
                 <dt class="text-sm font-medium text-gray-600">Description</dt>
                 <dd class="mt-1 text-base text-gray-900 break-words">@Model.ObstacleDescription</dd>
             </div>
 
-            <!-- Latitude -->
-            <div class="sm:col-span-1">
-                <dt class="text-sm font-medium text-gray-600">Latitude</dt>
-                <dd class="mt-1 text-base text-gray-900">@Model.Latitude</dd>
-            </div>
+            @if (!hasLine && Model.Latitude.HasValue && Model.Longitude.HasValue)
+            {
+                <div class="sm:col-span-1">
+                    <dt class="text-sm font-medium text-gray-600">Latitude</dt>
+                    <dd class="mt-1 text-base text-gray-900">@Model.Latitude.Value.ToString("F6", CultureInfo.InvariantCulture)</dd>
+                </div>
+                <div class="sm:col-span-1">
+                    <dt class="text-sm font-medium text-gray-600">Longitude</dt>
+                    <dd class="mt-1 text-base text-gray-900">@Model.Longitude.Value.ToString("F6", CultureInfo.InvariantCulture)</dd>
+                </div>
+            }
 
-            <!-- Longitude -->
-            <div class="sm:col-span-1">
-                <dt class="text-sm font-medium text-gray-600">Longitude</dt>
-                <dd class="mt-1 text-base text-gray-900">@Model.Longitude</dd>
-            </div>
+            @if (start is not null)
+            {
+                <div class="sm:col-span-1">
+                    <dt class="text-sm font-medium text-gray-600">Start Latitude</dt>
+                    <dd class="mt-1 text-base text-gray-900">@start.Latitude.ToString("F6", CultureInfo.InvariantCulture)</dd>
+                </div>
+                <div class="sm:col-span-1">
+                    <dt class="text-sm font-medium text-gray-600">Start Longitude</dt>
+                    <dd class="mt-1 text-base text-gray-900">@start.Longitude.ToString("F6", CultureInfo.InvariantCulture)</dd>
+                </div>
+            }
+
+            @if (end is not null)
+            {
+                <div class="sm:col-span-1">
+                    <dt class="text-sm font-medium text-gray-600">End Latitude</dt>
+                    <dd class="mt-1 text-base text-gray-900">@end.Latitude.ToString("F6", CultureInfo.InvariantCulture)</dd>
+                </div>
+                <div class="sm:col-span-1">
+                    <dt class="text-sm font-medium text-gray-600">End Longitude</dt>
+                    <dd class="mt-1 text-base text-gray-900">@end.Longitude.ToString("F6", CultureInfo.InvariantCulture)</dd>
+                </div>
+            }
+
+            @if (Model.LineVertexCount > 0)
+            {
+                <div class="sm:col-span-1">
+                    <dt class="text-sm font-medium text-gray-600">Vertices</dt>
+                    <dd class="mt-1 text-base text-gray-900">@Model.LineVertexCount</dd>
+                </div>
+            }
+
+            @if (lineLength.HasValue)
+            {
+                var meters = lineLength.Value;
+                var formatted = meters >= 1000
+                ? $"{meters / 1000:0.00} km"
+                : $"{meters:0.0} m";
+                <div class="sm:col-span-1">
+                    <dt class="text-sm font-medium text-gray-600">Line length</dt>
+                    <dd class="mt-1 text-base text-gray-900">@formatted</dd>
+                </div>
+            }
+
+            @if (vertices.Count > 0)
+            {
+                <div class="sm:col-span-3">
+                    <dt class="text-sm font-medium text-gray-600">Line vertices</dt>
+                    <dd class="mt-1 text-sm text-gray-900">
+                        <div class="overflow-x-auto rounded-lg border border-gray-200">
+                            <table class="min-w-full text-left text-sm">
+                                <thead class="bg-gray-50 text-gray-500">
+                                    <tr>
+                                        <th class="px-3 py-2">#</th>
+                                        <th class="px-3 py-2">Latitude</th>
+                                        <th class="px-3 py-2">Longitude</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @for (var i = 0; i < vertices.Count; i++)
+                                    {
+                                        <tr class="odd:bg-white even:bg-gray-50">
+                                            <td class="px-3 py-2 text-gray-700">@(i + 1)</td>
+                                            <td class="px-3 py-2 font-mono text-gray-900">@vertices[i].Latitude.ToString("F6", CultureInfo.InvariantCulture)</td>
+                                            <td class="px-3 py-2 font-mono text-gray-900">@vertices[i].Longitude.ToString("F6", CultureInfo.InvariantCulture)</td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                    </dd>
+                </div>
+            }
         </dl>
 
-        <!-- Map and navigation button -->
         <div>
-            <!-- Map container -->
             <div id="map" class="rounded-lg border border-gray-200" style="height: 300px;"></div>
 
-            <!-- Link back to homepage -->
             <a asp-controller="Home" asp-action="Index"
                class="mt-4 mb-6 inline-flex items-center rounded-lg px-4 py-2 ring-1 ring-gray-300 hover:bg-gray-50">
                 Back to Home
@@ -62,16 +134,42 @@
 </section>
 
 @section Scripts {
-    <!-- Leaflet CSS and JS for rendering the map -->
-
     <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
     <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
     <script>
-        var map = L.map('map').setView([@Model.Latitude, @Model.Longitude], 14); // Initialize map centered on the obstacle's coordinates
-        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);  // Add OpenStreetMap tile layer
+        const fallbackLat = "@fallbackLat.ToString(CultureInfo.InvariantCulture)";
+        const fallbackLng = "@fallbackLng.ToString(CultureInfo.InvariantCulture)";
+        const hasPointGeometry = @(!hasLine && Model.Latitude.HasValue && Model.Longitude.HasValue).ToString().ToLowerInvariant();
+        const map = L.map('map').setView([parseFloat(fallbackLat), parseFloat(fallbackLng)], 14);
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
 
-          // Add a marker at the obstacle location with popup showing the name
-        L.marker([@Model.Latitude, @Model.Longitude]).addTo(map)
-            .bindPopup("@Model.ObstacleName").openPopup();
+        const lineGeoJson = @Html.Raw(string.IsNullOrWhiteSpace(Model.LineGeoJson) ? "null" : Model.LineGeoJson);
+
+        if (lineGeoJson && lineGeoJson.type === 'LineString' && Array.isArray(lineGeoJson.coordinates)) {
+            const latLngs = lineGeoJson.coordinates
+                .filter(coord => Array.isArray(coord) && coord.length >= 2)
+                .map(coord => [coord[1], coord[0]]);
+
+            if (latLngs.length > 0) {
+                const polyline = L.polyline(latLngs, { color: '#1d4ed8', weight: 4 }).addTo(map);
+                latLngs.forEach(point => {
+                    L.circleMarker(point, {
+                        radius: 5,
+                        color: '#1d4ed8',
+                        fillColor: '#3b82f6',
+                        fillOpacity: 0.8
+                    }).addTo(map);
+                });
+
+                if (latLngs.length > 1) {
+                    map.fitBounds(polyline.getBounds(), { padding: [20, 20] });
+                } else {
+                    map.setView(latLngs[0], 14);
+                }
+            }
+        } else if (hasPointGeometry) {
+            L.marker([parseFloat(fallbackLat), parseFloat(fallbackLng)]).addTo(map)
+                .bindPopup("@Model.ObstacleName").openPopup();
+        }
     </script>
 }
