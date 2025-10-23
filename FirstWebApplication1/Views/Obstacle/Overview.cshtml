@@ -12,6 +12,7 @@
     var fallbackLng = start?.Longitude ?? Model.Longitude ?? 10.75;
 }
 
+<body class="bg-cover bg-center" style="background-image: url('/images/BackgroundImageGreen.png');">
 <section class="mx-auto max-w-2xl mb-16">
     <div class="bg-white rounded-2xl shadow-sm ring-1 ring-gray-200 p-6 pb-12 space-y-6">
         <header>
@@ -83,8 +84,8 @@
             {
                 var meters = lineLength.Value;
                 var formatted = meters >= 1000
-                ? $"{meters / 1000:0.00} km"
-                : $"{meters:0.0} m";
+                    ? $"{meters / 1000:0.00} km"
+                    : $"{meters:0.0} m";
                 <div class="sm:col-span-1">
                     <dt class="text-sm font-medium text-gray-600">Line length</dt>
                     <dd class="mt-1 text-base text-gray-900">@formatted</dd>
@@ -99,21 +100,21 @@
                         <div class="overflow-x-auto rounded-lg border border-gray-200">
                             <table class="min-w-full text-left text-sm">
                                 <thead class="bg-gray-50 text-gray-500">
-                                    <tr>
-                                        <th class="px-3 py-2">#</th>
-                                        <th class="px-3 py-2">Latitude</th>
-                                        <th class="px-3 py-2">Longitude</th>
-                                    </tr>
+                                <tr>
+                                    <th class="px-3 py-2">#</th>
+                                    <th class="px-3 py-2">Latitude</th>
+                                    <th class="px-3 py-2">Longitude</th>
+                                </tr>
                                 </thead>
                                 <tbody>
-                                    @for (var i = 0; i < vertices.Count; i++)
-                                    {
-                                        <tr class="odd:bg-white even:bg-gray-50">
-                                            <td class="px-3 py-2 text-gray-700">@(i + 1)</td>
-                                            <td class="px-3 py-2 font-mono text-gray-900">@vertices[i].Latitude.ToString("F6", CultureInfo.InvariantCulture)</td>
-                                            <td class="px-3 py-2 font-mono text-gray-900">@vertices[i].Longitude.ToString("F6", CultureInfo.InvariantCulture)</td>
-                                        </tr>
-                                    }
+                                @for (var i = 0; i < vertices.Count; i++)
+                                {
+                                    <tr class="odd:bg-white even:bg-gray-50">
+                                        <td class="px-3 py-2 text-gray-700">@(i + 1)</td>
+                                        <td class="px-3 py-2 font-mono text-gray-900">@vertices[i].Latitude.ToString("F6", CultureInfo.InvariantCulture)</td>
+                                        <td class="px-3 py-2 font-mono text-gray-900">@vertices[i].Longitude.ToString("F6", CultureInfo.InvariantCulture)</td>
+                                    </tr>
+                                }
                                 </tbody>
                             </table>
                         </div>
@@ -132,6 +133,7 @@
         </div>
     </div>
 </section>
+</body>
 
 @section Scripts {
     <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />

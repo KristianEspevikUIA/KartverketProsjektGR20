@@ -5,7 +5,7 @@
 }
 
 
-
+<body class="bg-cover bg-center" style="background-image: url('/images/BackgroundImageGreen.png');">
 <section class="mx-auto max-w-3xl mt-8">
     <div class="text-center space-y-6">
         <h1 class="text-3xl sm:text-4xl font-bold tracking-tight">
@@ -13,8 +13,9 @@
         </h1>
 
         <!-- here is the image -->
-        <img src="~/images/standard_kartverket.png" alt="kartverket logo" class="mx-auto w-64 h-auto rounded-lg shadow" />
-
+            <img src="~/images/standard_kartverket.png"
+                 alt="kartverket logo"
+                 class="mx-auto w-96 h-auto rounded-lg" />
         @if (!string.IsNullOrWhiteSpace(Model))
         {
             <p class="text-gray-800">@Model</p>
@@ -28,3 +29,4 @@
         </div>
     </div>
 </section>
+</body>
