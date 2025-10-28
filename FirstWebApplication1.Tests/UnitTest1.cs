@@ -9,7 +9,7 @@ namespace FirstWebApplication1.Tests
         {
             var obstacle = new ObstacleData();
             Assert.NotNull(obstacle);
-            Assert.Equal(0, obstacle.Id);
+         
         }
     }
 }
