@@ -3,22 +3,16 @@
 @{
     ViewData["Title"] = "Register Obstacle";
 }
-
+<body class="bg-cover bg-center" style="background-image: url('/images/BackgroundImageGreen.png');">
 <section class="mx-auto max-w-2xl pb-12">
     <div class="bg-white rounded-2xl shadow-sm ring-1 ring-gray-200 p-6">
-        <!-- Header with page title and description -->
         <header class="mb-6">
             <h1 class="text-2xl font-semibold">Obstacle Registration Form</h1>
             <p class="text-gray-600">Please register an obstacle:</p>
         </header>
 
-        <!-- Form to submit obstacle data -->
-        <!-- asp-action="DataForm" means it will post to the DataForm action in the controller -->
-
         <form asp-action="DataForm" method="post" class="space-y-5">
-            <!-- Obstacle Name -->
             <div class="sm:col-span-2">
-                <!-- Input bound to ObstacleName property -->
                 <label asp-for="ObstacleName" class="block text-sm font-medium text-gray-800 mb-1">Obstacle Name</label>
                 <input asp-for="ObstacleName"
                        class="block w-full rounded-lg border-gray-300 focus:border-indigo-600 focus:ring-indigo-600 px-3 py-2"
@@ -26,56 +20,86 @@
                 <span asp-validation-for="ObstacleName" class="text-sm text-red-600"></span>
             </div>
 
-            <!-- Height -->
             <div>
                 <label asp-for="ObstacleHeight" class="block text-sm font-medium text-gray-800 mb-1">
                     Obstacle Height (meters)
                 </label>
-                <!-- Number input with min value 15 and decimal support -->
                 <input asp-for="ObstacleHeight" type="number" step="0.01" min="15"
                        class="block w-full rounded-lg border-gray-300 focus:border-indigo-600 focus:ring-indigo-600 px-3 py-2"
                        placeholder="e.g. 25" />
                 <span asp-validation-for="ObstacleHeight" class="text-sm text-red-600"></span>
             </div>
 
-            <!-- Description -->
             <div class="sm:col-span-2">
                 <label asp-for="ObstacleDescription" class="block text-sm font-medium text-gray-800 mb-1">
                     Obstacle Description
                 </label>
-                <!-- Textarea bound to ObstacleDescription property -->
                 <textarea asp-for="ObstacleDescription" rows="4"
                           class="block w-full rounded-lg border-gray-300 focus:border-indigo-600 focus:ring-indigo-600 px-3 py-2"
                           placeholder="Short description of the obstacle"></textarea>
                 <span asp-validation-for="ObstacleDescription" class="text-sm text-red-600"></span>
             </div>
 
-            <!-- Map -->
-            <div class="sm:col-span-2">
-                <label class="block text-sm font-medium text-gray-800 mb-1">Klikk på kartet for å velge posisjon</label>
-                <div id="map" style="height: 300px; border: 1px solid #ccc;" class="rounded-lg"></div>
-                <input asp-for="Latitude" class="block w-full rounded-lg border-gray-300 mt-2 px-3 py-2" readonly />
-                <input asp-for="Longitude" class="block w-full rounded-lg border-gray-300 mt-2 px-3 py-2" readonly />
-                <span asp-validation-for="Latitude" class="text-sm text-red-600"></span>
-                <span asp-validation-for="Longitude" class="text-sm text-red-600"></span>
+            <div class="sm:col-span-2 space-y-4">
+                <div>
+                    <label class="block text-sm font-medium text-gray-800 mb-1">Draw the obstacle location</label>
+                    <p class="text-sm text-gray-600">
+                        Click once to register a single point or continue clicking to build a line.
+                        Use the buttons below to undo or clear.
+                    </p>
+                </div>
 
-                <!-- Submit button placed just under the map -->
+                <div id="map" style="height: 300px; border: 1px solid #ccc;" class="rounded-lg"></div>
+
+                <div class="flex flex-wrap gap-2">
+                    <button type="button" id="undoPoint"
+                            class="inline-flex items-center justify-center rounded-lg bg-gray-100 px-3 py-2 text-sm text-gray-800 hover:bg-gray-200">
+                        Undo last point
+                    </button>
+                    <button type="button" id="clearLine"
+                            class="inline-flex items-center justify-center rounded-lg bg-gray-100 px-3 py-2 text-sm text-gray-800 hover:bg-gray-200">
+                        Clear drawing
+                    </button>
+                </div>
+
+                <div class="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                    <div>
+                        <label asp-for="Latitude" class="block text-sm font-medium text-gray-800 mb-1">Latitude</label>
+                        <input asp-for="Latitude" readonly
+                               class="block w-full rounded-lg border-gray-300 bg-gray-100 px-3 py-2 text-gray-800" />
+                        <span asp-validation-for="Latitude" class="text-sm text-red-600"></span>
+                    </div>
+                    <div>
+                        <label asp-for="Longitude" class="block text-sm font-medium text-gray-800 mb-1">Longitude</label>
+                        <input asp-for="Longitude" readonly
+                               class="block w-full rounded-lg border-gray-300 bg-gray-100 px-3 py-2 text-gray-800" />
+                        <span asp-validation-for="Longitude" class="text-sm text-red-600"></span>
+                    </div>
+                </div>
+
+                <div id="lineSummary" class="text-sm text-gray-600"></div>
+
+                <div id="vertexList" class="rounded-lg border border-gray-200 bg-gray-50 p-3 text-sm text-gray-700"></div>
+
+                <input asp-for="LineGeoJson" type="hidden" />
+                <span asp-validation-for="LineGeoJson" class="text-sm text-red-600"></span>
+
+                <p class="text-xs text-gray-500">Submit is enabled once at least one point has been selected.</p>
+
                 <button type="submit"
-                        class="mt-4 inline-flex items-center justify-center rounded-lg bg-indigo-600 px-4 py-2 text-white hover:bg-indigo-700 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600">
+                        class="inline-flex items-center justify-center rounded-lg bg-indigo-600 px-4 py-2 text-white opacity-50 cursor-not-allowed disabled:opacity-50 disabled:cursor-not-allowed hover:bg-indigo-700 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
+                        disabled>
                     Submit Data
                 </button>
             </div>
         </form>
     </div>
-    @section Scripts {
-        <!-- Standard valideringsscript -->
+
+@section Scripts {
         <partial name="_ValidationScriptsPartial" />
 
-        <!-- Leaflet CSS og JS -->
         <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
         <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
-
-        <!-- Din egendefinerte kart- og geolokasjonskode -->
         <script src="~/js/geolocation.js"></script>
-    }
 }
+</body>
