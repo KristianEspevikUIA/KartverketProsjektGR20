@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 using System.Linq;
 using System.Text.Json;
 
@@ -8,13 +9,16 @@ namespace FirstWebApplication1.Models
 {
     public class ObstacleData : IValidatableObject
     {
+        [Key]
+        public int Id { get; set; }
+
         [Required(ErrorMessage = "Obstacle name is required")]
         [StringLength(100, ErrorMessage = "Max 100 characters")]
         public string? ObstacleName { get; set; }
 
         [Required(ErrorMessage = "Height is required")]
         [Range(15, 300, ErrorMessage = "Height must be between 15 and 300 meters")]
-        public double? ObstacleHeight { get; set; }
+        public double ObstacleHeight { get; set; }
 
         [Required(ErrorMessage = "Description is required")]
         [StringLength(1000, ErrorMessage = "Max 1000 characters")]
@@ -26,12 +30,14 @@ namespace FirstWebApplication1.Models
         [Required]
         public double? Latitude { get; set; }
 
+        [Column(TypeName = "longtext")]
         public string? LineGeoJson { get; set; }
 
         private IReadOnlyList<GeoCoordinate>? _cachedLine;
         private string? _cachedSource;
         private bool _lineParseFailed;
 
+        [NotMapped]
         public IReadOnlyList<GeoCoordinate> LineCoordinates
         {
             get
@@ -57,14 +63,19 @@ namespace FirstWebApplication1.Models
             }
         }
 
+        [NotMapped]
         public GeoCoordinate? StartCoordinate => LineCoordinates.FirstOrDefault();
 
+        [NotMapped]
         public GeoCoordinate? EndCoordinate => LineCoordinates.LastOrDefault();
 
+        [NotMapped]
         public bool HasLine => LineCoordinates.Count >= 2;
 
+        [NotMapped]
         public int LineVertexCount => LineCoordinates.Count;
 
+        [NotMapped]
         public double? LineLengthMeters => HasLine ? CalculateLineLength(LineCoordinates) : null;
 
         public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)

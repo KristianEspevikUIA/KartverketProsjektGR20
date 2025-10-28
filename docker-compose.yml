@@ -1,8 +1,21 @@
-version: "3.9"
+﻿version: "3.9"
 
 services:
-  firstwebapplication1:           
-    image: ${DOCKER_REGISTRY-}firstwebapplication
+  mariadb:
+    image: mariadb:11
+    container_name: mariadbcontainer
+    environment:
+      - MARIADB_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD}
+      - MARIADB_DATABASE=ObstacleDb
+    ports:
+      - "3306:3306"             # eksponer DB til host (for EF-kommandoer fra Windows)
+    volumes:
+      - mariadb_data:/var/lib/mysql
+    networks:
+      - appnet
+
+  firstwebapplication1:
+    image: firstwebapplication
     build:
       context: .
       dockerfile: FirstWebApplication1/Dockerfile
@@ -10,9 +23,15 @@ services:
       - "5000:8080"
     environment:
       - ASPNETCORE_ENVIRONMENT=Development
-      - ConnectionStrings__DefaultConnection=server=mariadbcontainer;port=3306;database=mysql;user=root;password=KlokkeklangKrissegutt04
+      # Connection string for CONTAINER→CONTAINER (app → DB)
+      - ConnectionStrings__DefaultConnection=server=mariadbcontainer;port=3306;database=ObstacleDb;user=root;password=${MYSQL_ROOT_PASSWORD};TreatTinyAsBoolean=false;ConnectionTimeout=15;DefaultCommandTimeout=30
+    depends_on:
+      - mariadb
     networks:
       - appnet
+
+volumes:
+  mariadb_data:
 
 networks:
   appnet:
