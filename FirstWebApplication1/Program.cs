@@ -1,4 +1,6 @@
-using MySqlConnector;
+using FirstWebApplication1.Data;
+using Microsoft.EntityFrameworkCore;
+using Pomelo.EntityFrameworkCore.MySql.Infrastructure;
 using System.Globalization;
 using Microsoft.AspNetCore.Localization;
 var builder = WebApplication.CreateBuilder(args);
@@ -6,11 +8,17 @@ var builder = WebApplication.CreateBuilder(args);
 // Add services to the container.
 builder.Services.AddControllersWithViews();
 
-//Henter connection string fra �appsettings.json� filen 
+//Henter connection string fra �appsettings.json� filen
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
 
-//Oppretter en instans av MySqlConnection 
-builder.Services.AddSingleton(new MySqlConnection(connectionString));
+if (string.IsNullOrWhiteSpace(connectionString))
+{
+    throw new InvalidOperationException("The MariaDB connection string 'DefaultConnection' was not found.");
+}
+
+// Konfigurerer Entity Framework Core med MariaDB
+builder.Services.AddDbContext<ApplicationDbContext>(options =>
+    options.UseMySql(connectionString, new MySqlServerVersion(new Version(10, 6, 0))));
 
 var app = builder.Build();
 // --- Fix culture for macOS parsing of latitude/longitude ---
