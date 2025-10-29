@@ -3,12 +3,8 @@
 services:
   mariadb:
     image: mariadb:11
-    container_name: mariadbcontainer
-    environment:
-      - MARIADB_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD}
-      - MARIADB_DATABASE=ObstacleDb
     ports:
-      - "3306:3306"             # eksponer DB til host (for EF-kommandoer fra Windows)
+      - "3308:3306"             # eksponer DB til host (for EF-kommandoer fra Windows)
     volumes:
       - mariadb_data:/var/lib/mysql
     networks:
@@ -24,7 +20,7 @@ services:
     environment:
       - ASPNETCORE_ENVIRONMENT=Development
       # Connection string for CONTAINER→CONTAINER (app → DB)
-      - ConnectionStrings__DefaultConnection=server=mariadbcontainer;port=3306;database=ObstacleDb;user=root;password=${MYSQL_ROOT_PASSWORD};TreatTinyAsBoolean=false;ConnectionTimeout=15;DefaultCommandTimeout=30
+      - ConnectionStrings__DefaultConnection=server=mariadbcontainer;port=3306;database=ObstacleDb;user=root;password=KlokkeklangKrissegutt04;TreatTinyAsBoolean=false;ConnectionTimeout=15;DefaultCommandTimeout=30
     depends_on:
       - mariadb
     networks:
