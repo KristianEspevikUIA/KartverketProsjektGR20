@@ -20,7 +20,7 @@ services:
     environment:
       - ASPNETCORE_ENVIRONMENT=Development
       # Connection string for CONTAINER→CONTAINER (app → DB)
-      - ConnectionStrings__DefaultConnection=server=mariadbcontainer;port=3306;database=ObstacleDb;user=root;password=KlokkeklangKrissegutt04;TreatTinyAsBoolean=false;ConnectionTimeout=15;DefaultCommandTimeout=30
+      - ConnectionStrings__DefaultConnection=server=mariadb;port=3306;database=ObstacleDb;user=root;password=KlokkeklangKrissegutt04;TreatTinyAsBoolean=false;ConnectionTimeout=15;DefaultCommandTimeout=30
     depends_on:
       - mariadb
     networks:
