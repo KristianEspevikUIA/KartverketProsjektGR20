@@ -22,6 +22,7 @@ namespace FirstWebApplication1.Controllers
 
         // Blir kalt etter at vi trykker på "Submit Data" knapp i DataForm viewet
         [HttpPost] // Håndterer POST-forespørsel etter innsending av skjema
+        [ValidateAntiForgeryToken]
         public async Task<IActionResult> DataForm(ObstacleData obstacledata)
         {
             if (!ModelState.IsValid) // Sjekker om modellen (inputdata) er gyldig i henhold til valideringsregler
