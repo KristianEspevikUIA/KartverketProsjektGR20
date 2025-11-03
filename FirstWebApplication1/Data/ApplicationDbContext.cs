@@ -1,14 +1,23 @@
 ﻿using FirstWebApplication1.Models;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 
 namespace FirstWebApplication1.Data
 {
-    public class ApplicationDbContext : DbContext
+    public class ApplicationDbContext : IdentityDbContext<IdentityUser>
     {
+        public DbSet<ObstacleData> ObstacleDatas { get; set; } = null!;
+
+        public ApplicationDbContext()
+        {
+        }
+
         public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options)
             : base(options)
         {
         }
+
 
         public DbSet<ObstacleData> Obstacles => Set<ObstacleData>();
 
