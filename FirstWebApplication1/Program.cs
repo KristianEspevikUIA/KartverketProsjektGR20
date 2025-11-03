@@ -51,20 +51,38 @@ var app = builder.Build();
 
 using (var scope = app.Services.CreateScope())
 {
-    var roleManager = scope.ServiceProvider.GetRequiredService<RoleManager<IdentityRole>>();
-    var userManager = scope.ServiceProvider.GetRequiredService<UserManager<IdentityUser>>();
-
-    string[] roleNames = { "Admin", "Pilot", "Registerfører" };
-
-    foreach (var roleName in roleNames)
+    var services = scope.ServiceProvider;
+    try
     {
-        var roleExist = await roleManager.RoleExistsAsync(roleName);
-        if (!roleExist)
+        // Apply pending EF Core migrations (creates Identity tables if needed)
+        var db = services.GetRequiredService<ApplicationDbContext>();
+        db.Database.Migrate();
+
+        // Seed roles
+        var roleManager = services.GetRequiredService<RoleManager<IdentityRole>>();
+        string[] roleNames = { "Admin", "Pilot", "Registerfører" };
+
+        foreach (var roleName in roleNames)
         {
-            await roleManager.CreateAsync(new IdentityRole(roleName));
+            var exists = roleManager.RoleExistsAsync(roleName).GetAwaiter().GetResult();
+            if (!exists)
+            {
+                var createResult = roleManager.CreateAsync(new IdentityRole(roleName)).GetAwaiter().GetResult();
+                if (!createResult.Succeeded)
+                {
+                    var logger = services.GetRequiredService<ILogger<Program>>();
+                    logger.LogWarning("Failed to create role {Role}: {Errors}", roleName, string.Join(", ", createResult.Errors.Select(e => e.Description)));
+                }
+            }
         }
     }
-
+    catch (Exception ex)
+    {
+        // Log and rethrow so startup fails visibly if migration/seed cannot complete.
+        var logger = scope.ServiceProvider.GetRequiredService<ILogger<Program>>();
+        logger.LogError(ex, "An error occurred while migrating or seeding the database.");
+        throw;
+    }
 }
 
 // --- Fix culture for macOS parsing of latitude/longitude ---

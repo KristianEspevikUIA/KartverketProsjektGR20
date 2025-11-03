@@ -7,22 +7,18 @@ namespace FirstWebApplication1.Data
 {
     public class ApplicationDbContext : IdentityDbContext<IdentityUser>
     {
-        public DbSet<ObstacleData> ObstacleDatas { get; set; } = null!;
+        // Single DbSet for obstacles
+        public DbSet<ObstacleData> Obstacles { get; set; } = null!;
 
-        public ApplicationDbContext()
-        {
-        }
-
+        // Keep only the DbContextOptions constructor used by DI/EF
         public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options)
             : base(options)
         {
         }
 
-
-        public DbSet<ObstacleData> Obstacles => Set<ObstacleData>();
-
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
+            // Important: call base so Identity can configure its schema
             base.OnModelCreating(modelBuilder);
 
             modelBuilder.Entity<ObstacleData>(entity =>
