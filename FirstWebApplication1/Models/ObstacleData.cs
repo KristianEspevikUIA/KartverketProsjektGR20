@@ -33,6 +33,8 @@ namespace FirstWebApplication1.Models
         [Column(TypeName = "longtext")]
         public string? LineGeoJson { get; set; }
 
+        
+
         private IReadOnlyList<GeoCoordinate>? _cachedLine;
         private string? _cachedSource;
         private bool _lineParseFailed;

@@ -1,13 +1,17 @@
 ﻿using FirstWebApplication1.Data;
 using FirstWebApplication1.Models; // Importerer modellene (her: ObstacleData)
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.RateLimiting; // Gir tilgang til ASP.NET Core MVC-funksjonalitet
+
+
 
 namespace FirstWebApplication1.Controllers
 {
 
     [EnableRateLimiting("Fixed")]
     // Kontroller for håndtering av skjema knyttet til hindringsdata (ObstacleData)
+   
     public class ObstacleController : Controller
     {
         private readonly ApplicationDbContext _context; // Databasekontekst for datatilgang
