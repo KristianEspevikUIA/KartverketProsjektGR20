@@ -1,10 +1,17 @@
 ﻿using FirstWebApplication1.Data;
 using FirstWebApplication1.Models; // Importerer modellene (her: ObstacleData)
-using Microsoft.AspNetCore.Mvc; // Gir tilgang til ASP.NET Core MVC-funksjonalitet
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting; // Gir tilgang til ASP.NET Core MVC-funksjonalitet
+
+
 
 namespace FirstWebApplication1.Controllers
 {
+
+    [EnableRateLimiting("Fixed")]
     // Kontroller for håndtering av skjema knyttet til hindringsdata (ObstacleData)
+   
     public class ObstacleController : Controller
     {
         private readonly ApplicationDbContext _context; // Databasekontekst for datatilgang
@@ -22,6 +29,7 @@ namespace FirstWebApplication1.Controllers
 
         // Blir kalt etter at vi trykker på "Submit Data" knapp i DataForm viewet
         [HttpPost] // Håndterer POST-forespørsel etter innsending av skjema
+        [ValidateAntiForgeryToken]
         public async Task<IActionResult> DataForm(ObstacleData obstacledata)
         {
             if (!ModelState.IsValid) // Sjekker om modellen (inputdata) er gyldig i henhold til valideringsregler
