@@ -1,7 +1,8 @@
-﻿using FirstWebApplication1.Models; // Your ViewModels namespace
+﻿using FirstWebApplication1.Models;
 using FirstWebApplication1.Models.Account;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Authorization;
 
 namespace FirstWebApplication1.Controllers
 {
@@ -28,7 +29,36 @@ namespace FirstWebApplication1.Controllers
             return View();
         }
 
+        // POST: /Account/Register
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Register(RegisterViewModel model)
+        {
+            if (ModelState.IsValid)
+            {
+                var user = new IdentityUser { UserName = model.Email, Email = model.Email };
+                var result = await _userManager.CreateAsync(user, model.Password);
 
+                if (result.Succeeded)
+                {
+                    // Assign role to user
+                    if (!string.IsNullOrEmpty(model.Role))
+                    {
+                        await _userManager.AddToRoleAsync(user, model.Role);
+                    }
+
+                    await _signInManager.SignInAsync(user, isPersistent: false);
+                    return RedirectToAction("Index", "Home"); // Changed from "Index" to "Home"
+                }
+
+                foreach (var error in result.Errors)
+                {
+                    ModelState.AddModelError(string.Empty, error.Description);
+                }
+            }
+
+            return View(model);
+        }
 
         // GET: /Account/Login
         [HttpGet]
@@ -38,8 +68,10 @@ namespace FirstWebApplication1.Controllers
             return View();
         }
 
+       
         // POST: /Account/Login
         [HttpPost]
+        [ValidateAntiForgeryToken]
         public async Task<IActionResult> Login(LoginViewModel model, string? returnUrl = null)
         {
             ViewData["ReturnUrl"] = returnUrl;
@@ -50,7 +82,7 @@ namespace FirstWebApplication1.Controllers
 
                 if (result.Succeeded)
                 {
-                    return RedirectToLocal(returnUrl);
+                    return RedirectToLocal(returnUrl) ?? RedirectToAction("Index", "Home");
                 }
 
                 ModelState.AddModelError(string.Empty, "Invalid login attempt.");
@@ -58,7 +90,6 @@ namespace FirstWebApplication1.Controllers
 
             return View(model);
         }
-
         // POST: /Account/Logout
         [HttpPost]
         [ValidateAntiForgeryToken]

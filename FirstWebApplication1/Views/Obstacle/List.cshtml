@@ -1,0 +1,85 @@
+﻿@model IEnumerable<FirstWebApplication1.Models.ObstacleData>
+
+@{
+    ViewData["Title"] = "Obstacle Reports";
+}
+
+<body class="bg-cover bg-center" style="background-image: url('/images/BackgroundImageGreen.png');">
+    <section class="mx-auto max-w-6xl mt-8">
+        <div class="bg-white rounded-2xl shadow-sm ring-1 ring-gray-200 p-8">
+            <div class="flex justify-between items-center mb-8">
+                <div>
+                    <h1 class="text-3xl font-bold text-gray-900">Obstacle Reports</h1>
+                    <p class="text-gray-600 mt-2">Manage and view all registered obstacles</p>
+                </div>
+                <a asp-action="DataForm"
+                   class="inline-flex items-center rounded-lg bg-indigo-600 px-4 py-2 text-white font-medium hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                    Register New Obstacle
+                </a>
+            </div>
+
+            @if (Model.Any())
+            {
+                <div class="overflow-hidden shadow ring-1 ring-black ring-opacity-5 rounded-lg">
+                    <table class="min-w-full divide-y divide-gray-300">
+                        <thead class="bg-gray-50">
+                            <tr>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Obstacle Name</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Height</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Submitted Date</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody class="bg-white divide-y divide-gray-200">
+                            @foreach (var obstacle in Model)
+                            {
+                                <tr class="hover:bg-gray-50">
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <div class="text-sm font-medium text-gray-900">@obstacle.ObstacleName</div>
+                                        <div class="text-sm text-gray-500">@obstacle.ObstacleDescription</div>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <div class="text-sm text-gray-900">@obstacle.ObstacleHeight m</div>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        @{
+                                            var statusClass = obstacle.Status switch
+                                            {
+                                                "Approved" => "bg-green-100 text-green-800",
+                                                "Rejected" => "bg-red-100 text-red-800",
+                                                _ => "bg-yellow-100 text-yellow-800"
+                                            };
+                                        }
+                                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium @statusClass">
+                                            @obstacle.Status
+                                        </span>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                        @obstacle.SubmittedDate.ToString("MMM dd, yyyy")
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                                        <a asp-action="Details" asp-route-id="@obstacle.Id"
+                                           class="text-indigo-600 hover:text-indigo-900 mr-4">View</a>
+                                        <a asp-action="Edit" asp-route-id="@obstacle.Id"
+                                           class="text-indigo-600 hover:text-indigo-900 mr-4">Edit</a>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            }
+            else
+            {
+                <div class="text-center py-12">
+                    <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.172 16.172a4 4 0 015.656 0M9 12h6m-6-4h6m2 5.291A7.962 7.962 0 0112 15c-2.34 0-4.47-.88-6.08-2.32M3 3l18 18" />
+                    </svg>
+                    <h3 class="mt-2 text-sm font-medium text-gray-900">No obstacles</h3>
+                    <p class="mt-1 text-sm text-gray-500">Get started by creating a new obstacle report.</p>
+                </div>
+            }
+        </div>
+    </section>
+</body>
