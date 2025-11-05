@@ -1,0 +1,74 @@
+﻿@model FirstWebApplication1.Models.Account.RegisterViewModel
+
+@{
+    ViewData["Title"] = "Register";
+}
+
+<body class="bg-cover bg-center" style="background-image: url('/images/BackgroundImageGreen.png');">
+    <section class="mx-auto max-w-md mt-8">
+        <div class="bg-white rounded-2xl shadow-sm ring-1 ring-gray-200 p-8">
+            <div class="text-center mb-8">
+                <h1 class="text-3xl font-bold text-gray-900">Create your account</h1>
+                <p class="mt-2 text-gray-600">Join the NRL Registration System</p>
+            </div>
+
+            <form asp-action="Register" method="post" class="space-y-6">
+                @Html.AntiForgeryToken()
+                <div asp-validation-summary="ModelOnly" class="text-red-600 text-sm"></div>
+
+                <div>
+                    <label asp-for="Email" class="block text-sm font-medium text-gray-700 mb-1"></label>
+                    <input asp-for="Email"
+                           class="w-full rounded-lg border-gray-300 focus:border-indigo-600 focus:ring-indigo-600 px-3 py-2 border"
+                           placeholder="Enter your email" />
+                    <span asp-validation-for="Email" class="text-red-600 text-sm"></span>
+                </div>
+
+                <div>
+                    <label asp-for="Password" class="block text-sm font-medium text-gray-700 mb-1"></label>
+                    <input asp-for="Password" type="password"
+                           class="w-full rounded-lg border-gray-300 focus:border-indigo-600 focus:ring-indigo-600 px-3 py-2 border"
+                           placeholder="Create a password" />
+                    <span asp-validation-for="Password" class="text-red-600 text-sm"></span>
+                </div>
+
+                <div>
+                    <label asp-for="ConfirmPassword" class="block text-sm font-medium text-gray-700 mb-1"></label>
+                    <input asp-for="ConfirmPassword" type="password"
+                           class="w-full rounded-lg border-gray-300 focus:border-indigo-600 focus:ring-indigo-600 px-3 py-2 border"
+                           placeholder="Confirm your password" />
+                    <span asp-validation-for="ConfirmPassword" class="text-red-600 text-sm"></span>
+                </div>
+
+                <div>
+                    <label asp-for="Role" class="block text-sm font-medium text-gray-700 mb-1"></label>
+                    <select asp-for="Role"
+                            class="w-full rounded-lg border-gray-300 focus:border-indigo-600 focus:ring-indigo-600 px-3 py-2 border">
+                        <option value="">Select a role</option>
+                        <option value="Pilot">Pilot</option>
+                        <option value="Registerfører">Registerfører</option>
+                        <option value="Admin">Admin</option>
+                    </select>
+                    <span asp-validation-for="Role" class="text-red-600 text-sm"></span>
+                </div>
+
+                <button type="submit"
+                        class="w-full flex justify-center py-2 px-4 border border-transparent rounded-lg shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                    Create account
+                </button>
+
+                <div class="text-center">
+                    <a asp-action="Login" class="font-medium text-indigo-600 hover:text-indigo-500">
+                        Already have an account? Sign in here
+                    </a>
+                </div>
+            </form>
+        </div>
+    </section>
+</body>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+}

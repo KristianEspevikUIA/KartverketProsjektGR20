@@ -1,49 +1,118 @@
-﻿<!DOCTYPE html>
+﻿@using Microsoft.AspNetCore.Identity
+@inject SignInManager<IdentityUser> SignInManager
+@inject UserManager<IdentityUser> UserManager
+
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>@ViewData["Title"] - Gruppe 20 KartverketProject </title>
+    <title>@ViewData["Title"] - NRL Registration System</title>
 
-    <!-- TailwindCSS CDN -->
+    <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
 
-    <script type="importmap"></script>
-    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
-    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
-    <link rel="stylesheet" href="~/FirstWebApplication1.styles.css" asp-append-version="true" />
+    <!-- Optional: Font Awesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    @await RenderSectionAsync("Head", required: false)
 </head>
-<body>
-        <header class="bg-gray-100 shadow">
-            <div class="container mx-auto flex items-center space-x-6 p-4">
-                <!-- Prosjektnavn -->
-                <a asp-controller="Home" asp-action="Index" class="font-bold text-gray-800">
-                    Gruppe 20 KartverketProject
-                </a>
+<body class="min-h-screen bg-gray-50">
+    @using Microsoft.AspNetCore.Identity
+    @inject SignInManager<IdentityUser> SignInManager
+    @inject UserManager<IdentityUser> UserManager
 
-                <!-- Lenker -->
-                <a asp-controller="Home" asp-action="Index" class="text-gray-700 hover:text-indigo-600">
-                    Home
-                </a>
-                <a asp-controller="Home" asp-action="Privacy" class="text-gray-700 hover:text-indigo-600">
-                    Privacy
-                </a>
+    <nav class="bg-white shadow-sm border-b border-gray-200">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between h-16">
+                <div class="flex items-center">
+                    <a asp-controller="Home" asp-action="Index" class="flex-shrink-0 flex items-center">
+                        <img class="h-8 w-auto" src="~/images/standard_kartverket.png" alt="Kartverket Logo">
+                        <span class="ml-2 text-lg font-semibold text-gray-900">NRL System</span>
+                    </a>
+
+                    @if (SignInManager.IsSignedIn(User))
+                    {
+                        <div class="hidden md:ml-6 md:flex md:space-x-4">
+                            <a asp-controller="Obstacle" asp-action="List"
+                               class="text-gray-900 hover:bg-gray-50 hover:text-gray-900 px-3 py-2 rounded-md text-sm font-medium">
+                                View Obstacles
+                            </a>
+                            <a asp-controller="Obstacle" asp-action="DataForm"
+                               class="text-gray-900 hover:bg-gray-50 hover:text-gray-900 px-3 py-2 rounded-md text-sm font-medium">
+                                Report Obstacle
+                            </a>
+
+                            @if (User.IsInRole("Admin"))
+                            {
+                                <a asp-controller="Admin" asp-action="Users"
+                                   class="text-gray-900 hover:bg-gray-50 hover:text-gray-900 px-3 py-2 rounded-md text-sm font-medium">
+                                    Manage Users
+                                </a>
+                            }
+                        </div>
+                    }
+                </div>
+
+                <div class="flex items-center">
+                    @if (SignInManager.IsSignedIn(User))
+                    {
+                        <div class="flex items-center space-x-4">
+                            <span class="text-sm text-gray-700">Hello, @User.Identity?.Name!</span>
+
+                            @if (User.IsInRole("Admin"))
+                            {
+                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-purple-100 text-purple-800">Admin</span>
+                            }
+                            else if (User.IsInRole("Registerfører"))
+                            {
+                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">Registerfører</span>
+                            }
+                            else if (User.IsInRole("Pilot"))
+                            {
+                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">Pilot</span>
+                            }
+
+                            <form asp-controller="Account" asp-action="Logout" method="post" class="inline">
+                                @Html.AntiForgeryToken()
+                                <button type="submit" class="text-gray-700 hover:text-gray-900 px-3 py-2 rounded-md text-sm font-medium">
+                                    Logout
+                                </button>
+                            </form>
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="flex space-x-4">
+                            <a asp-controller="Account" asp-action="Login" class="text-gray-700 hover:text-gray-900 px-3 py-2 rounded-md text-sm font-medium">Login</a>
+                            <a asp-controller="Account" asp-action="Register" class="text-gray-700 hover:text-gray-900 px-3 py-2 rounded-md text-sm font-medium">Register</a>
+                        </div>
+                    }
+                </div>
             </div>
-    </header>
-    <div class="container">
-        <main role="main" class="pb-3">
-            @RenderBody()
-        </main>
-    </div>
+        </div>
+    </nav>
 
-    <footer class="border-top footer text-muted">
-        <div class="container">
-            &copy; 2025 - Gruppe 20 KartverkeProject - <a asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a>
+    <main>
+        @RenderBody()
+    </main>
+
+    <!-- Optional: Footer -->
+    <footer class="bg-white border-t border-gray-200 mt-12">
+        <div class="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
+            <div class="text-center text-gray-500 text-sm">
+                <p>&copy; 2024 NRL Registration System. All rights reserved.</p>
+            </div>
         </div>
     </footer>
-    <script src="~/lib/jquery/dist/jquery.min.js"></script>
-    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="~/js/site.js" asp-append-version="true"></script>
+
+    <!-- jQuery (needed for some validation) -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+    <!-- Validation Scripts -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-validate/1.19.3/jquery.validate.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-validation-unobtrusive/3.2.12/jquery.validate.unobtrusive.min.js"></script>
+
     @await RenderSectionAsync("Scripts", required: false)
 </body>
 </html>

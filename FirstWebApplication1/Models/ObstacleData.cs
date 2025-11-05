@@ -33,8 +33,6 @@ namespace FirstWebApplication1.Models
         [Column(TypeName = "longtext")]
         public string? LineGeoJson { get; set; }
 
-        
-
         private IReadOnlyList<GeoCoordinate>? _cachedLine;
         private string? _cachedSource;
         private bool _lineParseFailed;
@@ -79,6 +77,18 @@ namespace FirstWebApplication1.Models
 
         [NotMapped]
         public double? LineLengthMeters => HasLine ? CalculateLineLength(LineCoordinates) : null;
+
+        // Change from internal set to public set
+        public string Status { get; set; } = string.Empty;
+        public string SubmittedBy { get; set; } = string.Empty;
+        public DateTime SubmittedDate { get; set; }
+        public string LastModifiedBy { get; set; } = string.Empty;
+        public DateTime LastModifiedDate { get; set; }
+        public string ApprovedBy { get; set; } = string.Empty;
+        public DateTime ApprovedDate { get; set; }
+        public string? DeclineReason { get; set; }
+        public string DeclinedBy { get; set; } = string.Empty;
+        public DateTime DeclinedDate { get; set; }
 
         public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
         {

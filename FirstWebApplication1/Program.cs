@@ -56,18 +56,18 @@ using (var scope = app.Services.CreateScope())
     {
         // Apply pending EF Core migrations (creates Identity tables if needed)
         var db = services.GetRequiredService<ApplicationDbContext>();
-        db.Database.Migrate();
+        await db.Database.MigrateAsync(); // Changed to async
 
-        // Seed roles
+        // Seed roles - using async properly
         var roleManager = services.GetRequiredService<RoleManager<IdentityRole>>();
         string[] roleNames = { "Admin", "Pilot", "Registerfører" };
 
         foreach (var roleName in roleNames)
         {
-            var exists = roleManager.RoleExistsAsync(roleName).GetAwaiter().GetResult();
+            var exists = await roleManager.RoleExistsAsync(roleName); // Changed to await
             if (!exists)
             {
-                var createResult = roleManager.CreateAsync(new IdentityRole(roleName)).GetAwaiter().GetResult();
+                var createResult = await roleManager.CreateAsync(new IdentityRole(roleName)); // Changed to await
                 if (!createResult.Succeeded)
                 {
                     var logger = services.GetRequiredService<ILogger<Program>>();
@@ -78,8 +78,7 @@ using (var scope = app.Services.CreateScope())
     }
     catch (Exception ex)
     {
-        // Log and rethrow so startup fails visibly if migration/seed cannot complete.
-        var logger = scope.ServiceProvider.GetRequiredService<ILogger<Program>>();
+        var logger = services.GetRequiredService<ILogger<Program>>();
         logger.LogError(ex, "An error occurred while migrating or seeding the database.");
         throw;
     }
