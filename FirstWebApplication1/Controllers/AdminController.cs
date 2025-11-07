@@ -130,6 +130,35 @@ namespace FirstWebApplication1.Controllers
             return RedirectToAction(nameof(Users));
         }
 
+        // API: Delete user - JSON endpoint for AJAX
+        [HttpDelete]
+        [Route("api/users/{id}")]
+        public async Task<IActionResult> DeleteUserApi(string id)
+        {
+            var user = await _userManager.FindByIdAsync(id);
+            if (user == null)
+            {
+                return NotFound(new { success = false, message = "User not found" });
+            }
+
+            // Prevent deleting your own account
+            var currentUser = await _userManager.GetUserAsync(User);
+            if (currentUser?.Id == id)
+            {
+                return BadRequest(new { success = false, message = "You cannot delete your own account." });
+            }
+
+            var result = await _userManager.DeleteAsync(user);
+            if (result.Succeeded)
+            {
+                return Ok(new { success = true, message = "User deleted successfully" });
+            }
+            else
+            {
+                return BadRequest(new { success = false, message = "Failed to delete user", errors = result.Errors });
+            }
+        }
+
         // GET: /Admin/Roles
         [HttpGet]
         public async Task<IActionResult> Roles()

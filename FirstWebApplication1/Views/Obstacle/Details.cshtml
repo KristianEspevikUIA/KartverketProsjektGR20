@@ -68,7 +68,7 @@
                         </dl>
                     </div>
 
-                    @if (User.IsInRole("Admin"))
+                    @if (User.IsInRole("Registerfører") || User.IsInRole("Admin"))
                     {
                         <div class="border-t pt-6">
                             <h3 class="text-lg font-medium text-gray-900 mb-4">Approval Actions</h3>
@@ -80,13 +80,14 @@
                                         Approve
                                     </button>
                                 </form>
-                                <form asp-action="Reject" asp-route-id="@Model.Id" method="post" class="inline">
-                                    @Html.AntiForgeryToken()
-                                    <button type="submit"
-                                            class="inline-flex items-center rounded-lg bg-red-600 px-4 py-2 text-sm font-medium text-white hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500">
-                                        Reject
-                                    </button>
-                                </form>
+                                <button type="button" onclick="showRejectModal()"
+                                        class="inline-flex items-center rounded-lg bg-red-600 px-4 py-2 text-sm font-medium text-white hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500">
+                                    Reject
+                                </button>
+                                <button type="button" onclick="deleteObstacle(@Model.Id)"
+                                        class="inline-flex items-center rounded-lg bg-gray-800 px-4 py-2 text-sm font-medium text-white hover:bg-gray-900 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500">
+                                    Delete
+                                </button>
                             </div>
                         </div>
                     }
@@ -122,5 +123,58 @@
             .addTo(map)
             .bindPopup('@Model.ObstacleName')
             .openPopup();
+
+        function showRejectModal() {
+            const reason = prompt('Please enter a reason for rejection (optional):');
+            if (reason !== null) {
+                rejectObstacle(@Model.Id, reason);
+            }
+        }
+
+        async function rejectObstacle(id, reason) {
+            try {
+                const response = await fetch(`/api/reports/${id}/reject`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ declineReason: reason })
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    alert('Obstacle rejected successfully');
+                    location.reload();
+                } else {
+                    alert('Failed to reject obstacle: ' + data.message);
+                }
+            } catch (error) {
+                alert('Error rejecting obstacle: ' + error.message);
+            }
+        }
+
+        async function deleteObstacle(id) {
+            if (!confirm('Are you sure you want to delete this obstacle? This action cannot be undone.')) {
+                return;
+            }
+
+            try {
+                const response = await fetch(`/api/reports/${id}`, {
+                    method: 'DELETE'
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    alert('Obstacle deleted successfully');
+                    window.location.href = '/Obstacle/List';
+                } else {
+                    alert('Failed to delete obstacle: ' + data.message);
+                }
+            } catch (error) {
+                alert('Error deleting obstacle: ' + error.message);
+            }
+        }
     </script>
 }

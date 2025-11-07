@@ -42,7 +42,9 @@
                                     </td>
                                     <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
                                         <a asp-action="EditUser" asp-route-id="@user.Id"
-                                           class="text-indigo-600 hover:text-indigo-900">Edit Roles</a>
+                                           class="text-indigo-600 hover:text-indigo-900 mr-4">Edit Roles</a>
+                                        <button type="button" onclick="deleteUserFromList('@user.Id', '@user.Email', this)"
+                                                class="text-red-600 hover:text-red-900">Delete</button>
                                     </td>
                                 </tr>
                             }
@@ -63,3 +65,32 @@
         </div>
     </section>
 </body>
+
+@section Scripts {
+    <script>
+        async function deleteUserFromList(userId, userEmail, button) {
+            if (!confirm(`Are you sure you want to delete user "${userEmail}"? This action cannot be undone.`)) {
+                return;
+            }
+
+            try {
+                const response = await fetch(`/api/users/${userId}`, {
+                    method: 'DELETE'
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    // Remove the row from the table
+                    const row = button.closest('tr');
+                    row.remove();
+                    alert('User deleted successfully');
+                } else {
+                    alert('Failed to delete user: ' + data.message);
+                }
+            } catch (error) {
+                alert('Error deleting user: ' + error.message);
+            }
+        }
+    </script>
+}

@@ -1,19 +1,32 @@
 using FirstWebApplication1.Controllers;
+using FirstWebApplication1.Data;
 using FirstWebApplication1.Models;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
+using System.Security.Claims;
 
 namespace FirstWebApplication1.Tests.Controllers
 {
     public class ObstacleControllerTests
     {
-     
+        private ApplicationDbContext CreateInMemoryContext()
+        {
+            var options = new DbContextOptionsBuilder<ApplicationDbContext>()
+                .UseInMemoryDatabase(databaseName: Guid.NewGuid().ToString())
+                .Options;
+
+            return new ApplicationDbContext(options);
+        }
+
         // This test verifies that when the user visits the DataForm page, the controller returns a ViewResult with no model.
 
         [Fact]
         public void DataForm_Get_ReturnsViewResultWithoutModel()
         {
             // Arrange: Create an instance of the controller to test
-            var controller = new ObstacleController();
+            using var context = CreateInMemoryContext();
+            var controller = new ObstacleController(context);
 
             // Act: Call the GET method
             var result = controller.DataForm();
@@ -30,10 +43,11 @@ namespace FirstWebApplication1.Tests.Controllers
         
         // This test simulates what happens when a user submits the form with invalid data (for example, missing required fields).
         [Fact]
-        public void DataForm_Post_InvalidModelState_ReturnsSameViewWithModel()
+        public async Task DataForm_Post_InvalidModelState_ReturnsSameViewWithModel()
         {
             // Arrange: Create controller and a dummy ObstacleData object
-            var controller = new ObstacleController();
+            using var context = CreateInMemoryContext();
+            var controller = new ObstacleController(context);
             var obstacle = new ObstacleData
             {
                 // You can optionally add fake data here
@@ -43,7 +57,7 @@ namespace FirstWebApplication1.Tests.Controllers
             controller.ModelState.AddModelError("TestError", "Some validation error");
 
             // Act: Call the POST method with invalid model
-            var result = controller.DataForm(obstacle);
+            var result = await controller.DataForm(obstacle);
 
             // Assert: Ensure the controller returns a ViewResult (not a Redirect)
             var viewResult = Assert.IsType<ViewResult>(result);
@@ -54,7 +68,7 @@ namespace FirstWebApplication1.Tests.Controllers
             Assert.Null(viewResult.ViewName);
 
             // The model passed back to the view should be the same object we sent in,
-            // so the user’s form input is preserved
+            // so the user's form input is preserved
             Assert.Same(obstacle, viewResult.Model);
         }
 
@@ -67,18 +81,34 @@ namespace FirstWebApplication1.Tests.Controllers
         // This corresponds to the controller code:
         //     return View("Overview", obstacledata);
         [Fact]
-        public void DataForm_Post_ValidModelState_ReturnsOverviewViewWithModel()
+        public async Task DataForm_Post_ValidModelState_ReturnsOverviewViewWithModel()
         {
             // Arrange: Create controller and a valid model
-            var controller = new ObstacleController();
+            using var context = CreateInMemoryContext();
+            var controller = new ObstacleController(context);
+            
+            // Set up a fake user identity
+            var user = new System.Security.Claims.ClaimsPrincipal(new System.Security.Claims.ClaimsIdentity(new System.Security.Claims.Claim[]
+            {
+                new System.Security.Claims.Claim(System.Security.Claims.ClaimTypes.Name, "testuser")
+            }, "mock"));
+
+            controller.ControllerContext = new ControllerContext()
+            {
+                HttpContext = new DefaultHttpContext() { User = user }
+            };
+
             var obstacle = new ObstacleData
             {
-                // You can add realistic example data here, e.g.:
-                // Height = 45, Location = "58.12N, 07.23E", etc.
+                ObstacleName = "Test Obstacle",
+                ObstacleHeight = 100,
+                ObstacleDescription = "Test Description",
+                Latitude = 58.0,
+                Longitude = 7.0
             };
 
             // Act: Call the POST method (ModelState is valid by default)
-            var result = controller.DataForm(obstacle);
+            var result = await controller.DataForm(obstacle);
 
             // Assert: Verify that we got a ViewResult
             var viewResult = Assert.IsType<ViewResult>(result);

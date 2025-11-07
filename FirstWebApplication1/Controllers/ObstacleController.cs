@@ -170,8 +170,8 @@ namespace FirstWebApplication1.Controllers
             return RedirectToAction(nameof(Details), new { id });
         }
 
-        // DELETE: Delete obstacle - Only Admin
-        [Authorize(Roles = "Admin")]
+        // DELETE: Delete obstacle - Registerfører and Admin
+        [Authorize(Roles = "Registerfører,Admin")]
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Delete(int id)
@@ -189,9 +189,78 @@ namespace FirstWebApplication1.Controllers
             return RedirectToAction(nameof(List));
         }
 
+        // API: Approve obstacle - JSON endpoint for AJAX
+        [Authorize(Roles = "Registerfører,Admin")]
+        [HttpPost]
+        [Route("api/reports/{id}/approve")]
+        public async Task<IActionResult> ApproveApi(int id)
+        {
+            var obstacle = await _context.Obstacles.FindAsync(id);
+
+            if (obstacle == null)
+            {
+                return NotFound(new { success = false, message = "Obstacle not found" });
+            }
+
+            obstacle.Status = "Approved";
+            obstacle.ApprovedBy = User.Identity?.Name ?? "Unknown";
+            obstacle.ApprovedDate = DateTime.UtcNow;
+
+            await _context.SaveChangesAsync();
+
+            return Ok(new { success = true, message = "Obstacle approved successfully", status = "Approved" });
+        }
+
+        // API: Reject obstacle - JSON endpoint for AJAX
+        [Authorize(Roles = "Registerfører,Admin")]
+        [HttpPost]
+        [Route("api/reports/{id}/reject")]
+        public async Task<IActionResult> RejectApi(int id, [FromBody] RejectRequest? request)
+        {
+            var obstacle = await _context.Obstacles.FindAsync(id);
+
+            if (obstacle == null)
+            {
+                return NotFound(new { success = false, message = "Obstacle not found" });
+            }
+
+            obstacle.Status = "Declined";
+            obstacle.DeclinedBy = User.Identity?.Name ?? "Unknown";
+            obstacle.DeclinedDate = DateTime.UtcNow;
+            obstacle.DeclineReason = request?.DeclineReason;
+
+            await _context.SaveChangesAsync();
+
+            return Ok(new { success = true, message = "Obstacle rejected successfully", status = "Declined" });
+        }
+
+        // API: Delete obstacle - JSON endpoint for AJAX
+        [Authorize(Roles = "Registerfører,Admin")]
+        [HttpDelete]
+        [Route("api/reports/{id}")]
+        public async Task<IActionResult> DeleteApi(int id)
+        {
+            var obstacle = await _context.Obstacles.FindAsync(id);
+
+            if (obstacle == null)
+            {
+                return NotFound(new { success = false, message = "Obstacle not found" });
+            }
+
+            _context.Obstacles.Remove(obstacle);
+            await _context.SaveChangesAsync();
+
+            return Ok(new { success = true, message = "Obstacle deleted successfully" });
+        }
+
         private async Task<bool> ObstacleExists(int id)
         {
             return await _context.Obstacles.AnyAsync(e => e.Id == id);
         }
+    }
+
+    public class RejectRequest
+    {
+        public string? DeclineReason { get; set; }
     }
 }
