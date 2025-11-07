@@ -5,6 +5,7 @@
 }
 
 <body class="bg-cover bg-center" style="background-image: url('/images/BackgroundImageGreen.png');">
+    @Html.AntiForgeryToken()
     <section class="mx-auto max-w-4xl mt-8">
         <div class="bg-white rounded-2xl shadow-sm ring-1 ring-gray-200 p-8">
             <div class="flex justify-between items-start mb-8">
@@ -124,6 +125,11 @@
             .bindPopup('@Model.ObstacleName')
             .openPopup();
 
+        // Get anti-forgery token
+        function getAntiForgeryToken() {
+            return document.querySelector('input[name="__RequestVerificationToken"]')?.value || '';
+        }
+
         function showRejectModal() {
             const reason = prompt('Please enter a reason for rejection (optional):');
             if (reason !== null) {
@@ -137,6 +143,7 @@
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
+                        'RequestVerificationToken': getAntiForgeryToken()
                     },
                     body: JSON.stringify({ declineReason: reason })
                 });
@@ -161,7 +168,10 @@
 
             try {
                 const response = await fetch(`/api/reports/${id}`, {
-                    method: 'DELETE'
+                    method: 'DELETE',
+                    headers: {
+                        'RequestVerificationToken': getAntiForgeryToken()
+                    }
                 });
 
                 const data = await response.json();

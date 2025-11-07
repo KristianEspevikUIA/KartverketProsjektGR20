@@ -193,6 +193,7 @@ namespace FirstWebApplication1.Controllers
         [Authorize(Roles = "Registerfører,Admin")]
         [HttpPost]
         [Route("api/reports/{id}/approve")]
+        [ValidateAntiForgeryToken]
         public async Task<IActionResult> ApproveApi(int id)
         {
             var obstacle = await _context.Obstacles.FindAsync(id);
@@ -215,6 +216,7 @@ namespace FirstWebApplication1.Controllers
         [Authorize(Roles = "Registerfører,Admin")]
         [HttpPost]
         [Route("api/reports/{id}/reject")]
+        [ValidateAntiForgeryToken]
         public async Task<IActionResult> RejectApi(int id, [FromBody] RejectRequest? request)
         {
             var obstacle = await _context.Obstacles.FindAsync(id);
@@ -238,6 +240,7 @@ namespace FirstWebApplication1.Controllers
         [Authorize(Roles = "Registerfører,Admin")]
         [HttpDelete]
         [Route("api/reports/{id}")]
+        [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteApi(int id)
         {
             var obstacle = await _context.Obstacles.FindAsync(id);

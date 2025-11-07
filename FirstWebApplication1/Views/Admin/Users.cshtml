@@ -5,6 +5,7 @@
 }
 
 <body class="bg-cover bg-center" style="background-image: url('/images/BackgroundImageGreen.png');">
+    @Html.AntiForgeryToken()
     <section class="mx-auto max-w-6xl mt-8">
         <div class="bg-white rounded-2xl shadow-sm ring-1 ring-gray-200 p-8">
             <div class="mb-8">
@@ -68,6 +69,11 @@
 
 @section Scripts {
     <script>
+        // Get anti-forgery token
+        function getAntiForgeryToken() {
+            return document.querySelector('input[name="__RequestVerificationToken"]')?.value || '';
+        }
+
         async function deleteUserFromList(userId, userEmail, button) {
             if (!confirm(`Are you sure you want to delete user "${userEmail}"? This action cannot be undone.`)) {
                 return;
@@ -75,7 +81,10 @@
 
             try {
                 const response = await fetch(`/api/users/${userId}`, {
-                    method: 'DELETE'
+                    method: 'DELETE',
+                    headers: {
+                        'RequestVerificationToken': getAntiForgeryToken()
+                    }
                 });
 
                 const data = await response.json();

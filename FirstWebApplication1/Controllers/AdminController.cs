@@ -133,6 +133,7 @@ namespace FirstWebApplication1.Controllers
         // API: Delete user - JSON endpoint for AJAX
         [HttpDelete]
         [Route("api/users/{id}")]
+        [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteUserApi(string id)
         {
             var user = await _userManager.FindByIdAsync(id);
