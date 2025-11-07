@@ -170,8 +170,8 @@ namespace FirstWebApplication1.Controllers
             return RedirectToAction(nameof(Details), new { id });
         }
 
-        // DELETE: Delete obstacle - Only Admin
-        [Authorize(Roles = "Admin")]
+        // DELETE: Delete obstacle - Registerfører and Admin
+        [Authorize(Roles = "Registerfører,Admin")]
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Delete(int id)
