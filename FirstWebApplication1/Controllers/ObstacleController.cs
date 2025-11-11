@@ -1,16 +1,13 @@
-﻿using System;
-using System.Linq;
-using System.Threading.Tasks;
+﻿using FirstWebApplication1.Data;
+using FirstWebApplication1.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.EntityFrameworkCore;
-using FirstWebApplication1.Data;
-using FirstWebApplication1.Models;
 
 namespace FirstWebApplication1.Controllers
 {
-    // If you previously had any attributes like rate-limiting, keep them;
-    // the original snapshot included [EnableRateLimiting("Fixed")] in some versions.
+    [EnableRateLimiting("Fixed")]
     public class ObstacleController : Controller
     {
         private readonly ApplicationDbContext _context;
@@ -20,37 +17,116 @@ namespace FirstWebApplication1.Controllers
             _context = context;
         }
 
-        // GET: DataForm - Only authenticated users can create obstacles
+        // STEP 1: Select obstacle type
+        [Authorize]
+        [HttpGet]
+        public IActionResult SelectType()
+        {
+            return View(new ObstacleTypeViewModel());
+        }
+
+        [Authorize]
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public IActionResult SelectType(ObstacleTypeViewModel model)
+        {
+            if (string.IsNullOrWhiteSpace(model.SelectedType))
+            {
+                ModelState.AddModelError("SelectedType", "Please select an obstacle type");
+                return View(model);
+            }
+
+            TempData["ObstacleType"] = model.SelectedType;
+            return RedirectToAction(nameof(DataForm));
+        }
+
+        // STEP 2: Fill in details
         [Authorize]
         [HttpGet]
         public IActionResult DataForm()
         {
-            return View();
+            if (TempData.Peek("ObstacleType") == null)
+            {
+                return RedirectToAction(nameof(SelectType));
+            }
+
+            var obstacleType = TempData.Peek("ObstacleType")?.ToString();
+            var obstacleData = new ObstacleData
+            {
+                ObstacleType = obstacleType,
+                ObstacleHeight = 15
+            };
+
+            return View(obstacleData);
         }
 
-        // POST: DataForm - Submit new obstacle
+        // STEP 3: Submit and show overview
         [Authorize]
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DataForm(ObstacleData obstacledata)
         {
-            if (!ModelState.IsValid)
+            try
             {
+                // Retrieve obstacle type from TempData
+                if (TempData["ObstacleType"] != null)
+                {
+                    obstacledata.ObstacleType = TempData["ObstacleType"].ToString();
+                    TempData.Keep("ObstacleType");
+                }
+
+                // Auto-generate obstacle name from type
+                if (!string.IsNullOrWhiteSpace(obstacledata.ObstacleType))
+                {
+                    obstacledata.ObstacleName = obstacledata.ObstacleType;
+                }
+                else
+                {
+                    obstacledata.ObstacleName = "Unknown Obstacle";
+                }
+
+                // FIX: Ensure description is not null (set to empty string if null/empty)
+                if (string.IsNullOrWhiteSpace(obstacledata.ObstacleDescription))
+                {
+                    obstacledata.ObstacleDescription = "";
+                }
+
+                // Remove validation for optional/auto-generated fields
+                ModelState.Remove("ObstacleType");
+                ModelState.Remove("ObstacleName");
+                ModelState.Remove("ObstacleDescription");
+
+                if (!ModelState.IsValid)
+                {
+                    return View(obstacledata);
+                }
+
+                // Set status to Pending
+                obstacledata.Status = "Pending";
+                obstacledata.SubmittedBy = User.Identity?.Name ?? "Unknown";
+                obstacledata.SubmittedDate = DateTime.UtcNow;
+
+                _context.Obstacles.Add(obstacledata);
+                await _context.SaveChangesAsync();
+
+                return View("Overview", obstacledata);
+            }
+            catch (Exception ex)
+            {
+                // Log detailed error for debugging
+                var innerMessage = ex.InnerException?.Message ?? ex.Message;
+                var stackTrace = ex.StackTrace;
+
+                ModelState.AddModelError("", $"Error saving obstacle: {innerMessage}");
+
+                // Log to console for debugging
+                Console.WriteLine($"Error: {innerMessage}");
+                Console.WriteLine($"Stack: {stackTrace}");
+
                 return View(obstacledata);
             }
-
-            // Set status to Pending for new submissions
-            obstacledata.Status = "Pending";
-            obstacledata.SubmittedBy = User.Identity?.Name ?? "Unknown";
-            obstacledata.SubmittedDate = DateTime.UtcNow;
-
-            _context.Obstacles.Add(obstacledata);
-            await _context.SaveChangesAsync();
-
-            return View("Overview", obstacledata);
         }
 
-        // GET: List all obstacles - Pilot, Registerfører, and Admin can view
         [Authorize(Roles = "Pilot,Registerfører,Admin")]
         [HttpGet]
         public async Task<IActionResult> List()
@@ -62,7 +138,6 @@ namespace FirstWebApplication1.Controllers
             return View(obstacles);
         }
 
-        // GET: View single obstacle details
         [Authorize(Roles = "Pilot,Registerfører,Admin")]
         [HttpGet]
         public async Task<IActionResult> Details(int id)
@@ -77,7 +152,85 @@ namespace FirstWebApplication1.Controllers
             return View(obstacle);
         }
 
-        // POST: Decline obstacle - Only Registerfører and Admin
+        [Authorize(Roles = "Pilot,Registerfører,Admin")]
+        [HttpGet]
+        public async Task<IActionResult> Edit(int id)
+        {
+            var obstacle = await _context.Obstacles.FindAsync(id);
+
+            if (obstacle == null)
+            {
+                return NotFound();
+            }
+
+            return View(obstacle);
+        }
+
+        [Authorize(Roles = "Pilot,Registerfører,Admin")]
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Edit(int id, ObstacleData obstacledata)
+        {
+            if (id != obstacledata.Id)
+            {
+                return NotFound();
+            }
+
+            // Ensure description is not null
+            if (string.IsNullOrWhiteSpace(obstacledata.ObstacleDescription))
+            {
+                obstacledata.ObstacleDescription = "";
+            }
+
+            ModelState.Remove("ObstacleType");
+            ModelState.Remove("ObstacleDescription");
+
+            if (!ModelState.IsValid)
+            {
+                return View(obstacledata);
+            }
+
+            try
+            {
+                obstacledata.LastModifiedBy = User.Identity?.Name ?? "Unknown";
+                obstacledata.LastModifiedDate = DateTime.UtcNow;
+
+                _context.Update(obstacledata);
+                await _context.SaveChangesAsync();
+            }
+            catch (DbUpdateConcurrencyException)
+            {
+                if (!await ObstacleExists(id))
+                {
+                    return NotFound();
+                }
+                throw;
+            }
+
+            return RedirectToAction(nameof(Details), new { id });
+        }
+
+        [Authorize(Roles = "Registerfører,Admin")]
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Approve(int id)
+        {
+            var obstacle = await _context.Obstacles.FindAsync(id);
+
+            if (obstacle == null)
+            {
+                return NotFound();
+            }
+
+            obstacle.Status = "Approved";
+            obstacle.ApprovedBy = User.Identity?.Name ?? "Unknown";
+            obstacle.ApprovedDate = DateTime.UtcNow;
+
+            await _context.SaveChangesAsync();
+
+            return RedirectToAction(nameof(Details), new { id });
+        }
+
         [Authorize(Roles = "Registerfører,Admin")]
         [HttpPost]
         [ValidateAntiForgeryToken]
@@ -100,121 +253,27 @@ namespace FirstWebApplication1.Controllers
             return RedirectToAction(nameof(Details), new { id });
         }
 
-        // NEW: Approve obstacle - Registerfører and Admin
-        [Authorize(Roles = "Registerfører,Admin")]
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Approve(int id)
-        {
-            var obstacle = await _context.Obstacles.FindAsync(id);
-
-            if (obstacle == null)
-            {
-                return NotFound();
-            }
-
-            obstacle.Status = "Approved";
-            obstacle.ApprovedBy = User.Identity?.Name ?? "Unknown";
-            obstacle.ApprovedDate = DateTime.UtcNow;
-
-            await _context.SaveChangesAsync();
-
-            return RedirectToAction(nameof(Details), new { id });
-        }
-
-        // DELETE: Delete obstacle - allow Registerfører and Admin to delete reported obstacles
-        [Authorize(Roles = "Registerfører,Admin")]
+        [Authorize(Roles = "Admin")]
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Delete(int id)
         {
             var obstacle = await _context.Obstacles.FindAsync(id);
+
             if (obstacle == null)
             {
                 return NotFound();
             }
 
-            // Remove the obstacle (hard delete).
-            // If you prefer soft-delete, change to mark a flag and filter it from lists instead.
             _context.Obstacles.Remove(obstacle);
             await _context.SaveChangesAsync();
 
-            // After deletion, redirect to list page
             return RedirectToAction(nameof(List));
         }
 
         private async Task<bool> ObstacleExists(int id)
         {
             return await _context.Obstacles.AnyAsync(e => e.Id == id);
-        }
-
-
-        // Add these methods inside the ObstacleController class
-
-        // GET: /Obstacle/Edit/5
-        [Authorize(Roles = "Pilot,Registerfører,Admin")]
-        [HttpGet]
-        public async Task<IActionResult> Edit(int id)
-        {
-            var obstacle = await _context.Obstacles.FindAsync(id);
-            if (obstacle == null)
-            {
-                return NotFound();
-            }
-
-            return View(obstacle);
-        }
-
-        // POST: /Obstacle/Edit/5
-        [Authorize(Roles = "Pilot,Registerfører,Admin")]
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, FirstWebApplication1.Models.ObstacleData obstacledata)
-        {
-            if (id != obstacledata.Id)
-            {
-                return BadRequest();
-            }
-
-            if (!ModelState.IsValid)
-            {
-                // Return the same view so validation errors are shown
-                return View(obstacledata);
-            }
-
-            var obstacle = await _context.Obstacles.FindAsync(id);
-            if (obstacle == null)
-            {
-                return NotFound();
-            }
-
-            // Update only the editable fields to avoid overwriting important metadata.
-            obstacle.ObstacleName = obstacledata.ObstacleName;
-            obstacle.ObstacleDescription = obstacledata.ObstacleDescription;
-            obstacle.ObstacleHeight = obstacledata.ObstacleHeight;
-            obstacle.LineGeoJson = obstacledata.LineGeoJson;
-            obstacle.Latitude = obstacledata.Latitude;
-            obstacle.Longitude = obstacledata.Longitude;
-
-            obstacle.LastModifiedBy = User.Identity?.Name ?? "Unknown";
-            obstacle.LastModifiedDate = DateTime.UtcNow;
-
-            // Keep SubmittedBy/SubmittedDate/Status/etc. as they were.
-            try
-            {
-                _context.Update(obstacle);
-                await _context.SaveChangesAsync();
-            }
-            catch (DbUpdateConcurrencyException)
-            {
-                if (!await _context.Obstacles.AnyAsync(e => e.Id == id))
-                {
-                    return NotFound();
-                }
-                throw;
-            }
-
-            return RedirectToAction(nameof(Details), new { id = obstacle.Id });
         }
     }
 }
