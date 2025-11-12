@@ -17,37 +17,116 @@ namespace FirstWebApplication1.Controllers
             _context = context;
         }
 
-        // GET: DataForm - Only authenticated users can create obstacles
+        // STEP 1: Select obstacle type
+        [Authorize]
+        [HttpGet]
+        public IActionResult SelectType()
+        {
+            return View(new ObstacleTypeViewModel());
+        }
+
+        [Authorize]
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public IActionResult SelectType(ObstacleTypeViewModel model)
+        {
+            if (string.IsNullOrWhiteSpace(model.SelectedType))
+            {
+                ModelState.AddModelError("SelectedType", "Please select an obstacle type");
+                return View(model);
+            }
+
+            TempData["ObstacleType"] = model.SelectedType;
+            return RedirectToAction(nameof(DataForm));
+        }
+
+        // STEP 2: Fill in details
         [Authorize]
         [HttpGet]
         public IActionResult DataForm()
         {
-            return View();
+            if (TempData.Peek("ObstacleType") == null)
+            {
+                return RedirectToAction(nameof(SelectType));
+            }
+
+            var obstacleType = TempData.Peek("ObstacleType")?.ToString();
+            var obstacleData = new ObstacleData
+            {
+                ObstacleType = obstacleType,
+                ObstacleHeight = 15
+            };
+
+            return View(obstacleData);
         }
 
-        // POST: DataForm - Submit new obstacle
+        // STEP 3: Submit and show overview
         [Authorize]
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DataForm(ObstacleData obstacledata)
         {
-            if (!ModelState.IsValid)
+            try
             {
+                // Retrieve obstacle type from TempData
+                if (TempData["ObstacleType"] != null)
+                {
+                    obstacledata.ObstacleType = TempData["ObstacleType"].ToString();
+                    TempData.Keep("ObstacleType");
+                }
+
+                // Auto-generate obstacle name from type
+                if (!string.IsNullOrWhiteSpace(obstacledata.ObstacleType))
+                {
+                    obstacledata.ObstacleName = obstacledata.ObstacleType;
+                }
+                else
+                {
+                    obstacledata.ObstacleName = "Unknown Obstacle";
+                }
+
+                // FIX: Ensure description is not null (set to empty string if null/empty)
+                if (string.IsNullOrWhiteSpace(obstacledata.ObstacleDescription))
+                {
+                    obstacledata.ObstacleDescription = "";
+                }
+
+                // Remove validation for optional/auto-generated fields
+                ModelState.Remove("ObstacleType");
+                ModelState.Remove("ObstacleName");
+                ModelState.Remove("ObstacleDescription");
+
+                if (!ModelState.IsValid)
+                {
+                    return View(obstacledata);
+                }
+
+                // Set status to Pending
+                obstacledata.Status = "Pending";
+                obstacledata.SubmittedBy = User.Identity?.Name ?? "Unknown";
+                obstacledata.SubmittedDate = DateTime.UtcNow;
+
+                _context.Obstacles.Add(obstacledata);
+                await _context.SaveChangesAsync();
+
+                return View("Overview", obstacledata);
+            }
+            catch (Exception ex)
+            {
+                // Log detailed error for debugging
+                var innerMessage = ex.InnerException?.Message ?? ex.Message;
+                var stackTrace = ex.StackTrace;
+
+                ModelState.AddModelError("", $"Error saving obstacle: {innerMessage}");
+
+                // Log to console for debugging
+                Console.WriteLine($"Error: {innerMessage}");
+                Console.WriteLine($"Stack: {stackTrace}");
+
                 return View(obstacledata);
             }
-
-            // Set status to Pending for new submissions
-            obstacledata.Status = "Pending";
-            obstacledata.SubmittedBy = User.Identity?.Name ?? "Unknown";
-            obstacledata.SubmittedDate = DateTime.UtcNow;
-
-            _context.Obstacles.Add(obstacledata);
-            await _context.SaveChangesAsync();
-
-            return View("Overview", obstacledata);
         }
 
-        // GET: List all obstacles - Pilot, Registerfører, and Admin can view
         [Authorize(Roles = "Pilot,Registerfører,Admin")]
         [HttpGet]
         public async Task<IActionResult> List()
@@ -59,7 +138,6 @@ namespace FirstWebApplication1.Controllers
             return View(obstacles);
         }
 
-        // GET: View single obstacle details
         [Authorize(Roles = "Pilot,Registerfører,Admin")]
         [HttpGet]
         public async Task<IActionResult> Details(int id)
@@ -74,7 +152,6 @@ namespace FirstWebApplication1.Controllers
             return View(obstacle);
         }
 
-        // GET: Edit obstacle - Pilot, Registerfører, and Admin can edit
         [Authorize(Roles = "Pilot,Registerfører,Admin")]
         [HttpGet]
         public async Task<IActionResult> Edit(int id)
@@ -89,7 +166,6 @@ namespace FirstWebApplication1.Controllers
             return View(obstacle);
         }
 
-        // POST: Update obstacle
         [Authorize(Roles = "Pilot,Registerfører,Admin")]
         [HttpPost]
         [ValidateAntiForgeryToken]
@@ -99,6 +175,15 @@ namespace FirstWebApplication1.Controllers
             {
                 return NotFound();
             }
+
+            // Ensure description is not null
+            if (string.IsNullOrWhiteSpace(obstacledata.ObstacleDescription))
+            {
+                obstacledata.ObstacleDescription = "";
+            }
+
+            ModelState.Remove("ObstacleType");
+            ModelState.Remove("ObstacleDescription");
 
             if (!ModelState.IsValid)
             {
@@ -125,7 +210,6 @@ namespace FirstWebApplication1.Controllers
             return RedirectToAction(nameof(Details), new { id });
         }
 
-        // POST: Approve obstacle - Only Registerfører and Admin
         [Authorize(Roles = "Registerfører,Admin")]
         [HttpPost]
         [ValidateAntiForgeryToken]
@@ -147,7 +231,6 @@ namespace FirstWebApplication1.Controllers
             return RedirectToAction(nameof(Details), new { id });
         }
 
-        // POST: Decline obstacle - Only Registerfører and Admin
         [Authorize(Roles = "Registerfører,Admin")]
         [HttpPost]
         [ValidateAntiForgeryToken]
@@ -170,7 +253,6 @@ namespace FirstWebApplication1.Controllers
             return RedirectToAction(nameof(Details), new { id });
         }
 
-        // DELETE: Delete obstacle - Only Admin
         [Authorize(Roles = "Admin")]
         [HttpPost]
         [ValidateAntiForgeryToken]

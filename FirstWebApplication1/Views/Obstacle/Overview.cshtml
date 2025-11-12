@@ -2,7 +2,7 @@
 @model FirstWebApplication1.Models.ObstacleData
 
 @{
-    ViewData["Title"] = "Overview";
+    ViewData["Title"] = "Obstacle Registered";
     var vertices = Model.LineCoordinates;
     var start = Model.StartCoordinate;
     var end = Model.EndCoordinate;
@@ -13,147 +13,204 @@
 }
 
 <body class="bg-cover bg-center" style="background-image: url('/images/BackgroundImageGreen.png');">
-<section class="mx-auto max-w-2xl mb-16">
-    <div class="bg-white rounded-2xl shadow-sm ring-1 ring-gray-200 p-6 pb-12 space-y-6">
-        <header>
-            <h1 class="text-2xl font-semibold">Overview</h1>
-            <p class="text-gray-600 mt-1">Thank you for registering an obstacle:</p>
-        </header>
+    <section class="mx-auto max-w-6xl px-4 mb-16">
+        <div class="bg-white rounded-2xl shadow-sm ring-1 ring-gray-200 p-8 space-y-6">
+            <header class="text-center border-b pb-6">
+                <div class="inline-flex items-center justify-center w-16 h-16 bg-green-100 rounded-full mb-4">
+                    <i class="fa-solid fa-check text-3xl text-green-600"></i>
+                </div>
+                <h1 class="text-3xl font-bold text-gray-900">Obstacle Registered Successfully!</h1>
+                <p class="text-gray-600 mt-2">Thank you for submitting this obstacle report</p>
+            </header>
 
-        <dl class="grid grid-cols-1 sm:grid-cols-3 gap-4">
-            <div class="sm:col-span-1">
-                <dt class="text-sm font-medium text-gray-600">Obstacle Name</dt>
-                <dd class="mt-1 text-base text-gray-900 break-words">@Html.DisplayFor(m => m.ObstacleName)</dd>
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                <!-- Left Column: Details -->
+                <div class="space-y-6">
+                    <div>
+                        <h2 class="text-xl font-semibold text-gray-900 mb-4 flex items-center">
+                            <i class="fa-solid fa-info-circle mr-2 text-indigo-600"></i>
+                            Obstacle Information
+                        </h2>
+
+                        <dl class="grid grid-cols-1 gap-4">
+                            <div class="bg-gray-50 p-4 rounded-lg">
+                                <dt class="text-sm font-medium text-gray-600">Obstacle Type</dt>
+                                <dd class="mt-1 text-lg font-semibold text-gray-900">
+                                    <i class="fa-solid fa-tag mr-2 text-indigo-600"></i>
+                                    @Html.DisplayFor(m => m.ObstacleType)
+                                </dd>
+                            </div>
+
+                            <div class="bg-gray-50 p-4 rounded-lg">
+                                <dt class="text-sm font-medium text-gray-600">Obstacle Name</dt>
+                                <dd class="mt-1 text-lg font-semibold text-gray-900">@Html.DisplayFor(m => m.ObstacleName)</dd>
+                            </div>
+
+                            <div class="bg-gray-50 p-4 rounded-lg">
+                                <dt class="text-sm font-medium text-gray-600">Height</dt>
+                                <dd class="mt-1 text-lg font-semibold text-gray-900">
+                                    @Html.DisplayFor(m => m.ObstacleHeight) meters
+                                </dd>
+                            </div>
+
+                            <div class="bg-gray-50 p-4 rounded-lg">
+                                <dt class="text-sm font-medium text-gray-600">Description</dt>
+                                <dd class="mt-1 text-base text-gray-900 whitespace-pre-wrap">@Html.DisplayFor(m => m.ObstacleDescription)</dd>
+                            </div>
+
+                            <div class="bg-gray-50 p-4 rounded-lg">
+                                <dt class="text-sm font-medium text-gray-600">Status</dt>
+                                <dd class="mt-1">
+                                    <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-yellow-100 text-yellow-800">
+                                        <i class="fa-solid fa-clock mr-2"></i>
+                                        Pending Review
+                                    </span>
+                                </dd>
+                            </div>
+                        </dl>
+                    </div>
+                </div>
+
+                <!-- Right Column: Map & Coordinates -->
+                <div class="space-y-6">
+                    <div>
+                        <h2 class="text-xl font-semibold text-gray-900 mb-4 flex items-center">
+                            <i class="fa-solid fa-map-marked-alt mr-2 text-indigo-600"></i>
+                            Location Details
+                        </h2>
+
+                        <div id="map" class="rounded-lg border-2 border-gray-200 shadow-sm" style="height: 400px;"></div>
+                    </div>
+
+                    <div class="bg-gray-50 p-4 rounded-lg">
+                        @if (!hasLine && Model.Latitude.HasValue && Model.Longitude.HasValue)
+                        {
+                            <div class="grid grid-cols-2 gap-4">
+                                <div>
+                                    <dt class="text-xs font-medium text-gray-600">Latitude</dt>
+                                    <dd class="mt-1 text-sm font-mono text-gray-900">@Model.Latitude.Value.ToString("F6", CultureInfo.InvariantCulture)</dd>
+                                </div>
+                                <div>
+                                    <dt class="text-xs font-medium text-gray-600">Longitude</dt>
+                                    <dd class="mt-1 text-sm font-mono text-gray-900">@Model.Longitude.Value.ToString("F6", CultureInfo.InvariantCulture)</dd>
+                                </div>
+                            </div>
+                        }
+
+                        @if (start is not null)
+                        {
+                            <div class="grid grid-cols-2 gap-4 mb-3">
+                                <div>
+                                    <dt class="text-xs font-medium text-gray-600">Start Latitude</dt>
+                                    <dd class="mt-1 text-sm font-mono text-gray-900">@start.Latitude.ToString("F6", CultureInfo.InvariantCulture)</dd>
+                                </div>
+                                <div>
+                                    <dt class="text-xs font-medium text-gray-600">Start Longitude</dt>
+                                    <dd class="mt-1 text-sm font-mono text-gray-900">@start.Longitude.ToString("F6", CultureInfo.InvariantCulture)</dd>
+                                </div>
+                            </div>
+                        }
+
+                        @if (end is not null)
+                        {
+                            <div class="grid grid-cols-2 gap-4">
+                                <div>
+                                    <dt class="text-xs font-medium text-gray-600">End Latitude</dt>
+                                    <dd class="mt-1 text-sm font-mono text-gray-900">@end.Latitude.ToString("F6", CultureInfo.InvariantCulture)</dd>
+                                </div>
+                                <div>
+                                    <dt class="text-xs font-medium text-gray-600">End Longitude</dt>
+                                    <dd class="mt-1 text-sm font-mono text-gray-900">@end.Longitude.ToString("F6", CultureInfo.InvariantCulture)</dd>
+                                </div>
+                            </div>
+                        }
+
+                        @if (Model.LineVertexCount > 0)
+                        {
+                            <div class="mt-4 pt-4 border-t">
+                                <span class="inline-flex items-center text-sm text-gray-700">
+                                    <i class="fa-solid fa-map-pin mr-2 text-indigo-600"></i>
+                                    <strong>Vertices:</strong>&nbsp;@Model.LineVertexCount
+                                </span>
+                            </div>
+                        }
+
+                        @if (lineLength.HasValue)
+                        {
+                            var meters = lineLength.Value;
+                            var formatted = meters >= 1000
+                            ? $"{meters / 1000:0.00} km"
+                            : $"{meters:0.0} m";
+                            <div class="mt-2">
+                                <span class="inline-flex items-center text-sm text-gray-700">
+                                    <i class="fa-solid fa-ruler mr-2 text-indigo-600"></i>
+                                    <strong>Line Length:</strong>&nbsp;@formatted
+                                </span>
+                            </div>
+                        }
+                    </div>
+
+                    @if (vertices.Count > 0)
+                    {
+                        <details class="bg-gray-50 p-4 rounded-lg">
+                            <summary class="cursor-pointer font-medium text-gray-900 hover:text-indigo-600">
+                                <i class="fa-solid fa-list mr-2"></i>
+                                View All Vertices (@vertices.Count points)
+                            </summary>
+                            <div class="mt-4 overflow-x-auto rounded-lg border border-gray-200">
+                                <table class="min-w-full text-left text-sm">
+                                    <thead class="bg-gray-100 text-gray-600">
+                                        <tr>
+                                            <th class="px-3 py-2">#</th>
+                                            <th class="px-3 py-2">Latitude</th>
+                                            <th class="px-3 py-2">Longitude</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        @for (var i = 0; i < vertices.Count; i++)
+                                        {
+                                            <tr class="border-b last:border-0 @(i % 2 == 0 ? "bg-white" : "bg-gray-50")">
+                                                <td class="px-3 py-2 text-gray-700">@(i + 1)</td>
+                                                <td class="px-3 py-2 font-mono text-gray-900">@vertices[i].Latitude.ToString("F6", CultureInfo.InvariantCulture)</td>
+                                                <td class="px-3 py-2 font-mono text-gray-900">@vertices[i].Longitude.ToString("F6", CultureInfo.InvariantCulture)</td>
+                                            </tr>
+                                        }
+                                    </tbody>
+                                </table>
+                            </div>
+                        </details>
+                    }
+                </div>
             </div>
 
-            <div class="sm:col-span-1">
-                <dt class="text-sm font-medium text-gray-600">Height (m)</dt>
-                 <dd class="mt-1 text-base text-gray-900 break-words">@Html.DisplayFor(m => m.ObstacleHeight)</dd>
+            <div class="flex flex-col sm:flex-row justify-between items-center gap-4 pt-8 border-t">
+                <a asp-controller="Home" asp-action="Index"
+                   class="w-full sm:w-auto inline-flex items-center justify-center rounded-lg px-6 py-3 bg-white text-gray-700 ring-1 ring-gray-300 hover:bg-gray-50 font-medium">
+                    <i class="fa-solid fa-home mr-2"></i>
+                    Back to Home
+                </a>
+                <a asp-controller="Obstacle" asp-action="List"
+                   class="w-full sm:w-auto inline-flex items-center justify-center rounded-lg px-6 py-3 bg-indigo-600 text-white hover:bg-indigo-700 font-medium">
+                    <i class="fa-solid fa-list mr-2"></i>
+                    View All Obstacles
+                </a>
             </div>
-
-            <div class="sm:col-span-3">
-                <dt class="text-sm font-medium text-gray-600">Description</dt>
-                <dd class="mt-1 text-base text-gray-900 break-words">@Html.DisplayFor(m => m.ObstacleDescription)</dd>
-            </div>
-
-            @if (!hasLine && Model.Latitude.HasValue && Model.Longitude.HasValue)
-            {
-                <div class="sm:col-span-1">
-                    <dt class="text-sm font-medium text-gray-600">Latitude</dt>
-                    <dd class="mt-1 text-base text-gray-900">@Model.Latitude.Value.ToString("F6", CultureInfo.InvariantCulture)</dd>
-                </div>
-                <div class="sm:col-span-1">
-                    <dt class="text-sm font-medium text-gray-600">Longitude</dt>
-                    <dd class="mt-1 text-base text-gray-900">@Model.Longitude.Value.ToString("F6", CultureInfo.InvariantCulture)</dd>
-                </div>
-            }
-
-            @if (start is not null)
-            {
-                <div class="sm:col-span-1">
-                    <dt class="text-sm font-medium text-gray-600">Start Latitude</dt>
-                    <dd class="mt-1 text-base text-gray-900">@start.Latitude.ToString("F6", CultureInfo.InvariantCulture)</dd>
-                </div>
-                <div class="sm:col-span-1">
-                    <dt class="text-sm font-medium text-gray-600">Start Longitude</dt>
-                    <dd class="mt-1 text-base text-gray-900">@start.Longitude.ToString("F6", CultureInfo.InvariantCulture)</dd>
-                </div>
-            }
-
-            @if (end is not null)
-            {
-                <div class="sm:col-span-1">
-                    <dt class="text-sm font-medium text-gray-600">End Latitude</dt>
-                    <dd class="mt-1 text-base text-gray-900">@end.Latitude.ToString("F6", CultureInfo.InvariantCulture)</dd>
-                </div>
-                <div class="sm:col-span-1">
-                    <dt class="text-sm font-medium text-gray-600">End Longitude</dt>
-                    <dd class="mt-1 text-base text-gray-900">@end.Longitude.ToString("F6", CultureInfo.InvariantCulture)</dd>
-                </div>
-            }
-
-            @if (Model.LineVertexCount > 0)
-            {
-                <div class="sm:col-span-1">
-                    <dt class="text-sm font-medium text-gray-600">Vertices</dt>
-                    <dd class="mt-1 text-base text-gray-900">@Model.LineVertexCount</dd>
-                </div>
-            }
-
-            @if (lineLength.HasValue)
-            {
-                var meters = lineLength.Value;
-                var formatted = meters >= 1000
-                    ? $"{meters / 1000:0.00} km"
-                    : $"{meters:0.0} m";
-                <div class="sm:col-span-1">
-                    <dt class="text-sm font-medium text-gray-600">Line length</dt>
-                    <dd class="mt-1 text-base text-gray-900">@formatted</dd>
-                </div>
-            }
-
-            @if (vertices.Count > 0)
-            {
-                <div class="sm:col-span-3">
-                    <dt class="text-sm font-medium text-gray-600">Line vertices</dt>
-                    <dd class="mt-1 text-sm text-gray-900">
-                        <div class="overflow-x-auto rounded-lg border border-gray-200">
-                            <table class="min-w-full text-left text-sm">
-                                <thead class="bg-gray-50 text-gray-500">
-                                <tr>
-                                    <th class="px-3 py-2">#</th>
-                                    <th class="px-3 py-2">Latitude</th>
-                                    <th class="px-3 py-2">Longitude</th>
-                                </tr>
-                                </thead>
-                                <tbody>
-                                @for (var i = 0; i < vertices.Count; i++)
-                                {
-                                    <tr class="odd:bg-white even:bg-gray-50">
-                                        <td class="px-3 py-2 text-gray-700">@(i + 1)</td>
-                                        <td class="px-3 py-2 font-mono text-gray-900">@vertices[i].Latitude.ToString("F6", CultureInfo.InvariantCulture)</td>
-                                        <td class="px-3 py-2 font-mono text-gray-900">@vertices[i].Longitude.ToString("F6", CultureInfo.InvariantCulture)</td>
-                                    </tr>
-                                }
-                                </tbody>
-                            </table>
-                        </div>
-                    </dd>
-                </div>
-            }
-        </dl>
-
-        <div>
-            <div id="map" class="rounded-lg border border-gray-200" style="height: 300px;"></div>
-
-            <a asp-controller="Home" asp-action="Index"
-               class="mt-4 mb-6 inline-flex items-center rounded-lg px-4 py-2 ring-1 ring-gray-300 hover:bg-gray-50">
-                Back to Home
-            </a>
         </div>
-    </div>
-        <div class="flex space-x-4 mt-6">
-            <a asp-controller="Home" asp-action="Index"
-               class="inline-flex items-center rounded-lg px-4 py-2 ring-1 ring-gray-300 hover:bg-gray-50">
-                Back to Home
-            </a>
-            <a asp-controller="Obstacle" asp-action="List"
-               class="inline-flex items-center rounded-lg px-4 py-2 bg-indigo-600 text-white hover:bg-indigo-700">
-                View All Obstacles
-            </a>
-        </div>
-</section>
+    </section>
 </body>
 
 @section Scripts {
-    <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
-    <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <script>
         const fallbackLat = "@fallbackLat.ToString(CultureInfo.InvariantCulture)";
         const fallbackLng = "@fallbackLng.ToString(CultureInfo.InvariantCulture)";
         const hasPointGeometry = @(!hasLine && Model.Latitude.HasValue && Model.Longitude.HasValue).ToString().ToLowerInvariant();
+
         const map = L.map('map').setView([parseFloat(fallbackLat), parseFloat(fallbackLng)], 14);
-        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '© OpenStreetMap contributors'
+        }).addTo(map);
 
         const lineGeoJson = @Html.Raw(string.IsNullOrWhiteSpace(Model.LineGeoJson) ? "null" : Model.LineGeoJson);
 
@@ -163,14 +220,15 @@
                 .map(coord => [coord[1], coord[0]]);
 
             if (latLngs.length > 0) {
-                const polyline = L.polyline(latLngs, { color: '#1d4ed8', weight: 4 }).addTo(map);
-                latLngs.forEach(point => {
+                const polyline = L.polyline(latLngs, { color: '#4f46e5', weight: 4 }).addTo(map);
+                latLngs.forEach((point, index) => {
                     L.circleMarker(point, {
-                        radius: 5,
-                        color: '#1d4ed8',
-                        fillColor: '#3b82f6',
-                        fillOpacity: 0.8
-                    }).addTo(map);
+                        radius: 6,
+                        color: '#4f46e5',
+                        fillColor: '#818cf8',
+                        fillOpacity: 0.9,
+                        weight: 2
+                    }).addTo(map).bindPopup(`Point ${index + 1}`);
                 });
 
                 if (latLngs.length > 1) {
@@ -183,5 +241,9 @@
             L.marker([parseFloat(fallbackLat), parseFloat(fallbackLng)]).addTo(map)
                 .bindPopup("@Model.ObstacleName").openPopup();
         }
+
+        setTimeout(() => {
+            map.invalidateSize();
+        }, 100);
     </script>
 }

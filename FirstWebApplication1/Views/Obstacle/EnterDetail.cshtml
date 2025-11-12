@@ -1,0 +1,47 @@
+﻿@model FirstWebApplication1.Models.ObstacleData
+@{
+    ViewData["Title"] = "Enter Obstacle Details";
+}
+
+<body class="bg-cover bg-center" style="background-image: url('/images/BackgroundImageGreen.png');">
+    <section class="mx-auto max-w-xl pb-12">
+        <div class="bg-white rounded-2xl shadow-sm p-6">
+            <header class="mb-6 text-center">
+                <h1 class="text-2xl font-semibold">Enter Obstacle Details</h1>
+                <p class="text-gray-600">Complete the fields below for <b>@ViewBag.ObstacleType</b>:</p>
+            </header>
+
+            <form asp-action="EnterDetails" method="post" class="space-y-6">
+                @Html.AntiForgeryToken()
+
+                <div>
+                    <label asp-for="ObstacleName" class="block text-sm font-medium text-gray-800">Name</label>
+                    <input asp-for="ObstacleName" class="w-full rounded-lg border-gray-300 focus:border-indigo-600 px-3 py-2" />
+                    <span asp-validation-for="ObstacleName" class="text-sm text-red-600"></span>
+                </div>
+
+                <div>
+                    <label asp-for="ObstacleHeight" class="block text-sm font-medium text-gray-800">Height</label>
+                    <input asp-for="ObstacleHeight" type="range" min="0" max="500" class="w-full" />
+                    <p>@Model.ObstacleHeight meters</p>
+                    <span asp-validation-for="ObstacleHeight" class="text-sm text-red-600"></span>
+                </div>
+
+                <div>
+                    <label asp-for="ObstacleDescription" class="block text-sm font-medium text-gray-800">Description</label>
+                    <textarea asp-for="ObstacleDescription" class="w-full rounded-lg border-gray-300 focus:border-indigo-600 px-3 py-2"></textarea>
+                    <span asp-validation-for="ObstacleDescription" class="text-sm text-red-600"></span>
+                </div>
+
+                <div>
+                    <div id="map" style="height: 300px;" class="rounded-lg border border-gray-300"></div>
+                    <script>
+                        // Add Leaflet map logic here
+                    </script>
+                </div>
+
+                <button type="submit" class="bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg px-4 py-2">Next</button>
+            </form>
+        </div>
+    </section>
+</body>
