@@ -10,6 +10,11 @@
     var lineLength = Model.LineLengthMeters;
     var fallbackLat = start?.Latitude ?? Model.Latitude ?? 59.91;
     var fallbackLng = start?.Longitude ?? Model.Longitude ?? 10.75;
+
+    var usesFeet = ViewBag.UsesFeet ?? false;
+    var heightDisplay = usesFeet ?
+        $"{Model.ObstacleHeightInFeet:F1} feet ({Model.ObstacleHeight:F1} meters)" :
+        $"{Model.ObstacleHeight:F1} meters";
 }
 
 <body class="bg-cover bg-center" style="background-image: url('/images/BackgroundImageGreen.png');">
@@ -49,14 +54,17 @@
                             <div class="bg-gray-50 p-4 rounded-lg">
                                 <dt class="text-sm font-medium text-gray-600">Height</dt>
                                 <dd class="mt-1 text-lg font-semibold text-gray-900">
-                                    @Html.DisplayFor(m => m.ObstacleHeight) meters
+                                    @heightDisplay
                                 </dd>
                             </div>
 
-                            <div class="bg-gray-50 p-4 rounded-lg">
-                                <dt class="text-sm font-medium text-gray-600">Description</dt>
-                                <dd class="mt-1 text-base text-gray-900 whitespace-pre-wrap">@Html.DisplayFor(m => m.ObstacleDescription)</dd>
-                            </div>
+                            @if (!string.IsNullOrWhiteSpace(Model.ObstacleDescription))
+                            {
+                                <div class="bg-gray-50 p-4 rounded-lg">
+                                    <dt class="text-sm font-medium text-gray-600">Description</dt>
+                                    <dd class="mt-1 text-base text-gray-900 whitespace-pre-wrap">@Html.DisplayFor(m => m.ObstacleDescription)</dd>
+                                </div>
+                            }
 
                             <div class="bg-gray-50 p-4 rounded-lg">
                                 <dt class="text-sm font-medium text-gray-600">Status</dt>

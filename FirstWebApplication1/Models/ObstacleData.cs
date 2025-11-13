@@ -12,11 +12,9 @@ namespace FirstWebApplication1.Models
         [Key]
         public int Id { get; set; }
 
-        // Obstacle Type - will be used as the name too
         [StringLength(50)]
         public string? ObstacleType { get; set; }
 
-        // REMOVED: ObstacleName - now auto-generated from type
         [Required(ErrorMessage = "Obstacle name is required")]
         [StringLength(100, ErrorMessage = "Max 100 characters")]
         public string? ObstacleName { get; set; }
@@ -25,7 +23,14 @@ namespace FirstWebApplication1.Models
         [Range(15, 300, ErrorMessage = "Height must be between 15 and 300 meters")]
         public double ObstacleHeight { get; set; }
 
-        // CHANGED: Description is now optional
+        // Helper properties for unit conversion
+        [NotMapped]
+        public double ObstacleHeightInFeet
+        {
+            get => ObstacleHeight * 3.28084; // Convert meters to feet
+            set => ObstacleHeight = value / 3.28084; // Convert feet to meters
+        }
+
         [StringLength(1000, ErrorMessage = "Max 1000 characters")]
         public string? ObstacleDescription { get; set; }
 

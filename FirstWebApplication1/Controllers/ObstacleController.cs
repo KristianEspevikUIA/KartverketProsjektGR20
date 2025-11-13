@@ -17,6 +17,12 @@ namespace FirstWebApplication1.Controllers
             _context = context;
         }
 
+        // Helper method to check if user is a pilot
+        private bool IsPilot()
+        {
+            return User.IsInRole("Pilot");
+        }
+
         // STEP 1: Select obstacle type
         [Authorize]
         [HttpGet]
@@ -54,8 +60,12 @@ namespace FirstWebApplication1.Controllers
             var obstacleData = new ObstacleData
             {
                 ObstacleType = obstacleType,
-                ObstacleHeight = 15
+                ObstacleHeight = 15 // Default minimum height in meters
             };
+
+            // Pass user role info to view
+            ViewBag.IsPilot = IsPilot();
+            ViewBag.UsesFeet = IsPilot();
 
             return View(obstacleData);
         }
@@ -64,7 +74,7 @@ namespace FirstWebApplication1.Controllers
         [Authorize]
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> DataForm(ObstacleData obstacledata)
+        public async Task<IActionResult> DataForm(ObstacleData obstacledata, bool? useFeet)
         {
             try
             {
@@ -85,7 +95,7 @@ namespace FirstWebApplication1.Controllers
                     obstacledata.ObstacleName = "Unknown Obstacle";
                 }
 
-                // FIX: Ensure description is not null (set to empty string if null/empty)
+                // FIX: Ensure description is not null
                 if (string.IsNullOrWhiteSpace(obstacledata.ObstacleDescription))
                 {
                     obstacledata.ObstacleDescription = "";
@@ -98,6 +108,8 @@ namespace FirstWebApplication1.Controllers
 
                 if (!ModelState.IsValid)
                 {
+                    ViewBag.IsPilot = IsPilot();
+                    ViewBag.UsesFeet = IsPilot();
                     return View(obstacledata);
                 }
 
@@ -109,19 +121,19 @@ namespace FirstWebApplication1.Controllers
                 _context.Obstacles.Add(obstacledata);
                 await _context.SaveChangesAsync();
 
+                // Pass user role to overview
+                ViewBag.IsPilot = IsPilot();
+                ViewBag.UsesFeet = IsPilot();
+
                 return View("Overview", obstacledata);
             }
             catch (Exception ex)
             {
-                // Log detailed error for debugging
                 var innerMessage = ex.InnerException?.Message ?? ex.Message;
-                var stackTrace = ex.StackTrace;
-
                 ModelState.AddModelError("", $"Error saving obstacle: {innerMessage}");
 
-                // Log to console for debugging
-                Console.WriteLine($"Error: {innerMessage}");
-                Console.WriteLine($"Stack: {stackTrace}");
+                ViewBag.IsPilot = IsPilot();
+                ViewBag.UsesFeet = IsPilot();
 
                 return View(obstacledata);
             }
@@ -134,6 +146,9 @@ namespace FirstWebApplication1.Controllers
             var obstacles = await _context.Obstacles
                 .OrderByDescending(o => o.SubmittedDate)
                 .ToListAsync();
+
+            ViewBag.IsPilot = IsPilot();
+            ViewBag.UsesFeet = IsPilot();
 
             return View(obstacles);
         }
@@ -149,6 +164,9 @@ namespace FirstWebApplication1.Controllers
                 return NotFound();
             }
 
+            ViewBag.IsPilot = IsPilot();
+            ViewBag.UsesFeet = IsPilot();
+
             return View(obstacle);
         }
 
@@ -163,6 +181,9 @@ namespace FirstWebApplication1.Controllers
                 return NotFound();
             }
 
+            ViewBag.IsPilot = IsPilot();
+            ViewBag.UsesFeet = IsPilot();
+
             return View(obstacle);
         }
 
@@ -176,7 +197,6 @@ namespace FirstWebApplication1.Controllers
                 return NotFound();
             }
 
-            // Ensure description is not null
             if (string.IsNullOrWhiteSpace(obstacledata.ObstacleDescription))
             {
                 obstacledata.ObstacleDescription = "";
@@ -187,6 +207,8 @@ namespace FirstWebApplication1.Controllers
 
             if (!ModelState.IsValid)
             {
+                ViewBag.IsPilot = IsPilot();
+                ViewBag.UsesFeet = IsPilot();
                 return View(obstacledata);
             }
 
