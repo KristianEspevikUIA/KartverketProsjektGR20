@@ -1,5 +1,4 @@
-﻿
-@model FirstWebApplication1.Models.ObstacleData
+﻿@model FirstWebApplication1.Models.ObstacleData
 
 @{
     ViewData["Title"] = "Obstacle Details";
@@ -74,6 +73,15 @@
                                 </button>
                             </form>
                         </div>
+                    </div>
+                    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-4">
+                        <button type="button"
+                                class="inline-flex items-center gap-2 px-3 py-2 rounded-md ring-1 ring-gray-300 text-gray-700 hover:bg-gray-50"
+                                onclick="if (document.referrer) { history.back(); } else { window.location.href='@Url.Action("List", "Obstacle")'; }"
+                                aria-label="Go back">
+                            <i class="fa-solid fa-arrow-left"></i>
+                            Go back
+                        </button>
                     </div>
                 }
             </div>

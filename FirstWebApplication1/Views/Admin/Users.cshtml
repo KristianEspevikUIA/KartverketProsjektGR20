@@ -1,8 +1,6 @@
-﻿
-@model IEnumerable<FirstWebApplication1.Models.UsersViewModel>
-
-@{
-    ViewData["Title"] = "User Management";
+﻿@model IEnumerable<FirstWebApplication1.Models.UsersViewModel>
+﻿@{
+ViewData["Title"] = "User Management";
 }
 
 <body class="bg-cover bg-center" style="background-image: url('/images/BackgroundImageGreen.png');">
@@ -33,7 +31,6 @@
                                     <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
                                         <a asp-action="EditUser" asp-route-id="@user.Id" class="text-indigo-600 hover:text-indigo-900 mr-4">Edit Roles</a>
 
-                                        @* Delete/Remove user via existing AdminController.DeleteUser (POST) *@
                                         <form asp-action="DeleteUser" asp-route-id="@user.Id" method="post" class="inline" onsubmit="return confirm('Remove this user? This action cannot be undone.');">
                                             @Html.AntiForgeryToken()
                                             <button type="submit" class="text-red-600 hover:text-red-900">Remove</button>
@@ -55,6 +52,17 @@
                     <p class="mt-1 text-sm text-gray-500">No users found in the system.</p>
                 </div>
             }
+
+            <!-- Go back button moved BELOW the content -->
+            <div class="mt-8">
+                <button type="button"
+                        class="inline-flex items-center gap-2 px-4 py-2 rounded-md ring-1 ring-gray-300 text-gray-700 hover:bg-gray-50"
+                        onclick="window.location.href='@Url.Action("Index", "Home")'"
+                        aria-label="Go back to Home">
+                    <i class="fa-solid fa-arrow-left"></i>
+                    Go back
+                </button>
+            </div>
         </div>
     </section>
-</body>
+</body> 
