@@ -51,7 +51,10 @@
                 </div>
 
                 <div class="flex justify-end space-x-3 pt-6">
-                    <a asp-action="Users"
+                    <!-- Cancel: if we came from Users list, use history.back() (removes Edit from active view but keeps proper stack).
+                         If not, go directly to Users list. -->
+                    <a href="@Url.Action("Users", "Admin")"
+                       onclick="event.preventDefault(); if (document.referrer && document.referrer.includes('/Admin/Users')) { history.back(); } else { window.location.href='@Url.Action("Users", "Admin")'; }"
                        class="inline-flex items-center rounded-lg bg-white px-4 py-2 text-sm font-medium text-gray-700 ring-1 ring-gray-300 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
                         Cancel
                     </a>
