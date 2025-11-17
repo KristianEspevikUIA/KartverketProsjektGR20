@@ -39,8 +39,8 @@
                         @foreach (var role in Model.AvailableRoles)
                         {
                             <div class="flex items-center">
-                                <input type="checkbox"
-                                       name="SelectedRoles"
+                                <input type="radio"
+                                       name="SelectedRole"
                                        value="@role"
                                        @(Model.CurrentRoles.Contains(role) ? "checked" : "")
                                        class="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded" />
