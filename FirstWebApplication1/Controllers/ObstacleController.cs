@@ -190,34 +190,49 @@ namespace FirstWebApplication1.Controllers
         [Authorize(Roles = "Pilot,Registerfører,Admin")]
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, ObstacleData obstacledata)
+        public async Task<IActionResult> Edit(int id, [Bind("Id, ObstacleName, ObstacleHeight, ObstacleDescription, Longitude, Latitude, LineGeoJson")] ObstacleData obstacledata)
         {
             if (id != obstacledata.Id)
             {
                 return NotFound();
             }
 
-            if (string.IsNullOrWhiteSpace(obstacledata.ObstacleDescription))
-            {
-                obstacledata.ObstacleDescription = "";
-            }
-
-            ModelState.Remove("ObstacleType");
-            ModelState.Remove("ObstacleDescription");
-
             if (!ModelState.IsValid)
             {
+                // If model state is invalid, we must reload the full entity to pass back to the view
+                var fullObstacle = await _context.Obstacles.AsNoTracking().FirstOrDefaultAsync(o => o.Id == id);
+                if (fullObstacle == null) return NotFound();
+
+                // We update the full entity with the user's failed changes to show them back
+                fullObstacle.ObstacleName = obstacledata.ObstacleName;
+                fullObstacle.ObstacleHeight = obstacledata.ObstacleHeight;
+                // etc. for other bound properties
+
                 ViewBag.IsPilot = IsPilot();
                 ViewBag.UsesFeet = IsPilot();
-                return View(obstacledata);
+                return View(fullObstacle);
             }
 
             try
             {
-                obstacledata.LastModifiedBy = User.Identity?.Name ?? "Unknown";
-                obstacledata.LastModifiedDate = DateTime.UtcNow;
+                var obstacleToUpdate = await _context.Obstacles.FindAsync(id);
+                if (obstacleToUpdate == null)
+                {
+                    return NotFound();
+                }
 
-                _context.Update(obstacledata);
+                // Apply the changes from the bound model
+                obstacleToUpdate.ObstacleName = obstacledata.ObstacleName;
+                obstacleToUpdate.ObstacleHeight = obstacledata.ObstacleHeight;
+                obstacleToUpdate.ObstacleDescription = obstacledata.ObstacleDescription ?? "";
+                obstacleToUpdate.Longitude = obstacledata.Longitude;
+                obstacleToUpdate.Latitude = obstacledata.Latitude;
+                obstacleToUpdate.LineGeoJson = obstacledata.LineGeoJson;
+
+                // Set modification metadata
+                obstacleToUpdate.LastModifiedBy = User.Identity?.Name ?? "Unknown";
+                obstacleToUpdate.LastModifiedDate = DateTime.UtcNow;
+
                 await _context.SaveChangesAsync();
             }
             catch (DbUpdateConcurrencyException)
@@ -229,7 +244,7 @@ namespace FirstWebApplication1.Controllers
                 throw;
             }
 
-            return RedirectToAction(nameof(Details), new { id });
+            return RedirectToAction(nameof(List));
         }
 
         [Authorize(Roles = "Registerfører,Admin")]
