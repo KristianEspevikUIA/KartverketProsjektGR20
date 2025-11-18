@@ -1,7 +1,6 @@
 ﻿@model FirstWebApplication1.Models.ObstacleData
-
-@{
-    ViewData["Title"] = "Edit Obstacle";
+﻿@{
+ViewData["Title"] = "Edit Obstacle";
 }
 
 <body class="bg-cover bg-center" style="background-image: url('/images/BackgroundImageGreen.png');">
@@ -14,15 +13,16 @@
 
             <form asp-action="Edit" asp-route-id="@Model.Id" method="post" class="space-y-5">
                 @Html.AntiForgeryToken()
-                @Html.HiddenFor(m => m.Id)
-                @Html.HiddenFor(m => m.Status)
-                @Html.HiddenFor(m => m.SubmittedBy)
-                @Html.HiddenFor(m => m.SubmittedDate)
-                @Html.HiddenFor(m => m.ApprovedBy)
-                @Html.HiddenFor(m => m.ApprovedDate)
-                @Html.HiddenFor(m => m.DeclinedBy)
-                @Html.HiddenFor(m => m.DeclinedDate)
-                @Html.HiddenFor(m => m.DeclineReason)
+                <input type="hidden" asp-for="Id" />
+                <input type="hidden" asp-for="ObstacleType" />
+                <input type="hidden" asp-for="Status" />
+                <input type="hidden" asp-for="SubmittedBy" />
+                <input type="hidden" asp-for="SubmittedDate" />
+                <input type="hidden" asp-for="ApprovedBy" />
+                <input type="hidden" asp-for="ApprovedDate" />
+                <input type="hidden" asp-for="DeclinedBy" />
+                <input type="hidden" asp-for="DeclinedDate" />
+                <input type="hidden" asp-for="DeclineReason" />
 
                 <div class="sm:col-span-2">
                     <label asp-for="ObstacleName" class="block text-sm font-medium text-gray-800 mb-1">Obstacle Name</label>

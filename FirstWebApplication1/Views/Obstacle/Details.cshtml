@@ -1,7 +1,6 @@
 ﻿@model FirstWebApplication1.Models.ObstacleData
-
-@{
-    ViewData["Title"] = "Obstacle Details";
+﻿@{
+ViewData["Title"] = "Obstacle Details";
 }
 
 <body class="bg-cover bg-center" style="background-image: url('/images/BackgroundImageGreen.png');">
@@ -13,7 +12,7 @@
                     <p class="text-sm text-gray-600">@Model.ObstacleDescription</p>
                 </div>
 
-                <div class="grid grid-cols-3 gap-4">
+                <dl class="grid grid-cols-3 gap-4">
                     <div>
                         <dt class="text-sm font-medium text-gray-500">Status</dt>
                         <dd class="mt-1 text-sm text-gray-900">
@@ -39,7 +38,7 @@
                         <dt class="text-sm font-medium text-gray-500">Submitted Date</dt>
                         <dd class="mt-1 text-sm text-gray-900">@Model.SubmittedDate.ToString("MMM dd, yyyy HH:mm")</dd>
                     </div>
-                </div>
+                </dl>
 
                 @* Approval/Moderation actions: visible to Registerfører and Admin *@
                 @if (User.IsInRole("Registerfører") || User.IsInRole("Admin"))
@@ -102,3 +101,6 @@
             .openPopup();
     </script>
 }
+
+
+
