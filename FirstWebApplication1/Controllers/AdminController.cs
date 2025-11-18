@@ -70,7 +70,7 @@ namespace FirstWebApplication1.Controllers
         // POST: /Admin/EditUser/{id}
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> EditUser(string id, List<string> selectedRoles)
+        public async Task<IActionResult> EditUser(string id, string selectedRole)
         {
             var user = await _userManager.FindByIdAsync(id);
             if (user == null)
@@ -80,18 +80,13 @@ namespace FirstWebApplication1.Controllers
 
             var currentRoles = await _userManager.GetRolesAsync(user);
 
-            // Remove roles that are no longer selected
-            var rolesToRemove = currentRoles.Except(selectedRoles).ToList();
-            if (rolesToRemove.Any())
-            {
-                await _userManager.RemoveFromRolesAsync(user, rolesToRemove);
-            }
+            // Remove all current roles
+            await _userManager.RemoveFromRolesAsync(user, currentRoles);
 
-            // Add newly selected roles
-            var rolesToAdd = selectedRoles.Except(currentRoles).ToList();
-            if (rolesToAdd.Any())
+            // Add the new selected role, if one was provided
+            if (!string.IsNullOrEmpty(selectedRole))
             {
-                await _userManager.AddToRolesAsync(user, rolesToAdd);
+                await _userManager.AddToRoleAsync(user, selectedRole);
             }
 
             TempData["SuccessMessage"] = "User roles updated successfully.";
