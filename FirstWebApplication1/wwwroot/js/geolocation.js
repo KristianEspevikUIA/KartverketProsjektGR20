@@ -7,13 +7,14 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     // Initialize map
-    const map = L.map('map').setView([59.91, 10.75], 12);
+    const map = L.map('map').setView([59.91, 10.75], 5); // Start zoomed out
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
         attribution: '© OpenStreetMap contributors',
         maxZoom: 19
     }).addTo(map);
 
-    // Ensure map renders properly
+
+    // Ensure map renders properly if its container was resized
     setTimeout(() => {
         map.invalidateSize();
     }, 100);
@@ -32,6 +33,9 @@ document.addEventListener('DOMContentLoaded', function () {
     let vertices = [];
     let polyline = null;
     let markers = [];
+
+    // --- Layer group for approved obstacles ---
+    const approvedObstaclesLayer = L.featureGroup().addTo(map);
 
     function toFixed(value) {
         return Number(value.toFixed(6));
@@ -291,6 +295,77 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     }
 
+    function drawApprovedObstacles(layerGroup, obstacles) {
+        console.log(`Found ${obstacles.length} approved obstacles to draw.`);
+
+        if (!Array.isArray(obstacles)) {
+            return;
+        }
+
+        obstacles.forEach(obstacle => {
+            console.log('Processing obstacle:', obstacle);
+            const popupContent = `
+                <div style="font-family: sans-serif;">
+                    <h4 style="margin: 0 0 5px 0; font-size: 1.1em;">${obstacle.ObstacleName || 'Approved Obstacle'}</h4>
+                    <p style="margin: 0; color: #555;">Type: ${obstacle.ObstacleType || 'N/A'}</p>
+                </div>`;
+
+            if (obstacle.LineGeoJson) {
+                try {
+                    const geoJson = JSON.parse(obstacle.LineGeoJson);
+                    if (geoJson.type === 'LineString' && Array.isArray(geoJson.coordinates) && geoJson.coordinates.length > 0) {
+                        const latLngs = geoJson.coordinates
+                            .filter(coord => Array.isArray(coord) && coord.length >= 2)
+                            .map(coord => [coord[1], coord[0]]);
+
+                        if (latLngs.length > 0) {
+                            L.polyline(latLngs, {
+                                color: '#16a34a',
+                                weight: 3,
+                                opacity: 0.6
+                            }).bindPopup(popupContent).addTo(layerGroup);
+                        }
+                    }
+                } catch (e) { console.error("Error parsing LineGeoJson:", e); }
+            } else if (obstacle.Latitude && obstacle.Longitude) {
+                L.marker([obstacle.Latitude, obstacle.Longitude], {
+                    opacity: 0.7,
+                    icon: L.icon({
+                        iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-green.png',
+                        shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/images/marker-shadow.png',
+                        iconSize: [25, 41],
+                        iconAnchor: [12, 41],
+                        popupAnchor: [1, -34],
+                        shadowSize: [41, 41]
+                    })
+                }).bindPopup(popupContent).addTo(layerGroup);
+            }
+        });
+    }
+
+    // --- Main Execution ---
+    map.whenReady(function () {
+        console.log('Map is ready. Checking for approved obstacles data.');
+        const obstaclesDataAttribute = mapElement.dataset.approvedObstacles;
+        if (obstaclesDataAttribute) {
+            try {
+                const approvedObstaclesData = JSON.parse(obstaclesDataAttribute);
+                if (approvedObstaclesData.length > 0) {
+                    drawApprovedObstacles(approvedObstaclesLayer, approvedObstaclesData);
+                }
+            } catch (e) {
+                console.error("Failed to parse approved obstacles JSON data:", e);
+            }
+        }
+
+        // After drawing, decide where to center the map
+        if (approvedObstaclesLayer.getLayers().length > 0) {
+            map.fitBounds(approvedObstaclesLayer.getBounds(), { padding: [50, 50], maxZoom: 14 });
+        } else {
+            map.locate({ setView: true, maxZoom: 14 });
+        }
+    });
+
     // Event: Map click
     map.on('click', function (event) {
         addVertex(event.latlng);
@@ -306,20 +381,17 @@ document.addEventListener('DOMContentLoaded', function () {
         clearButton.addEventListener('click', clearVertices);
     }
 
-    // Try to load existing geometry
+    // Load any geometry from the form if returning from a validation error
     tryLoadExistingGeometry();
-
     if (vertices.length === 0) {
         tryLoadExistingPoint();
     }
 
     syncFormState();
 
-    // Try to get user's location
-    map.locate({ setView: true, maxZoom: 16 });
-
+    // Geolocation fallbacks
     map.on('locationfound', function (event) {
-        if (vertices.length === 0) {
+        if (approvedObstaclesLayer.getLayers().length === 0 && vertices.length === 0) {
             map.setView(event.latlng, 14);
         }
     });
