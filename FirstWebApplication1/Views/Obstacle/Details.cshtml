@@ -1,106 +1,221 @@
 ﻿@model FirstWebApplication1.Models.ObstacleData
-﻿@{
-ViewData["Title"] = "Obstacle Details";
+@{
+    ViewData["Title"] = "Obstacle Details";
+
+    var geometryType = Model.HasLine ? "Line" : "Point";
+
+    var verificationInfo = Model.Status switch
+    {
+        "Approved" => new { Label = "Verified By", User = Model.ApprovedBy, Timestamp = Model.ApprovedDate == default ? (DateTime?)null : Model.ApprovedDate },
+        "Declined" => new { Label = "Verified By", User = Model.DeclinedBy, Timestamp = Model.DeclinedDate == default ? (DateTime?)null : Model.DeclinedDate },
+        _ => new { Label = "Verified By", User = "", Timestamp = (DateTime?)null }
+    };
+
+    string statusClass = Model.Status switch
+    {
+        "Approved" => "bg-green-100 text-green-800",
+        "Declined" => "bg-red-100 text-red-800",
+        "Pending" => "bg-yellow-100 text-yellow-800",
+        _ => "bg-gray-100 text-gray-800"
+    };
 }
 
 <body class="bg-cover bg-center" style="background-image: url('/images/BackgroundImageGreen.png');">
-    <section class="mx-auto max-w-6xl mt-8">
-        <div class="bg-white rounded-2xl shadow-sm ring-1 ring-gray-200 p-8">
-            <div class="grid grid-cols-1 gap-6">
-                <div>
-                    <h1 class="text-2xl font-semibold text-gray-900">@Model.ObstacleName</h1>
-                    <p class="text-sm text-gray-600">@Model.ObstacleDescription</p>
+
+    <section class="mx-auto max-w-5xl mt-6">
+
+        <!-- Compact layout, fits all screens -->
+        <div class="grid grid-cols-1 lg:grid-cols-[3fr_2fr] gap-3">
+
+            <!-- INFO COLUMN -->
+            <div class="bg-white rounded-2xl shadow-sm ring-1 ring-gray-200 p-3 space-y-4">
+
+                <!-- Header -->
+                <h1 class="text-2xl font-semibold text-gray-900">@Model.ObstacleName</h1>
+
+                <!-- Top info -->
+                <div class="space-y-2">
+
+                    <div class="flex justify-between">
+                        <span class="text-gray-600 font-medium text-sm">Status</span>
+                        <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium @statusClass">@Model.Status</span>
+                    </div>
+
+                    <div class="flex justify-between">
+                        <span class="text-gray-600 font-medium text-sm">Submitted By</span>
+                        <span class="text-sm text-gray-900">@Model.SubmittedBy</span>
+                    </div>
+
+                    <div class="flex justify-between">
+                        <span class="text-gray-600 font-medium text-sm">Submitted Date</span>
+                        <span class="text-sm text-gray-900">@Model.SubmittedDate.ToString("MMM dd, yyyy HH:mm")</span>
+                    </div>
+
                 </div>
 
-                <dl class="grid grid-cols-3 gap-4">
-                    <div>
-                        <dt class="text-sm font-medium text-gray-500">Status</dt>
-                        <dd class="mt-1 text-sm text-gray-900">
-                            @{
-                                string statusClass = Model.Status switch
-                                {
-                                    "Approved" => "bg-green-100 text-green-800",
-                                    "Declined" => "bg-red-100 text-red-800",
-                                    "Pending" => "bg-yellow-100 text-yellow-800",
-                                    _ => "bg-yellow-100 text-yellow-800"
-                                };
-                            }
-                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium @statusClass">
-                                @Model.Status
-                            </span>
-                        </dd>
-                    </div>
-                    <div>
-                        <dt class="text-sm font-medium text-gray-500">Submitted By</dt>
-                        <dd class="mt-1 text-sm text-gray-900">@Model.SubmittedBy</dd>
-                    </div>
-                    <div>
-                        <dt class="text-sm font-medium text-gray-500">Submitted Date</dt>
-                        <dd class="mt-1 text-sm text-gray-900">@Model.SubmittedDate.ToString("MMM dd, yyyy HH:mm")</dd>
-                    </div>
-                </dl>
+                <!-- Basic Info -->
+                <h2 class="text-lg font-semibold text-gray-900 mt-2">Basic Obstacle Information</h2>
 
-                @* Approval/Moderation actions: visible to Registerfører and Admin *@
+                <div class="space-y-2">
+
+                    <div class="flex justify-between">
+                        <span class="text-gray-600 font-medium text-sm">Obstacle Type</span>
+                        <span class="text-sm text-gray-900">@Model.ObstacleType</span>
+                    </div>
+
+                    <div class="flex justify-between">
+                        <span class="text-gray-600 font-medium text-sm">Height</span>
+                        <span class="text-sm text-gray-900 whitespace-nowrap">
+                            @Model.ObstacleHeight m (@Model.ObstacleHeightInFeet.ToString("F2") ft)
+                        </span>
+                    </div>
+
+                    <div class="flex justify-between">
+                        <span class="text-gray-600 font-medium text-sm">Description</span>
+                        <span class="text-sm text-gray-900 text-right">@Model.ObstacleDescription</span>
+                    </div>
+
+                </div>
+
+                <!-- Location Info -->
+                <h2 class="text-lg font-semibold text-gray-900 mt-2">Location Information</h2>
+
+                <div class="space-y-2">
+
+                    <div class="flex justify-between">
+                        <span class="text-gray-600 font-medium text-sm">Geometry Type</span>
+                        <span class="text-sm text-gray-900">@geometryType</span>
+                    </div>
+
+                    <div class="flex justify-between">
+                        <span class="text-gray-600 font-medium text-sm">Coordinates</span>
+
+                        @if (Model.HasLine)
+                        {
+                            <span class="text-sm text-gray-900 text-right leading-tight">
+                                Start: @Model.StartCoordinate?.Latitude, @Model.StartCoordinate?.Longitude <br />
+                                End: @Model.EndCoordinate?.Latitude, @Model.EndCoordinate?.Longitude
+                            </span>
+                        }
+                        else
+                        {
+                            <span class="text-sm text-gray-900">@Model.Latitude, @Model.Longitude</span>
+                        }
+                    </div>
+
+                    <div class="flex justify-between">
+                        <span class="text-gray-600 font-medium text-sm">Line Details</span>
+
+                        @if (Model.HasLine)
+                        {
+                            <span class="text-sm text-gray-900 text-right leading-tight">
+                                Vertices: @Model.LineVertexCount <br />
+                                Length: @Model.LineLengthMeters?.ToString("N0") m
+                            </span>
+                        }
+                        else
+                        {
+                            <span class="text-sm text-gray-500">N/A</span>
+                        }
+                    </div>
+
+                </div>
+
+                <!-- Status Info -->
+                <h2 class="text-lg font-semibold text-gray-900 mt-2">Status Information</h2>
+
+                <div class="space-y-2">
+
+                    <div class="flex justify-between">
+                        <span class="text-gray-600 font-medium text-sm">Current Status</span>
+                        <span class="text-sm text-gray-900">@Model.Status</span>
+                    </div>
+
+                    <div class="flex justify-between">
+                        <span class="text-gray-600 font-medium text-sm">@verificationInfo.Label</span>
+                        <span class="text-sm text-gray-900">
+                            @(string.IsNullOrWhiteSpace(verificationInfo.User) ? "Not verified" : verificationInfo.User)
+                        </span>
+                    </div>
+
+                    <div class="flex justify-between">
+                        <span class="text-gray-600 font-medium text-sm">Verification/Rejection Timestamp</span>
+                        <span class="text-sm text-gray-900">
+                            @(verificationInfo.Timestamp?.ToString("MMM dd, yyyy HH:mm") ?? "Not verified")
+                        </span>
+                    </div>
+
+                </div>
+
+                <!-- Approval Actions -->
                 @if (User.IsInRole("Registerfører") || User.IsInRole("Admin"))
                 {
-                    <div class="border-t pt-6">
-                        <h3 class="text-lg font-medium text-gray-900 mb-4">Approval Actions</h3>
+                    <h2 class="text-lg font-semibold text-gray-900 mt-3">Approval Actions</h2>
 
-                        <div class="flex space-x-3">
-                            <form asp-action="Approve" asp-route-id="@Model.Id" method="post" class="inline">
-                                @Html.AntiForgeryToken()
-                                <button type="submit"
-                                        class="inline-flex items-center rounded-lg bg-green-600 px-4 py-2 text-sm font-medium text-white hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500">
-                                    Approve
-                                </button>
-                            </form>
+                    <div class="flex gap-2 mt-2">
 
-                            <form asp-action="Decline" asp-route-id="@Model.Id" method="post" class="inline">
-                                @Html.AntiForgeryToken()
-                                <input type="hidden" name="declineReason" value="" />
-                                <button type="submit"
-                                        class="inline-flex items-center rounded-lg bg-red-600 px-4 py-2 text-sm font-medium text-white hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500">
-                                    Reject
-                                </button>
-                            </form>
+                        <form asp-action="Approve" asp-route-id="@Model.Id" method="post">
+                            @Html.AntiForgeryToken()
+                            <button class="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 text-sm">
+                                Approve
+                            </button>
+                        </form>
 
-                            <form asp-action="Delete" asp-route-id="@Model.Id" method="post" class="inline" onsubmit="return confirm('Permanently delete this report?');">
-                                @Html.AntiForgeryToken()
-                                <button type="submit"
-                                        class="inline-flex items-center rounded-lg bg-gray-600 px-4 py-2 text-sm font-medium text-white hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500">
-                                    Delete
-                                </button>
-                            </form>
-                        </div>
-                    </div>
-                    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-4">
-                        <button type="button"
-                                class="inline-flex items-center gap-2 px-3 py-2 rounded-md ring-1 ring-gray-300 text-gray-700 hover:bg-gray-50"
-                                onclick="if (document.referrer) { history.back(); } else { window.location.href='@Url.Action("List", "Obstacle")'; }"
-                                aria-label="Go back">
-                            <i class="fa-solid fa-arrow-left"></i>
-                            Go back
-                        </button>
+                        <form asp-action="Decline" asp-route-id="@Model.Id" method="post">
+                            @Html.AntiForgeryToken()
+                            <input type="hidden" name="declineReason" value="" />
+                            <button class="bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700 text-sm">
+                                Reject
+                            </button>
+                        </form>
+
                     </div>
                 }
+
             </div>
+
+            <!-- MAP COLUMN -->
+            <div class="h-[300px] w-full rounded-2xl overflow-hidden ring-1 ring-gray-300 bg-white" id="map"></div>
+
         </div>
+
     </section>
 </body>
 
 @section Scripts {
     <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
     <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
-    <script>
-        const map = L.map('map').setView([@Model.Latitude, @Model.Longitude], 13);
-        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
 
-        L.marker([@Model.Latitude, @Model.Longitude])
-            .addTo(map)
-            .bindPopup('@Model.ObstacleName')
-            .openPopup();
+    <script>
+        @if (Model.HasLine)
+        {
+                <text>
+                const coords = [
+                    @foreach (var c in Model.LineCoordinates)
+                    {
+                            <text>[ @c.Latitude, @c.Longitude ],</text>
+                    }
+                ];
+
+                const map = L.map('map');
+                L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
+
+                const poly = L.polyline(coords, { color: 'red' }).addTo(map);
+                map.fitBounds(poly.getBounds());
+                map.setZoom(map.getZoom() - 1);
+                </text>
+        }
+        else
+        {
+                <text>
+                const map = L.map('map').setView([@Model.Latitude, @Model.Longitude], 13);
+                L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
+
+                L.marker([@Model.Latitude, @Model.Longitude])
+                    .addTo(map)
+                    .bindPopup("@Model.ObstacleName")
+                    .openPopup();
+                </text>
+        }
     </script>
 }
-
-
-
