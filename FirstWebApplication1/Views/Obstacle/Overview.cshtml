@@ -12,12 +12,12 @@
     var fallbackLng = start?.Longitude ?? Model.Longitude ?? 10.75;
 
     var usesFeet = ViewBag.UsesFeet ?? false;
-    var heightDisplay = usesFeet ?
-        $"{Model.ObstacleHeightInFeet:F1} feet ({Model.ObstacleHeight:F1} meters)" :
-        $"{Model.ObstacleHeight:F1} meters";
+    var heightDisplay = usesFeet
+        ? $"{Model.ObstacleHeightInFeet:F1} feet ({Model.ObstacleHeight:F1} meters)"
+        : $"{Model.ObstacleHeight:F1} meters";
 }
 
-<body class="bg-cover bg-center" style="background-image: url('/images/BackgroundImageGreen.png');">
+<div class="bg-cover bg-center" style="background-image: url('/images/BackgroundImageGreen.png');">
     <section class="mx-auto max-w-6xl px-4 mb-16">
         <div class="bg-white rounded-2xl shadow-sm ring-1 ring-gray-200 p-8 space-y-6">
             <header class="text-center border-b pb-6">
@@ -149,6 +149,7 @@
                             var formatted = meters >= 1000
                             ? $"{meters / 1000:0.00} km"
                             : $"{meters:0.0} m";
+
                             <div class="mt-2">
                                 <span class="inline-flex items-center text-sm text-gray-700">
                                     <i class="fa-solid fa-ruler mr-2 text-indigo-600"></i>
@@ -158,7 +159,7 @@
                         }
                     </div>
 
-                    @if (vertices.Count > 0)
+                    @if (vertices != null && vertices.Count > 0)
                     {
                         <details class="bg-gray-50 p-4 rounded-lg">
                             <summary class="cursor-pointer font-medium text-gray-900 hover:text-indigo-600">
@@ -205,7 +206,7 @@
             </div>
         </div>
     </section>
-</body>
+</div>
 
 @section Scripts {
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
@@ -213,9 +214,15 @@
     <script>
         const fallbackLat = "@fallbackLat.ToString(CultureInfo.InvariantCulture)";
         const fallbackLng = "@fallbackLng.ToString(CultureInfo.InvariantCulture)";
-        const hasPointGeometry = @(!hasLine && Model.Latitude.HasValue && Model.Longitude.HasValue).ToString().ToLowerInvariant();
 
-        const map = L.map('map').setView([parseFloat(fallbackLat), parseFloat(fallbackLng)], 14);
+        // Do ALL the C# string/boolean work server-side, so JS just gets "true" / "false"
+        const hasPointGeometry = @((!hasLine && Model.Latitude.HasValue && Model.Longitude.HasValue).ToString().ToLowerInvariant());
+
+        const map = L.map('map').setView(
+            [parseFloat(fallbackLat), parseFloat(fallbackLng)],
+            14
+        );
+
         L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
             attribution: '© OpenStreetMap contributors'
         }).addTo(map);
@@ -229,6 +236,7 @@
 
             if (latLngs.length > 0) {
                 const polyline = L.polyline(latLngs, { color: '#4f46e5', weight: 4 }).addTo(map);
+
                 latLngs.forEach((point, index) => {
                     L.circleMarker(point, {
                         radius: 6,
@@ -250,6 +258,7 @@
                 .bindPopup("@Model.ObstacleName").openPopup();
         }
 
+        // Fix map sizing when the page finishes layout
         setTimeout(() => {
             map.invalidateSize();
         }, 100);
