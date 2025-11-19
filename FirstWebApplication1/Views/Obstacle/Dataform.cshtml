@@ -119,6 +119,19 @@
                              data-approved-obstacles='@(ViewBag.ApprovedObstaclesJson ?? "[]")'>
                         </div>
 
+                        <div class="flex flex-wrap gap-3">
+                            <button type="button" id="undoPoint"
+                                    class="inline-flex items-center justify-center rounded-lg bg-gray-100 px-8 py-4 text-sm font-medium text-gray-800 hover:bg-gray-200 transition-colors">
+                                <i class="fa-solid fa-undo mr-2"></i>
+                                Undo Last Point
+                            </button>
+                            <button type="button" id="clearLine"
+                                    class="inline-flex items-center justify-center rounded-lg bg-gray-100 px-8 py-4 text-sm font-medium text-gray-800 hover:bg-gray-200 transition-colors">
+                                <i class="fa-solid fa-trash mr-2"></i>
+                                Clear All
+                            </button>
+                        </div>
+
                         <div>
                             <label asp-for="ObstacleDescription" class="block text-sm font-medium text-gray-800 mb-2">
                                 <i class="fa-solid fa-file-alt mr-2 text-gray-600"></i>
@@ -130,20 +143,6 @@
                             <span asp-validation-for="ObstacleDescription" class="text-sm text-red-600"></span>
                         </div>
                     </div>
-
-
-                        <div class="flex flex-wrap gap-3">
-                            <button type="button" id="undoPoint"
-                                    class="inline-flex items-center justify-center rounded-lg bg-gray-100 px-4 py-2 text-sm font-medium text-gray-800 hover:bg-gray-200 transition-colors">
-                                <i class="fa-solid fa-undo mr-2"></i>
-                                Undo Last Point
-                            </button>
-                            <button type="button" id="clearLine"
-                                    class="inline-flex items-center justify-center rounded-lg bg-gray-100 px-4 py-2 text-sm font-medium text-gray-800 hover:bg-gray-200 transition-colors">
-                                <i class="fa-solid fa-trash mr-2"></i>
-                                Clear All
-                            </button>
-                        </div>
 
                         <div class="grid grid-cols-2 gap-4">
                             <div>

@@ -199,7 +199,7 @@ document.addEventListener('DOMContentLoaded', function () {
         // Multiple points - draw line
         polyline = L.polyline(vertices, {
             color: '#4f46e5',
-            weight: 4,
+            weight: 6,
             opacity: 0.8
         }).addTo(map);
 
@@ -218,7 +218,7 @@ document.addEventListener('DOMContentLoaded', function () {
         });
 
         // Fit map to line bounds
-        map.fitBounds(polyline.getBounds(), { padding: [50, 50] });
+        map.fitBounds(polyline.getBounds(), { padding: [50, 50], maxZoom: 16});
     }
 
     function syncFormState() {
@@ -320,8 +320,8 @@ document.addEventListener('DOMContentLoaded', function () {
 
                         if (latLngs.length > 0) {
                             L.polyline(latLngs, {
-                                color: '#16a34a',
-                                weight: 3,
+                                color: '#4f46e5',
+                                weight: 6,
                                 opacity: 0.6
                             }).bindPopup(popupContent).addTo(layerGroup);
                         }
@@ -331,7 +331,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 L.marker([obstacle.Latitude, obstacle.Longitude], {
                     opacity: 0.7,
                     icon: L.icon({
-                        iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-green.png',
+                        iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-red.png',
                         shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/images/marker-shadow.png',
                         iconSize: [25, 41],
                         iconAnchor: [12, 41],
