@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.EntityFrameworkCore;
+using System.Text.Json;
 
 namespace FirstWebApplication1.Controllers
 {
@@ -50,7 +51,7 @@ namespace FirstWebApplication1.Controllers
         // STEP 2: Fill in details
         [Authorize]
         [HttpGet]
-        public IActionResult DataForm()
+        public async Task<IActionResult> DataForm()
         {
             if (TempData.Peek("ObstacleType") == null)
             {
@@ -63,6 +64,31 @@ namespace FirstWebApplication1.Controllers
                 ObstacleType = obstacleType,
                 ObstacleHeight = 15 // Default minimum height in meters
             };
+
+            // --- CORRECTED CODE START ---
+            var approvedObstacles = await _context.Obstacles
+                .Where(o => o.Status == "Approved")
+                .AsNoTracking()
+                .ToListAsync();
+
+            // Create serializer options to keep property names as-is (PascalCase)
+            var serializerOptions = new JsonSerializerOptions
+            {
+                PropertyNamingPolicy = null
+            };
+
+            var approvedObstaclesJson = JsonSerializer.Serialize(approvedObstacles.Select(o => new
+            {
+                o.ObstacleName,
+                o.ObstacleType,
+                o.Latitude,
+                o.Longitude,
+                o.LineGeoJson
+            }), serializerOptions); // Apply the options here
+
+            ViewBag.ApprovedObstaclesJson = approvedObstaclesJson;
+            // --- CORRECTED CODE END ---
+
 
             // Pass user role info to view
             ViewBag.IsPilot = IsPilot();
@@ -83,7 +109,7 @@ namespace FirstWebApplication1.Controllers
                 if (TempData["ObstacleType"] != null)
                 {
                     obstacledata.ObstacleType = TempData["ObstacleType"].ToString();
-                    TempData.Keep("ObstacleType");
+                    
                 }
 
                 // Auto-generate obstacle name from type
