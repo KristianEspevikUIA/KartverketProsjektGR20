@@ -29,7 +29,6 @@ namespace FirstWebApplication1.Controllers
         [HttpGet]
         public IActionResult SelectType()
         {
-            TempData.Clear();
             return View(new ObstacleTypeViewModel());
         }
 
