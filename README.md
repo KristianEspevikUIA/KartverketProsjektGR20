@@ -1,4 +1,4 @@
-## FirstWebApplication1 – IS-202 Programmeringsprosjekt (Høst 2025)
+# FirstWebApplication1 – IS-202 Programmeringsprosjekt (Høst 2025)
 
 FirstWebApplication1 is an ASP.NET Core MVC web application developed as part of
 IS-202 Programmeringsprosjekt (Høst 2025) at the University of Agder.
@@ -8,7 +8,7 @@ It integrates a simple interactive map for visualising registered coordinates an
 
 The project is developed and run in Visual Studio using Docker Compose for the database container and for managing environment variables. Docker runs in the background while Visual Studio launches the web application automatically.
 
-## How the project is run:
+# How the project is run:
 
 Development and execution are done directly from Visual Studio:
 
@@ -27,8 +27,8 @@ FirstWebApplication1.sln
 Visual Studio builds both the Docker services and the ASP.NET Core application.
 You do not need to manually run Docker commands.
 
-## Project Setup
-# Docker Background Services
+# Project Setup
+## Docker Background Services
 
 The project uses:
 
@@ -39,17 +39,17 @@ The project uses:
 
 The Docker Compose setup requires one private environment variable for the database password, stored in a .env file.
 
-## Environment Variables (.env)
+# Environment Variables (.env)
 
 Because the repository is public, secrets are not included.
 Before running the project, you need to create a file named .env in the project root - the same folder as docker-compose.yml.
 
-# Create .env with:
-DB_PASSWORD=<ask a team member for the real value>
+## Create .env with:
+DB_PASSWORD=(ask a team member for the value)
 
 This file is ignored by Git and must be created manually by all team members.
 
-## Running the Application
+# Running the Application
 
 After placing the .env file:
 
@@ -74,7 +74,7 @@ Visual Studio will:
 
 The default exposed port (for local development) is: http://localhost:5010
 
-## Project Features
+# Project Features
 
 The application includes:
 
@@ -104,12 +104,12 @@ This is a practical programming assignment focused on:
 
 - Basic JavaScript map integration
 
-## Project Purpose and Context
+# Project Purpose and Context
 The project is developed for IS-202 Programmeringsprosjekt, where students are tasked with building a functioning software solution based on given requirements. Our group implemented an obstacle reporting system inspired by processes used by Kartverket and Norsk Luftambulanse. The application supports creating new obstacle reports, managing them, and displaying the data in dynamic interfaces such as tables and a map view.
 
 All features were developed collaboratively by the group, including form validation, data handling, UI adjustments, status history, and map integration.
 
-## Team Members
+# Team Members
 
 This project was developed by Group 20:
 
