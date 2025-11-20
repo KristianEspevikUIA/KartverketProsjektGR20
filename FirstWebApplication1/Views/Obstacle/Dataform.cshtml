@@ -137,9 +137,12 @@
                                 <i class="fa-solid fa-file-alt mr-2 text-gray-600"></i>
                                 Obstacle Description <span class="text-gray-500 text-xs">(Optional)</span>
                             </label>
-                            <textarea asp-for="ObstacleDescription" rows="3"
+                            <textarea asp-for="ObstacleDescription" rows="3" maxlength=300"
                                       class="block w-full rounded-lg border-gray-300 focus:border-indigo-600 focus:ring-indigo-600 px-4 py-3 text-lg"
                                       placeholder="Add additional details about the obstacle (optional)"></textarea>
+                            <div class="text-xs text-gray-500 mt-1">
+                                <span id="descCount">0</span>/300 characters
+                            </div>
                             <span asp-validation-for="ObstacleDescription" class="text-sm text-red-600"></span>
                         </div>
                     </div>
@@ -195,6 +198,20 @@
         <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
         <script src="~/js/geolocation.js?v=1.2"></script>
+        
+        <script>
+            const desc = document.getElementById("ObstacleDescription");
+            const descCount = document.getElementById("descCount");
+
+            if (desc && descCount) {
+                desc.addEventListener("input", () => {
+                descCount.textContent = desc.value.length;
+            });
+
+        // Initialize from any existing value
+        descCount.textContent = desc.value.length;
+    }
+        </script>
 
         <style>
             /* Custom slider styling */

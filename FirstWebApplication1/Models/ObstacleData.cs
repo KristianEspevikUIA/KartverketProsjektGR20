@@ -13,6 +13,7 @@ namespace FirstWebApplication1.Models
         public int Id { get; set; }
 
         [StringLength(50)]
+        [MaxLength(300, ErrorMessage = "Description cannot exceed 300 characters.")] 
         public string? ObstacleType { get; set; }
 
         [Required(ErrorMessage = "Obstacle name is required")]
