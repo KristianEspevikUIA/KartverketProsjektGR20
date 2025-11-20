@@ -100,7 +100,7 @@
                             <div class="flex justify-center mb-4">
                                 <input id="heightInputDisplay"
                                        type="number"
-                                       class="text-center text-3xl font-bold text-indigo-600 
+                                       class="text-center text-2xl font-bold text-indigo-600 
                   border border-indigo-300 rounded-lg 
                   bg-white 
                   px-4 py-1 
@@ -129,13 +129,15 @@
 
                             <span asp-validation-for="ObstacleHeight" class="text-sm text-red-600 block mt-2"></span>
 
-                            @if (isPilot)
-                            {
-                            <div class="mt-3 text-xs text-gray-500 text-center">
-                                <i class="fa-solid fa-info-circle mr-1"></i>
-                                Value stored in meters: <span id="metersValue" class="font-mono font-semibold">@defaultHeightMeters.ToString("F2")</span> m
-                            </div>
-                            }
+                                @if (isPilot)
+                                {
+                                    <div class="mt-3 text-xs text-gray-500 text-center">
+                                        <i class="fa-solid fa-info-circle mr-1"></i>
+                                        Value stored in meters:
+                                        <span id="feetValue" class="font-mono font-semibold">@defaultHeightMeters.ToString("F2")</span> m
+                                    </div>
+                                }
+
                         </div>
                         
                         
@@ -206,120 +208,9 @@
         <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
         <script src="~/js/geolocation.js?v=1.2"></script>
-        
-        <script>
-    const heightInputDisplay = document.getElementById('heightInputDisplay');
-
-    // Bruker skriver inn manuelt
-    heightInputDisplay.addEventListener('input', () => {
-
-        let typedValue = parseFloat(heightInputDisplay.value);
-
-        if (isNaN(typedValue)) return;
-
-        if (currentUnit === 'feet') {
-
-            // Begrens til feet
-            typedValue = Math.min(Math.max(typedValue, MIN_FEET), MAX_FEET);
-
-            // Oppdater slider og hidden input
-            heightSlider.value = typedValue;
-            const metersValue = typedValue * FEET_TO_METERS;
-            heightInput.value = metersValue.toFixed(2);
-
-            if (metersValueSpan && isPilot) {
-                metersValueSpan.textContent = metersValue.toFixed(2);
-            }
-
-        } else {
-
-            // Begrens til meters
-            typedValue = Math.min(Math.max(typedValue, MIN_METERS), MAX_METERS);
-
-            // Oppdater slider og hidden input
-            heightSlider.value = typedValue;
-            heightInput.value = typedValue.toFixed(2);
-
-            if (metersValueSpan && isPilot) {
-                metersValueSpan.textContent = typedValue.toFixed(2);
-            }
-        }
-    });
-
-    // Slider → Input (eksisterende updateHeightDisplay)
-    heightSlider.addEventListener('input', () => {
-        const sliderValue = parseFloat(heightSlider.value);
-
-        if (currentUnit === 'feet') {
-            heightInputDisplay.value = sliderValue.toFixed(0);
-        } else {
-            heightInputDisplay.value = sliderValue.toFixed(1);
-        }
-    });
-</script>
-        
-        <script>
-            const desc = document.getElementById("ObstacleDescription");
-            const descCount = document.getElementById("descCount");
-
-            if (desc && descCount) {
-                desc.addEventListener("input", () => {
-                descCount.textContent = desc.value.length;
-            });
-
-        // Initialize from any existing value
-        descCount.textContent = desc.value.length;
-    }
-        </script>
-
-        <style>
-            /* Custom slider styling */
-            .slider::-webkit-slider-thumb {
-                appearance: none;
-                width: 28px;
-                height: 28px;
-                background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
-                cursor: pointer;
-                border-radius: 50%;
-                box-shadow: 0 2px 8px rgba(79, 70, 229, 0.4);
-                transition: all 0.2s;
-            }
-            /* Hide number input arrows (Chrome, Edge, Safari) */
-            #heightInputDisplay::-webkit-inner-spin-button,
-            #heightInputDisplay::-webkit-outer-spin-button {
-                -webkit-appearance: none;
-                margin: 0;
-            }
-
-            /* Hide number input arrows (Firefox) */
-            #heightInputDisplay {
-                -moz-appearance: textfield;
-            }
-
-                .slider::-webkit-slider-thumb:hover {
-                    transform: scale(1.1);
-                    box-shadow: 0 4px 12px rgba(79, 70, 229, 0.6);
-                }
-
-            .slider::-moz-range-thumb {
-                width: 28px;
-                height: 28px;
-                background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
-                cursor: pointer;
-                border-radius: 50%;
-                border: none;
-                box-shadow: 0 2px 8px rgba(79, 70, 229, 0.4);
-                transition: all 0.2s;
-            }
-
-                .slider::-moz-range-thumb:hover {
-                    transform: scale(1.1);
-                    box-shadow: 0 4px 12px rgba(79, 70, 229, 0.6);
-                }
-        </style>
 
         <script>
-            // Constants for unit conversion
+            // Constants
             const METERS_TO_FEET = 3.28084;
             const FEET_TO_METERS = 1 / METERS_TO_FEET;
             const MIN_METERS = 15;
@@ -327,96 +218,131 @@
             const MIN_FEET = MIN_METERS * METERS_TO_FEET;
             const MAX_FEET = MAX_METERS * METERS_TO_FEET;
 
+            // Initial unit from backend
             let currentUnit = '@(usesFeet ? "feet" : "meters")';
             const isPilot = @isPilot.ToString().ToLower();
 
+            // Elements
             const heightSlider = document.getElementById('heightSlider');
-            const heightDisplay = document.getElementById('heightDisplay');
-            const unitLabel = document.getElementById('unitLabel');
-            const heightInput = document.getElementById('ObstacleHeight');
+            const heightInputDisplay = document.getElementById('heightInputDisplay'); // main visible number input
+            const heightInput = document.getElementById('ObstacleHeight'); // hidden (always meters)
             const unitToggle = document.getElementById('unitToggle');
             const currentUnitSpan = document.getElementById('currentUnit');
             const minLabel = document.getElementById('minLabel');
             const maxLabel = document.getElementById('maxLabel');
-            const metersValueSpan = document.getElementById('metersValue');
+            const metersValueSpan = document.getElementById('feetValue'); // FIXED: correct ID
 
+            //------------------------------------------------------------
+            // Update display from slider
+            //------------------------------------------------------------
             function updateHeightDisplay() {
-                if (!heightSlider || !heightDisplay) return;
-
                 let sliderValue = parseFloat(heightSlider.value);
-                let displayValue, metersValue;
+                let metersValue;
 
                 if (currentUnit === 'feet') {
-                    // Round to whole number for feet
                     sliderValue = Math.round(sliderValue);
-                    displayValue = sliderValue;
+                    heightInputDisplay.value = sliderValue.toFixed(0);
                     metersValue = sliderValue * FEET_TO_METERS;
-                    heightDisplay.textContent = displayValue.toFixed(0); // No decimals for feet
                 } else {
-                    displayValue = sliderValue;
+                    heightInputDisplay.value = sliderValue.toFixed(1);
                     metersValue = sliderValue;
-                    heightDisplay.textContent = displayValue.toFixed(1);
                 }
 
-                // Always store in meters
-                if (heightInput) {
-                    heightInput.value = metersValue.toFixed(2);
-                }
+                // Always store meters
+                heightInput.value = metersValue.toFixed(2);
 
+                // Pilot debug text
                 if (metersValueSpan && isPilot) {
                     metersValueSpan.textContent = metersValue.toFixed(2);
                 }
             }
 
+            //------------------------------------------------------------
+            // Manual input → slider + hidden input
+            //------------------------------------------------------------
+            heightInputDisplay.addEventListener('input', () => {
+                let typedValue = parseFloat(heightInputDisplay.value);
+                if (isNaN(typedValue)) return;
+
+                if (currentUnit === 'feet') {
+                    typedValue = Math.min(Math.max(typedValue, MIN_FEET), MAX_FEET);
+                    heightSlider.value = typedValue;
+                    heightInput.value = (typedValue * FEET_TO_METERS).toFixed(2);
+
+                    if (metersValueSpan && isPilot) {
+                        metersValueSpan.textContent = (typedValue * FEET_TO_METERS).toFixed(2);
+                    }
+                } else {
+                    typedValue = Math.min(Math.max(typedValue, MIN_METERS), MAX_METERS);
+                    heightSlider.value = typedValue;
+                    heightInput.value = typedValue.toFixed(2);
+
+                    if (metersValueSpan && isPilot) {
+                        metersValueSpan.textContent = typedValue.toFixed(2);
+                    }
+                }
+            });
+
+            //------------------------------------------------------------
+            // Slider input → update display
+            //------------------------------------------------------------
+            heightSlider.addEventListener('input', updateHeightDisplay);
+
+            //------------------------------------------------------------
+            // Toggle between meters ↔ feet
+            //------------------------------------------------------------
             function toggleUnit() {
                 if (!isPilot) return;
 
-                const currentMetersValue = parseFloat(heightInput.value) || MIN_METERS;
+                const metersValueCurrent = parseFloat(heightInput.value) || MIN_METERS;
 
                 if (currentUnit === 'meters') {
-                    // Switch to feet
+                    //----------------------------------------------------------
+                    // Switch → FEET
+                    //----------------------------------------------------------
                     currentUnit = 'feet';
-                    const feetValue = currentMetersValue * METERS_TO_FEET;
+                    const feetValue = metersValueCurrent * METERS_TO_FEET;
 
                     heightSlider.min = MIN_FEET.toFixed(0);
                     heightSlider.max = MAX_FEET.toFixed(0);
-                    heightSlider.step = '1';
+                    heightSlider.step = "1";
                     heightSlider.value = Math.round(feetValue);
 
-                    unitLabel.textContent = 'feet';
-                    currentUnitSpan.textContent = 'Feet';
+                    currentUnitSpan.textContent = "Feet";
                     minLabel.textContent = `${MIN_FEET.toFixed(0)} ft (Min)`;
                     maxLabel.textContent = `${MAX_FEET.toFixed(0)} ft (Max)`;
-                } else {
-                    // Switch to meters
+                }
+                else {
+                    //----------------------------------------------------------
+                    // Switch → METERS
+                    //----------------------------------------------------------
                     currentUnit = 'meters';
 
                     heightSlider.min = MIN_METERS.toFixed(1);
                     heightSlider.max = MAX_METERS.toFixed(1);
-                    heightSlider.step = '0.5';
-                    heightSlider.value = currentMetersValue.toFixed(1);
+                    heightSlider.step = "0.5";
+                    heightSlider.value = metersValueCurrent.toFixed(1);
 
-                    unitLabel.textContent = 'meters';
-                    currentUnitSpan.textContent = 'Meters';
+                    currentUnitSpan.textContent = "Meters";
                     minLabel.textContent = `${MIN_METERS.toFixed(0)} m (Min)`;
                     maxLabel.textContent = `${MAX_METERS.toFixed(0)} m (Max)`;
                 }
 
-                heightSlider.dataset.unit = currentUnit;
                 updateHeightDisplay();
             }
 
-            if (heightSlider) {
-                heightSlider.addEventListener('input', updateHeightDisplay);
-                updateHeightDisplay(); // Initialize
-            }
-
             if (unitToggle && isPilot) {
-                unitToggle.addEventListener('click', function(e) {
+                unitToggle.addEventListener('click', (e) => {
                     e.preventDefault();
                     toggleUnit();
                 });
             }
+
+            //------------------------------------------------------------
+            // Initialize display on load
+            //------------------------------------------------------------
+            updateHeightDisplay();
         </script>
+
     }
 </body>
