@@ -71,8 +71,8 @@
                     </div>
 
                     <div class="flex justify-between">
-                        <span class="text-gray-600 font-medium text-sm">Description</span>
-                        <span class="text-sm text-gray-900 text-right">@Model.ObstacleDescription</span>
+                        <span class="text-gray-600 font-medium text-sm">Description </span>
+                        <span class="text-sm text-gray-900 text-right w-64 break-words">@Model.ObstacleDescription</span>
                     </div>
 
                 </div>
@@ -171,14 +171,19 @@
 
                     </div>
                 }
-
+                <div class="mt-6">
+                    <a asp-action="List"
+                       class="inline-flex items-center gap-2 px-3 py-2 rounded-md ring-1 ring-gray-300 text-gray-700 hover:bg-gray-50">
+                        ← Back
+                    </a>
+                </div>
             </div>
 
             <!-- MAP COLUMN -->
             <div class="h-[300px] w-full rounded-2xl overflow-hidden ring-1 ring-gray-300 bg-white" id="map"></div>
 
         </div>
-
+        
     </section>
 </body>
 

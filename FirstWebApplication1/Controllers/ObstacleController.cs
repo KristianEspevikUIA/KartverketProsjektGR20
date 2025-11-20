@@ -291,7 +291,7 @@ namespace FirstWebApplication1.Controllers
 
             await _context.SaveChangesAsync();
 
-            return RedirectToAction(nameof(Details), new { id });
+            return RedirectToAction(nameof(List), new { id });
         }
 
         [Authorize(Roles = "Registerfører,Admin")]
@@ -313,7 +313,7 @@ namespace FirstWebApplication1.Controllers
 
             await _context.SaveChangesAsync();
 
-            return RedirectToAction(nameof(Details), new { id });
+            return RedirectToAction(nameof(List), new { id });
         }
 
         [Authorize(Roles = "Admin")]

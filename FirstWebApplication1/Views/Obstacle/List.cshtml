@@ -37,7 +37,6 @@
                                 <tr class="hover:bg-gray-50">
                                     <td class="px-6 py-4 whitespace-nowrap">
                                         <div class="text-sm font-medium text-gray-900">@obstacle.ObstacleName</div>
-                                        <div class="text-sm text-gray-500">@obstacle.ObstacleDescription</div>
                                     </td>
                                     <td class="px-6 py-4 whitespace-nowrap">
                                         <div class="text-sm text-gray-900">@obstacle.ObstacleHeight m</div>
@@ -74,10 +73,10 @@
                 <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-4">
                     <button type="button"
                             class="inline-flex items-center gap-2 px-3 py-2 rounded-md ring-1 ring-gray-300 text-gray-700 hover:bg-gray-50"
-                            onclick="if (document.referrer) { history.back(); } else { window.location.href='@Url.Action("Index", "Home")'; }"
+                            onclick="window.location.href='@Url.Action("Index","Home")';"
                             aria-label="Go back">
                         <i class="fa-solid fa-arrow-left"></i>
-                        Go back
+                        Back
                     </button>
                 </div>
             }
