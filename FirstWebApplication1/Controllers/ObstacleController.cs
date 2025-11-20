@@ -314,7 +314,10 @@ namespace FirstWebApplication1.Controllers
 
             await _context.SaveChangesAsync();
 
-            return RedirectToAction(nameof(List), new { id });
+            TempData["NotificationMessage"] = "Obstacle was approved";
+            TempData["NotificationType"] = "success";
+
+            return RedirectToAction(nameof(List), new { statusFilter = "Pending" });
         }
 
         [Authorize(Roles = "Caseworker,Admin")]
@@ -336,7 +339,10 @@ namespace FirstWebApplication1.Controllers
 
             await _context.SaveChangesAsync();
 
-            return RedirectToAction(nameof(List), new { id });
+            TempData["NotificationMessage"] = "Obstacle was rejected";
+            TempData["NotificationType"] = "error";
+
+            return RedirectToAction(nameof(List), new { statusFilter = "Pending" });
         }
 
         [Authorize(Roles = "Admin")]

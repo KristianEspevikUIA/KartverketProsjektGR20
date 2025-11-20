@@ -98,9 +98,47 @@
     </main>
 
 
+    @if (TempData["NotificationMessage"] is string notificationMessage)
+    {
+        var notificationType = TempData["NotificationType"] as string ?? "info";
+        var backgroundClass = notificationType switch
+        {
+            "success" => "bg-green-600 text-white",
+            "error" => "bg-red-600 text-white",
+            _ => "bg-gray-800 text-white"
+        };
+
+        <div id="notification-toast"
+             class="fixed bottom-6 right-6 px-4 py-3 rounded-lg shadow-lg opacity-0 transition-opacity duration-300 @backgroundClass"
+             role="status"
+             aria-live="polite">
+            @notificationMessage
+        </div>
+    }
+
+
 
     <!-- jQuery (needed for some validation) -->
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+    <script>
+        window.addEventListener('load', () => {
+            const toast = document.getElementById('notification-toast');
+
+            if (!toast) {
+                return;
+            }
+
+            requestAnimationFrame(() => {
+                toast.classList.remove('opacity-0');
+            });
+
+            setTimeout(() => {
+                toast.classList.add('opacity-0');
+                setTimeout(() => toast.remove(), 300);
+            }, 3500);
+        });
+    </script>
 
     <!-- Validation Scripts -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-validate/1.19.3/jquery.validate.min.js"></script>
