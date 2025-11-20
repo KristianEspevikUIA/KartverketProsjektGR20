@@ -1,38 +1,126 @@
-# KartverketProsjektGR20
-Project for Kartverket
-Oppgave 1: Å opprette en ASP.NET Core MVC applikasjon med frontend, skjema og kart.
-Applikasjonen er laget i ASP.NET Core MVC og kjøres i Docker.
-# Beskrivelse
-Formålet med prosjektet er å lage en webapplikasjon som gjør at brukeren kan fylle ut et skjema med data, sende det inn, for så å få informasjonen på en ny side med tabeller og kartvisning.
+## FirstWebApplication1 – IS-202 Programmeringsprosjekt (Høst 2025)
 
-# Funksjoner: 
-Controller, ViewModel og View.
-Responsive nettsider
-GET og POST forespørsler
-Skjerma med brukerdata hvor data vises på en annen side
-Kart som tar inn data hvor data vises på en annen side
+FirstWebApplication1 is an ASP.NET Core MVC web application developed as part of
+IS-202 Programmeringsprosjekt (Høst 2025) at the University of Agder.
 
-# Hvordan kjøre prosjekt:
-1. Klon repoet via Github desktop
-2. Åpne i Visual Studio
-3. Velg Docker som oppstartprofil
-4. Kjør prosjektet med Container (Dockerfile)
-5. Nettsiden åpnes i nettleseren.
+The application allows users to register aviation-related obstacles through a structured form and view submitted entries in a clear overview table.
+It integrates a simple interactive map for visualising registered coordinates and provides a user-friendly submission workflow designed for further extension.
 
-# Teknologi
-ASP.NET Core MVC
-C#
-HTML, CSS og JavaScript
-Docker
-Leaflet
+The project is developed and run in Visual Studio using Docker Compose for the database container and for managing environment variables. Docker runs in the background while Visual Studio launches the web application automatically.
 
-# Mappestruktur
+## How the project is run:
 
+Development and execution are done directly from Visual Studio:
 
-# Gruppe 20:
+1. Clone the repository
+
+2. Open the solution file:
+FirstWebApplication1.sln
+
+3. Make sure Docker Desktop is running in the background
+
+4. In Visual Studio, select the Docker Compose target
+(green play-button dropdown)
+
+5. Press ▶ Docker Compose to start the app
+
+Visual Studio builds both the Docker services and the ASP.NET Core application.
+You do not need to manually run Docker commands.
+
+## Project Setup
+# Docker Background Services
+
+The project uses:
+
+- A MariaDB container for storing obstacle data
+
+- An ASP.NET Core 9 container for running the application
+(automatically launched by Visual Studio)
+
+The Docker Compose setup requires one private environment variable for the database password, stored in a .env file.
+
+## Environment Variables (.env)
+
+Because the repository is public, secrets are not included.
+Before running the project, you need to create a file named .env in the project root - the same folder as docker-compose.yml.
+
+# Create .env with:
+DB_PASSWORD=<ask a team member for the real value>
+
+This file is ignored by Git and must be created manually by all team members.
+
+## Running the Application
+
+After placing the .env file:
+
+1. Start Docker Desktop
+
+2. Open the solution
+
+3. Select Docker Compose from the Visual Studio run dropdown
+(usually located next to the green start button)
+
+4. Press Run
+
+Visual Studio will:
+
+- Read the .env file
+
+- Start the MariaDB container
+
+- Build and run the ASP.NET Core application
+
+- Open the website in your browser
+
+The default exposed port (for local development) is: http://localhost:5010
+
+## Project Features
+
+The application includes:
+
+- A clean obstacle registration form
+capturing height, location, coordinates, category, and metadata
+
+- A result/confirmation view that shows the submitted information
+
+- A table overview of reported obstacles
+
+- A Leaflet-based interactive map for displaying positions
+
+- Feet/meters conversion support based on user role
+
+- A simple and extendable architecture for further development
+throughout the IS-202 course
+
+This is a practical programming assignment focused on:
+
+- ASP.NET Core MVC development
+
+- Docker and containerized databases
+
+- Form handling
+
+- Razor views
+
+- Basic JavaScript map integration
+
+## Project Purpose and Context
+The project is developed for IS-202 Programmeringsprosjekt, where students are tasked with building a functioning software solution based on given requirements. Our group implemented an obstacle reporting system inspired by processes used by Kartverket and Norsk Luftambulanse. The application supports creating new obstacle reports, managing them, and displaying the data in dynamic interfaces such as tables and a map view.
+
+All features were developed collaboratively by the group, including form validation, data handling, UI adjustments, status history, and map integration.
+
+## Team Members
+
+This project was developed by Group 20:
+
 Nicolai Stephansen
-Brage Kristofferesen
+
+Brage Kristoffersen
+
 Endi Muriqi
+
 Kristian Espevik
+
 Rune Kvame
+
 Victor Ziadpour
