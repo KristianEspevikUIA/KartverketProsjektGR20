@@ -60,7 +60,7 @@ using (var scope = app.Services.CreateScope())
 
         // Seed roles - using async properly
         var roleManager = services.GetRequiredService<RoleManager<IdentityRole>>();
-        string[] roleNames = { "Admin", "Pilot", "Registerfører" };
+        string[] roleNames = { "Admin", "Pilot", "Caseworker" };
 
         foreach (var roleName in roleNames)
         {

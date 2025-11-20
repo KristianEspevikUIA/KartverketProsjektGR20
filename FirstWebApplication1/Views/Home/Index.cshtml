@@ -45,11 +45,19 @@
                                 Manage Users
                             </a>
                         }
-                        @if (User.IsInRole("Admin") || User.IsInRole("Registerfører"))
+                        @if (User.IsInRole("Admin") || User.IsInRole("Caseworker"))
                         {
-                            <a asp-controller="Obstacle" asp-action="List"
-                               class="inline-flex items-center px-3 py-1 bg-blue-600 text-white rounded-full text-sm hover:bg-blue-700">
+                            <a asp-controller="Obstacle" asp-action="List" asp-route-statusFilter="Pending"
+                               class="inline-flex items-center px-3 py-1 bg-yellow-400 text-white rounded-full text-sm hover:bg-yellow-700">
                                 Review Pending Obstacles
+                            </a>
+                            <a asp-controller="Obstacle" asp-action="List" asp-route-statusFilter="Approved"
+                               class="inline-flex items-center px-3 py-1 bg-green-600 text-white rounded-full text-sm hover:bg-green-700">
+                                View Approved Obstacles
+                            </a>
+                            <a asp-controller="Obstacle" asp-action="List" asp-route-statusFilter="Declined"
+                               class="inline-flex items-center px-3 py-1 bg-red-600 text-white rounded-full text-sm hover:bg-red-700">
+                                View Rejected Obstacles
                             </a>
                         }
                     </div>

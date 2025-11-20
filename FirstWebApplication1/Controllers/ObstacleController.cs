@@ -4,6 +4,8 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.EntityFrameworkCore;
+using System; 
+using System.Linq;
 using System.Text.Json;
 
 namespace FirstWebApplication1.Controllers
@@ -165,21 +167,42 @@ namespace FirstWebApplication1.Controllers
             }
         }
 
-        [Authorize(Roles = "Pilot,Registerfører,Admin")]
+        [Authorize(Roles = "Pilot,Caseworker,Admin")]
         [HttpGet]
-        public async Task<IActionResult> List()
+        public async Task<IActionResult> List(string? statusFilter = null)
         {
-            var obstacles = await _context.Obstacles
+            var obstaclesQuery = _context.Obstacles.AsQueryable();
+
+            if (!string.IsNullOrWhiteSpace(statusFilter))
+            {
+                var normalizedFilter = statusFilter.Trim();
+
+                if (string.Equals(normalizedFilter, "Rejected", StringComparison.OrdinalIgnoreCase))
+                {
+                    normalizedFilter = "Declined";
+                }
+
+                obstaclesQuery = obstaclesQuery.Where(o => o.Status == normalizedFilter);
+                statusFilter = normalizedFilter;
+            }
+
+            var obstacles = await obstaclesQuery
                 .OrderByDescending(o => o.SubmittedDate)
                 .ToListAsync();
+
+            var viewModel = new ObstacleListViewModel
+            {
+                Obstacles = obstacles,
+                StatusFilter = statusFilter
+            };
 
             ViewBag.IsPilot = IsPilot();
             ViewBag.UsesFeet = IsPilot();
 
-            return View(obstacles);
+            return View(viewModel);
         }
 
-        [Authorize(Roles = "Pilot,Registerfører,Admin")]
+        [Authorize(Roles = "Pilot,Caseworker,Admin")]
         [HttpGet]
         public async Task<IActionResult> Details(int id)
         {
@@ -196,7 +219,7 @@ namespace FirstWebApplication1.Controllers
             return View(obstacle);
         }
 
-        [Authorize(Roles = "Pilot,Registerfører,Admin")]
+        [Authorize(Roles = "Pilot,Caseworker,Admin")]
         [HttpGet]
         public async Task<IActionResult> Edit(int id)
         {
@@ -213,7 +236,7 @@ namespace FirstWebApplication1.Controllers
             return View(obstacle);
         }
 
-        [Authorize(Roles = "Pilot,Registerfører,Admin")]
+        [Authorize(Roles = "Pilot,Caseworker,Admin")]
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Edit(int id, [Bind("Id, ObstacleName, ObstacleHeight, ObstacleDescription, Longitude, Latitude, LineGeoJson")] ObstacleData obstacledata)
@@ -273,7 +296,7 @@ namespace FirstWebApplication1.Controllers
             return RedirectToAction(nameof(List));
         }
 
-        [Authorize(Roles = "Registerfører,Admin")]
+        [Authorize(Roles = "Caseworker,Admin")]
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Approve(int id)
@@ -294,7 +317,7 @@ namespace FirstWebApplication1.Controllers
             return RedirectToAction(nameof(List), new { id });
         }
 
-        [Authorize(Roles = "Registerfører,Admin")]
+        [Authorize(Roles = "Caseworker,Admin")]
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Decline(int id, string? declineReason)
