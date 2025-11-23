@@ -37,8 +37,6 @@ The project uses:
 - An ASP.NET Core 9 container for running the application
 (automatically launched by Visual Studio)
 
-The Docker Compose setup requires one private environment variable for the database password, stored in a .env file.
-
 # Running the Application
 
 1. Start Docker Desktop
@@ -51,8 +49,6 @@ The Docker Compose setup requires one private environment variable for the datab
 4. Press Run
 
 Visual Studio will:
-
-- Read the .env file
 
 - Start the MariaDB container
 
