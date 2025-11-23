@@ -39,19 +39,7 @@ The project uses:
 
 The Docker Compose setup requires one private environment variable for the database password, stored in a .env file.
 
-# Environment Variables (.env)
-
-Because the repository is public, secrets are not included.
-Before running the project, you need to create a file named .env in the project root - the same folder as docker-compose.yml.
-
-## Create .env with:
-DB_PASSWORD=(ask a team member for the value)
-
-This file is ignored by Git and must be created manually by all team members.
-
 # Running the Application
-
-After placing the .env file:
 
 1. Start Docker Desktop
 
