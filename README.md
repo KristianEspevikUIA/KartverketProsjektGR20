@@ -37,6 +37,15 @@ The project uses:
 - An ASP.NET Core 9 container for running the application
 (automatically launched by Visual Studio)
 
+## Admin account setup
+
+An admin user is provisioned automatically during startup when the following configuration values are present:
+
+- `Admin:Email` – the admin username (default: `admin@kartverket.no`)
+- `Admin:Password` – the initial admin password (default development value: `Admin123`)
+
+If these values are missing, the application logs a warning and no admin user is created. Only the configured admin email can sign up as an administrator; the public registration form exposes Pilot and Caseworker roles only.
+
 # Running the Application
 
 1. Start Docker Desktop
