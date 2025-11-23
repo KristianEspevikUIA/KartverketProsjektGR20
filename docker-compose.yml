@@ -3,10 +3,8 @@
     image: mariadb:11
     ports:
       - "3308:3306"
-    env_file:
-      - .env
     environment:
-      MARIADB_ROOT_PASSWORD: ${DB_PASSWORD}
+      MARIADB_ROOT_PASSWORD: KlokkeklangKrissegutt04
       MARIADB_DATABASE: ObstacleDb
     volumes:
       - mariadb_data:/var/lib/mysql
@@ -20,11 +18,9 @@
       dockerfile: FirstWebApplication1/Dockerfile
     ports:
       - "5010:8080"
-    env_file:
-      - .env
     environment:
-      ASPNETCORE_ENVIRONMENT: Development
-      ConnectionStrings__DefaultConnection: "server=mariadb;port=3306;database=ObstacleDb;user=root;password=${DB_PASSWORD};TreatTinyAsBoolean=false;ConnectionTimeout=15;DefaultCommandTimeout=30"
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ConnectionStrings__DefaultConnection=server=mariadb;port=3306;database=ObstacleDb;user=root;password=KlokkeklangKrissegutt04;TreatTinyAsBoolean=false;ConnectionTimeout=15;DefaultCommandTimeout=30
     depends_on:
       - mariadb
     networks:
