@@ -12,7 +12,7 @@ The project is developed and run in Visual Studio using Docker Compose for the d
 
 Development and execution are done directly from Visual Studio:
 
-1. Clone the repository
+1. Clone the repository.
 
 2. Open the solution file:
 FirstWebApplication1.sln
