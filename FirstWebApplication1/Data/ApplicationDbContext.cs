@@ -9,6 +9,7 @@ namespace FirstWebApplication1.Data
     {
         // Single DbSet for obstacles
         public DbSet<ObstacleData> Obstacles { get; set; } = null!;
+        public DbSet<Report> Reports { get; set; } = null!;
 
         // Keep only the DbContextOptions constructor used by DI/EF
         public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options)
@@ -30,6 +31,20 @@ namespace FirstWebApplication1.Data
                 entity.Property(e => e.ObstacleDescription).HasMaxLength(1000);
                 entity.Property(e => e.ObstacleDescription).IsRequired();
                 entity.Property(e => e.LineGeoJson).HasColumnType("longtext");
+            });
+
+            modelBuilder.Entity<Report>(entity =>
+            {
+                entity.HasKey(e => e.Id);
+                entity.Property(e => e.ReporterName).HasMaxLength(100).IsRequired();
+                entity.Property(e => e.ReporterEmail).HasMaxLength(256);
+                entity.Property(e => e.Description).HasMaxLength(1000).IsRequired();
+                entity.Property(e => e.Status).HasMaxLength(50);
+
+                entity.HasOne(e => e.Obstacle)
+                    .WithMany(o => o.Reports)
+                    .HasForeignKey(e => e.ObstacleId)
+                    .OnDelete(DeleteBehavior.Restrict);
             });
         }
     }
