@@ -75,6 +75,44 @@ using (var scope = app.Services.CreateScope())
                 }
             }
         }
+
+        // Seed admin user from configuration when credentials are provided
+        var configuration = services.GetRequiredService<IConfiguration>();
+        var adminEmail = configuration["Admin:Email"];
+        var adminPassword = configuration["Admin:Password"];
+
+        if (!string.IsNullOrWhiteSpace(adminEmail) && !string.IsNullOrWhiteSpace(adminPassword))
+        {
+            var userManager = services.GetRequiredService<UserManager<IdentityUser>>();
+            var adminUser = await userManager.FindByEmailAsync(adminEmail);
+
+            if (adminUser == null)
+            {
+                adminUser = new IdentityUser
+                {
+                    UserName = adminEmail,
+                    Email = adminEmail,
+                    EmailConfirmed = true
+                };
+
+                var createAdminResult = await userManager.CreateAsync(adminUser, adminPassword);
+                if (!createAdminResult.Succeeded)
+                {
+                    var logger = services.GetRequiredService<ILogger<Program>>();
+                    logger.LogWarning("Failed to create admin user {Email}: {Errors}", adminEmail, string.Join(", ", createAdminResult.Errors.Select(e => e.Description)));
+                }
+            }
+
+            if (adminUser != null && !await userManager.IsInRoleAsync(adminUser, "Admin"))
+            {
+                await userManager.AddToRoleAsync(adminUser, "Admin");
+            }
+        }
+        else
+        {
+            var logger = services.GetRequiredService<ILogger<Program>>();
+            logger.LogWarning("Admin credentials not configured; admin user was not created.");
+        }
     }
     catch (Exception ex)
     {

@@ -17,29 +17,6 @@ namespace FirstWebApplication1.Controllers
             _connectionString = config.GetConnectionString("DefaultConnection");
         }
 
-        /* 
-        // Eksempelmetode for å teste MariaDB-tilkobling (kommentert ut)
-        public async Task<IActionResult> Index()
-        {
-            try
-            {
-                await using var conn = new MySqlConnection(_connectionString); // Oppretter DB-forbindelse
-                await conn.OpenAsync(); // Åpner asynkron forbindelse
-                return Content("Connected to MariaDB successfully!"); // Tilbakemelding hvis OK
-            }
-            catch (Exception ex)
-            {
-                return Content("Failed to connect to MariaDB: " + ex.Message); // Tilbakemelding ved feil
-            }
-        }
-
-        // Alternativ konstruktør med logger (kommentert ut)
-        public HomeController(ILogger<HomeController> logger)
-        {
-            _logger = logger;
-        }
-        */
-
         // Returnerer standard visning for Home-siden
         public IActionResult Index()
         {

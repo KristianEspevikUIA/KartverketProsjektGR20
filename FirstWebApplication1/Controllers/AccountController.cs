@@ -3,6 +3,9 @@ using FirstWebApplication1.Models.Account;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.Extensions.Configuration;
+using System;
+using System.Collections.Generic;
 
 namespace FirstWebApplication1.Controllers
 {
@@ -11,15 +14,23 @@ namespace FirstWebApplication1.Controllers
         private readonly UserManager<IdentityUser> _userManager;
         private readonly SignInManager<IdentityUser> _signInManager;
         private readonly RoleManager<IdentityRole> _roleManager;
+        private readonly HashSet<string> _allowedAdminEmails;
 
         public AccountController(
             UserManager<IdentityUser> userManager,
             SignInManager<IdentityUser> signInManager,
-            RoleManager<IdentityRole> roleManager)
+            RoleManager<IdentityRole> roleManager,
+            IConfiguration configuration)
         {
             _userManager = userManager;
             _signInManager = signInManager;
             _roleManager = roleManager;
+
+            var adminEmail = configuration["Admin:Email"] ?? "admin@kartverket.no";
+            _allowedAdminEmails = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
+            {
+                adminEmail
+            };
         }
 
         // GET: /Account/Register
@@ -36,6 +47,13 @@ namespace FirstWebApplication1.Controllers
         {
             if (ModelState.IsValid)
             {
+                if (string.Equals(model.Role, "Admin", StringComparison.OrdinalIgnoreCase) &&
+                    !_allowedAdminEmails.Contains(model.Email))
+                {
+                    ModelState.AddModelError(nameof(model.Role), "Admin registration is restricted to authorized accounts.");
+                    return View(model);
+                }
+
                 var user = new IdentityUser { UserName = model.Email, Email = model.Email };
                 var result = await _userManager.CreateAsync(user, model.Password);
 

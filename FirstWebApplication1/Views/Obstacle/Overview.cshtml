@@ -227,7 +227,18 @@
             attribution: '© OpenStreetMap contributors'
         }).addTo(map);
 
-        const lineGeoJson = @Html.Raw(string.IsNullOrWhiteSpace(Model.LineGeoJson) ? "null" : Model.LineGeoJson);
+
+        const lineGeoJsonElement = document.getElementById('line-geojson-data');
+        const rawLineGeoJson = lineGeoJsonElement?.textContent?.trim();
+        let lineGeoJson = null;
+
+        if (rawLineGeoJson) {
+            try {
+                lineGeoJson = JSON.parse(rawLineGeoJson);
+            } catch (err) {
+                console.error('Could not parse obstacle line GeoJSON', err);
+            }
+        }
 
         if (lineGeoJson && lineGeoJson.type === 'LineString' && Array.isArray(lineGeoJson.coordinates)) {
             const latLngs = lineGeoJson.coordinates
