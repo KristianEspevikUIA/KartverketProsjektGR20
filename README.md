@@ -13,16 +13,28 @@ The project is developed and run in Visual Studio using Docker Compose for the d
 Development and execution are done directly from Visual Studio:
 
 1. Clone the repository.
+- git clone https://github.com/KristianEspevikUIA/KartverketProsjektGR20.git
 
-2. Open the solution file:
+2. Navigate to the project directory
+- cd KartverketProsjektGR20
+
+3. Install the dependecies
+- docker build -t KristianEspevikUIA/KartVerketProsjektGR20
+
+4. using nuget
+- dotnet restore 
+
+
+USAGE -----
+5. Open the solution file:
 FirstWebApplication1.sln
 
-3. Make sure Docker Desktop is running in the background
+6. Make sure Docker Desktop is running in the background
 
-4. In Visual Studio, select the Docker Compose target
+7. In Visual Studio, select the Docker Compose target
 (green play-button dropdown)
 
-5. Press ▶ Docker Compose to start the app
+7. Press ▶ Docker Compose to start the app
 
 Visual Studio builds both the Docker services and the ASP.NET Core application.
 You do not need to manually run Docker commands.
