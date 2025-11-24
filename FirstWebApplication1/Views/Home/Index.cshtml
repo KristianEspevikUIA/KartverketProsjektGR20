@@ -38,6 +38,14 @@
                 <div class="mt-6 p-4 bg-white rounded-lg shadow-sm">
                     <h3 class="text-lg font-semibold mb-3">Quick Actions</h3>
                     <div class="flex flex-wrap justify-center gap-2">
+                        @if (User.IsInRole("Pilot"))
+                        {
+                            <a asp-controller="Pilot" asp-action="Map"
+                               class="inline-flex items-center px-3 py-1 bg-green-600 text-white rounded-full text-sm hover:bg-green-700">
+                                Pilot Map
+                            </a>
+                        }
+                        
                         @if (User.IsInRole("Admin"))
                         {
                             <a asp-controller="Admin" asp-action="Users"

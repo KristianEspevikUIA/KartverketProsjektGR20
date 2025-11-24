@@ -1,0 +1,23 @@
+@{
+    ViewData["Title"] = "Pilot Map";
+}
+
+<div id="pilot-map" style="width: 100%; height: 90vh;"></div>
+
+<!-- Leaflet CSS -->
+<link rel="stylesheet"
+      href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+
+<!-- Leaflet JS -->
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+<!-- Floating button bottom-left -->
+<a asp-controller="Obstacle" asp-action="SelectType"
+   class="fixed bottom-6 left-6 bg-red-400 text-white px-6 py-4 rounded-lg shadow-lg 
+          hover:bg-red-500 transition font-medium z-50"
+   style="z-index: 9999">
+    Report Obstacle
+</a>
+
+<!-- Our JS -->
+<script src="~/js/pilot-map.js"></script>
