@@ -1,13 +1,25 @@
-﻿using System.Linq;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace FirstWebApplication1.Models
 {
     public class ObstacleListViewModel
     {
+        // collection of obstacles
         public IEnumerable<ObstacleData> Obstacles { get; set; } = Enumerable.Empty<ObstacleData>();
 
         public string? StatusFilter { get; set; }
 
+        // properties for filtering
+        public string? SearchTerm { get; set; }
+        public DateTime? StartDate { get; set; }
+        public DateTime? EndDate { get; set; }
+
+        // property for type filtering
+        public string? ObstacleTypeFilter { get; set; }
+
+        // dynamic title and description based on status filter
         public string Title => StatusFilter switch
         {
             "Approved" => "Approved Obstacles",
@@ -16,6 +28,7 @@ namespace FirstWebApplication1.Models
             _ => "Obstacle Reports"
         };
 
+        // dynamic description based on status filter
         public string Description => StatusFilter switch
         {
             "Approved" => "Obstacles that have been reviewed and approved.",
