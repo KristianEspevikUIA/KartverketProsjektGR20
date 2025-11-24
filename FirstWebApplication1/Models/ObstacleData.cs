@@ -100,6 +100,9 @@ namespace FirstWebApplication1.Models
         public string DeclinedBy { get; set; } = string.Empty;
         public DateTime DeclinedDate { get; set; }
 
+        public ICollection<Report> Reports { get; set; } = new List<Report>();
+        public ICollection<ObstacleComment> Comments { get; set; } = new List<ObstacleComment>();
+
         public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
         {
             _ = LineCoordinates;
