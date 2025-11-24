@@ -4,7 +4,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.EntityFrameworkCore;
-using System; 
+using System;
 using System.Linq;
 using System.Text.Json;
 
@@ -110,7 +110,7 @@ namespace FirstWebApplication1.Controllers
                 if (TempData["ObstacleType"] != null)
                 {
                     obstacledata.ObstacleType = TempData["ObstacleType"].ToString();
-                    
+
                 }
 
                 // Auto-generate obstacle name from type
@@ -169,21 +169,42 @@ namespace FirstWebApplication1.Controllers
 
         [Authorize(Roles = "Pilot,Caseworker,Admin")]
         [HttpGet]
-        public async Task<IActionResult> List(string? statusFilter = null)
+        public async Task<IActionResult> List(string? statusFilter = null, string? searchTerm = null, DateTime? startDate = null, DateTime? endDate = null, string? obstacleTypeFilter = null)
         {
             var obstaclesQuery = _context.Obstacles.AsQueryable();
 
+            // Status filter
             if (!string.IsNullOrWhiteSpace(statusFilter))
             {
                 var normalizedFilter = statusFilter.Trim();
-
                 if (string.Equals(normalizedFilter, "Rejected", StringComparison.OrdinalIgnoreCase))
                 {
                     normalizedFilter = "Declined";
                 }
-
                 obstaclesQuery = obstaclesQuery.Where(o => o.Status == normalizedFilter);
-                statusFilter = normalizedFilter;
+            }
+
+            // Obstacle type filter
+            if (!string.IsNullOrWhiteSpace(obstacleTypeFilter))
+            {
+                obstaclesQuery = obstaclesQuery.Where(o => o.ObstacleType == obstacleTypeFilter);
+            }
+
+            // Search term filter
+            if (!string.IsNullOrWhiteSpace(searchTerm))
+            {
+                obstaclesQuery = obstaclesQuery.Where(o => o.ObstacleName != null && o.ObstacleName.Contains(searchTerm));
+            }
+
+            // Date range filter
+            if (startDate.HasValue)
+            {
+                obstaclesQuery = obstaclesQuery.Where(o => o.SubmittedDate >= startDate.Value);
+            }
+            if (endDate.HasValue)
+            {
+                // Add one day to the end date to include all of that day
+                obstaclesQuery = obstaclesQuery.Where(o => o.SubmittedDate < endDate.Value.AddDays(1));
             }
 
             var obstacles = await obstaclesQuery
@@ -193,7 +214,11 @@ namespace FirstWebApplication1.Controllers
             var viewModel = new ObstacleListViewModel
             {
                 Obstacles = obstacles,
-                StatusFilter = statusFilter
+                StatusFilter = statusFilter,
+                SearchTerm = searchTerm,
+                StartDate = startDate,
+                EndDate = endDate,
+                ObstacleTypeFilter = obstacleTypeFilter
             };
 
             ViewBag.IsPilot = IsPilot();
