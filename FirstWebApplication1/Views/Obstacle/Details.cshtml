@@ -161,12 +161,30 @@
                             </button>
                         </form>
 
-                        <form asp-action="Decline" asp-route-id="@Model.Id" method="post">
+                        <form asp-action="Decline" asp-route-id="@Model.Id" method="post" id="declineForm">
                             @Html.AntiForgeryToken()
-                            <input type="hidden" name="declineReason" value="" />
-                            <button class="bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700 text-sm">
+
+                            <!-- Reject button -->
+                            <button type="button" id="showReasonBtn"
+                                    class="bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700 text-sm">
                                 Reject
                             </button>
+
+                            
+                            <!-- Reject Reason Box (HIDDEN by default) -->
+                            <div id="reasonContainer" class="mt-3 hidden">
+                                
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Reason for rejection</label>
+                                
+                                <textarea name="declineReason" rows="3"
+          class="w-full rounded-lg border-2 border-red-400 bg-red-50 text-red-900 
+                 focus:ring-2 focus:ring-red-600 focus:border-red-600 p-3 shadow-sm"></textarea>
+
+                <button type="submit"
+                class="mt-2 bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700 text-sm">
+                    Confirm Rejection
+                </button>  
+                            </div>
                         </form>
 
                     </div>
@@ -221,6 +239,15 @@
                     .bindPopup("@Model.ObstacleName")
                     .openPopup();
                 </text>
+        }
+        const showBtn = document.getElementById("showReasonBtn");
+        const reasonBox = document.getElementById("reasonContainer");
+
+        if (showBtn && reasonBox) {
+            showBtn.addEventListener("click", () => {
+                reasonBox.classList.remove("hidden");
+                showBtn.classList.add("hidden");
+            });
         }
     </script>
 }
