@@ -96,6 +96,45 @@ namespace FirstWebApplication1.Migrations
                     b.ToTable("Obstacles");
                 });
 
+            modelBuilder.Entity("FirstWebApplication1.Models.Report", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Description")
+                        .IsRequired()
+                        .HasMaxLength(1000)
+                        .HasColumnType("varchar(1000)");
+
+                    b.Property<int?>("ObstacleId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("ReporterEmail")
+                        .HasMaxLength(256)
+                        .HasColumnType("varchar(256)");
+
+                    b.Property<string>("ReporterName")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("varchar(100)");
+
+                    b.Property<string>("Status")
+                        .HasMaxLength(50)
+                        .HasColumnType("varchar(50)");
+
+                    b.Property<DateTime>("SubmittedDate")
+                        .HasColumnType("datetime(6)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ObstacleId");
+
+                    b.ToTable("Reports");
+                });
+
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRole", b =>
                 {
                     b.Property<string>("Id")
@@ -299,6 +338,21 @@ namespace FirstWebApplication1.Migrations
                         .HasForeignKey("RoleId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+                });
+
+            modelBuilder.Entity("FirstWebApplication1.Models.Report", b =>
+                {
+                    b.HasOne("FirstWebApplication1.Models.ObstacleData", "Obstacle")
+                        .WithMany("Reports")
+                        .HasForeignKey("ObstacleId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.Navigation("Obstacle");
+                });
+
+            modelBuilder.Entity("FirstWebApplication1.Models.ObstacleData", b =>
+                {
+                    b.Navigation("Reports");
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserClaim<string>", b =>
