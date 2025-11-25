@@ -157,6 +157,12 @@ The project is developed for IS-202 Programmeringsprosjekt, where students are t
 
 All features were developed collaboratively by the group, including form validation, data handling, UI adjustments, status history, and map integration.
 
+## 📄 Dokumentasjon
+
+- [Systemarkitektur](docs/architecture.md)
+- [Mobiltilpasning](docs/mobile.md)
+- [Testing og testresultater](docs/testing.md)
+
 # Team Members
 
 This project was developed by Group 20:
