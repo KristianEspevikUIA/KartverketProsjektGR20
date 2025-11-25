@@ -1,9 +1,11 @@
 using Microsoft.AspNetCore.Mvc;
 using FirstWebApplication1.Data;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.AspNetCore.Authorization;
 
 namespace FirstWebApplication1.Controllers
 {
+    [Authorize(Roles = "Pilot")]
     public class PilotController : Controller
     {
         private readonly ApplicationDbContext _context;

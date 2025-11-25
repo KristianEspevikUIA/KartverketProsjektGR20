@@ -144,6 +144,14 @@
                             @(verificationInfo.Timestamp?.ToString("MMM dd, yyyy HH:mm") ?? "Not verified")
                         </span>
                     </div>
+                    
+                    @if (Model.Status == "Declined" && !string.IsNullOrWhiteSpace(Model.DeclineReason))
+                    {
+                        <div class="flex justify-between mt-2">
+                            <span class="text-gray-600 font-medium text-sm">Rejection Reason</span>
+                            <span class="text-sm text-gray-900 text-right w-64 break-words">@Model.DeclineReason</span>
+                        </div>
+                    }
 
                 </div>
 
@@ -176,9 +184,12 @@
                                 
                                 <label class="block text-sm font-medium text-gray-700 mb-1">Reason for rejection</label>
                                 
-                                <textarea name="declineReason" rows="3"
+                                <textarea name="declineReason" rows="3" maxlength="300"
           class="w-full rounded-lg border-2 border-red-400 bg-red-50 text-red-900 
                  focus:ring-2 focus:ring-red-600 focus:border-red-600 p-3 shadow-sm"></textarea>
+                                <div class="text-xs text-gray-500 mt-1">
+                                    <span id="declineCount">0</span>/300 characters
+                                </div>
 
                 <button type="submit"
                 class="mt-2 bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700 text-sm">
@@ -241,6 +252,15 @@
                 </text>
         }
         const showBtn = document.getElementById("showReasonBtn");
+        // Character counter for decline reason
+        const declineTextarea = document.querySelector("textarea[name='declineReason']");
+        const declineCounter = document.getElementById("declineCount");
+
+        if (declineTextarea && declineCounter) {
+            declineTextarea.addEventListener("input", () => {
+                declineCounter.textContent = declineTextarea.value.length;
+            });
+        }
         const reasonBox = document.getElementById("reasonContainer");
 
         if (showBtn && reasonBox) {
