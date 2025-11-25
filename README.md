@@ -8,6 +8,17 @@ It integrates a simple interactive map for visualising registered coordinates an
 
 The project is developed and run in Visual Studio using Docker Compose for the database container and for managing environment variables. Docker runs in the background while Visual Studio launches the web application automatically.
 
+# Technologies and tools used 
+- JavaScript
+- C#
+- JSON
+- Markdown
+- MariaDB
+- Docker
+- Nuget
+
+
+
 # How the project is run:
 
 Development and execution are done directly from Visual Studio:
