@@ -8,6 +8,18 @@ It integrates a simple interactive map for visualising registered coordinates an
 
 The project is developed and run in Visual Studio using Docker Compose for the database container and for managing environment variables. Docker runs in the background while Visual Studio launches the web application automatically.
 
+## Repository structure
+- `FirstWebApplication1/` – ASP.NET Core MVC app (controllers, models, Razor views, static assets).
+- `FirstWebApplication1.Tests/` – Testprosjekt for å legge til enhets-/integrasjonstester.
+- `docs/` – Utfyllende dokumentasjon (arkitektur, sikkerhet, testing, mobil).
+- Docker Compose-filer – Starter MariaDB og app-containere i utvikling.
+
+## Teknologi og nøkkelfunksjoner
+- ASP.NET Core 9 MVC med Identity og EF Core (Pomelo MariaDB-driver)
+- Tailwind CSS via CDN og Leaflet-kart for godkjente hinder
+- Rollebasert tilgang (`Admin`, `Caseworker`, `Pilot`) med rate limiting på hindercontroller
+- Sikkerhetshoder (CSP, X-Frame-Options, Referrer-Policy m.m.) og HTTPS/HSTS i produksjon
+
 # Technologies and tools used 
 - JavaScript
 - C#
@@ -89,6 +101,18 @@ Visual Studio will:
 - Open the website in your browser
 
 The default exposed port (for local development) is: http://localhost:5010
+
+## How the system works (high level)
+- Users register/login via ASP.NET Identity. Only preconfigured emails kan bli Admin; andre velger Pilot/Caseworker.
+- Obstacle flow: velg hindertype → fyll inn skjema → innsending lagrer data som `Pending` → kvittering vises.
+- Behandling: Caseworker/Admin filtrerer hinder, oppdaterer status (Approved/Declined) og historikk.
+- Visning: Godkjente hinder leveres som JSON til Leaflet-kartet og listes i tabell.
+
+## Documentation
+- Systemarkitektur: `docs/architecture.md`
+- Sikkerhet (CSP, rate limiting, hoder, roller): `docs/security.md`
+- Testing (plan, scenarier, logg): `docs/testing.md`
+- Mobil og responsivitet: `docs/mobile.md` (inkl. skjermbilder)
 
 # Project Features
 
