@@ -1,17 +1,17 @@
-using System.Diagnostics; // Gir tilgang til diagnostikkverktøy, f.eks. sporing av aktivitet
+using System.Diagnostics; // Gir tilgang til diagnostikkverktï¿½y, f.eks. sporing av aktivitet
 using FirstWebApplication1.Models; // Importerer modeller fra prosjektet
 using Microsoft.AspNetCore.Mvc; // Gir tilgang til ASP.NET Core MVC-funksjoner
 using MySqlConnector; // MySQL/MariaDB-connector for databasekobling
 
 namespace FirstWebApplication1.Controllers
 {
-    // HomeController håndterer forespørsler til standard sider (Home/Privacy/Error)
+    // HomeController hï¿½ndterer forespï¿½rsler til standard sider (Home/Privacy/Error)
     public class HomeController : Controller
     {
-        private readonly ILogger<HomeController> _logger; // Logger for feilsøking og logging
-        private readonly string _connectionString; // Holder på database-tilkoblingsstreng
+        private readonly ILogger<HomeController> _logger; // Logger for feilsï¿½king og logging
+        private readonly string _connectionString; // Holder pï¿½ database-tilkoblingsstreng
 
-        // Konstruktør som henter tilkoblingsstrengen fra konfigurasjonen (appsettings.json)
+        // Konstruktï¿½r som henter tilkoblingsstrengen fra konfigurasjonen (appsettings.json)
         public HomeController(IConfiguration config)
         {
             _connectionString = config.GetConnectionString("DefaultConnection");
@@ -29,7 +29,7 @@ namespace FirstWebApplication1.Controllers
             return View();
         }
 
-        // Returnerer visning for feil, med RequestId for feilsøking
+        // Returnerer visning for feil, med RequestId for feilsï¿½king
         [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)] // Ingen caching
         public IActionResult Error()
         {
