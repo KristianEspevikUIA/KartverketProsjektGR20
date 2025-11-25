@@ -114,6 +114,11 @@ The default exposed port (for local development) is: http://localhost:5010
 - Testing (plan, scenarier, logg): `docs/testing.md`
 - Mobil og responsivitet: `docs/mobile.md` (inkl. skjermbilder)
 
+# Midlertidig håndtering av passord i repoet (kun for sensur)
+- Vi har **bevisst sjekket inn databasepassord og admin-passord** i Git for å forenkle oppsettet under sensur.
+- Dette er **ikke en anbefalt praksis** og bryter med våre egne retningslinjer om å bruke miljøvariabler/User Secrets for hemmeligheter.
+- Etter at prosjektet er ferdig vurdert vil passordene roteres, flyttes til secrets og slettes fra historikken for å gjenopprette sikkerhetsnivået.
+
 # Project Features
 
 The application includes:
