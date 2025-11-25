@@ -108,6 +108,14 @@ capturing height, location, coordinates, category, and metadata
 - A simple and extendable architecture for further development
 throughout the IS-202 course
 
+## Pilot-facing obstacle overview
+
+Pilots have two dedicated entry points for situational awareness:
+
+- **Pilot map (`/Pilot/Map`)** – loads Leaflet with approved obstacles from `PilotController.GetApprovedObstacles`, rendering both point markers and optional line geometry. A floating button links directly to the obstacle submission flow so pilots can report new findings.
+
+- **Obstacle list (`/Obstacle/List`)** – role-gated for Pilot, Caseworker, and Admin, exposing filtering by status, type, text search, and date range. Each row links to detail and edit actions, giving pilots a clear, filterable overview of all stored obstacles.
+
 This is a practical programming assignment focused on:
 
 - ASP.NET Core MVC development
