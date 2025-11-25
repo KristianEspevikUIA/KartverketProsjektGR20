@@ -129,24 +129,7 @@
     <!-- jQuery (needed for some validation) -->
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 
-    <script>
-        window.addEventListener('load', () => {
-            const toast = document.getElementById('notification-toast');
-
-            if (!toast) {
-                return;
-            }
-
-            requestAnimationFrame(() => {
-                toast.classList.remove('opacity-0');
-            });
-
-            setTimeout(() => {
-                toast.classList.add('opacity-0');
-                setTimeout(() => toast.remove(), 300);
-            }, 3500);
-        });
-    </script>
+    <script src="~/js/notification-toast.js"></script>
 
     <!-- Validation Scripts -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-validate/1.19.3/jquery.validate.min.js"></script>

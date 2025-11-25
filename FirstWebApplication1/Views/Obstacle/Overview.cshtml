@@ -87,7 +87,13 @@
                             Location Details
                         </h2>
 
-                        <div id="map" class="rounded-lg border-2 border-gray-200 shadow-sm" style="height: 400px;"></div>
+                        <div id="map"
+                             class="rounded-lg border-2 border-gray-200 shadow-sm"
+                             style="height: 400px;"
+                             data-fallback-lat="@fallbackLat.ToString(CultureInfo.InvariantCulture)"
+                             data-fallback-lng="@fallbackLng.ToString(CultureInfo.InvariantCulture)"
+                             data-has-point-geometry="@((!hasLine && Model.Latitude.HasValue && Model.Longitude.HasValue).ToString().ToLowerInvariant())"
+                             data-obstacle-name="@Model.ObstacleName"></div>
                     </div>
 
                     <div class="bg-gray-50 p-4 rounded-lg">
@@ -211,67 +217,6 @@
 @section Scripts {
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-    <script>
-        const fallbackLat = "@fallbackLat.ToString(CultureInfo.InvariantCulture)";
-        const fallbackLng = "@fallbackLng.ToString(CultureInfo.InvariantCulture)";
 
-        // Do ALL the C# string/boolean work server-side, so JS just gets "true" / "false"
-        const hasPointGeometry = @((!hasLine && Model.Latitude.HasValue && Model.Longitude.HasValue).ToString().ToLowerInvariant());
-
-        const map = L.map('map').setView(
-            [parseFloat(fallbackLat), parseFloat(fallbackLng)],
-            14
-        );
-
-        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-            attribution: '© OpenStreetMap contributors'
-        }).addTo(map);
-
-
-        const lineGeoJsonElement = document.getElementById('line-geojson-data');
-        const rawLineGeoJson = lineGeoJsonElement?.textContent?.trim();
-        let lineGeoJson = null;
-
-        if (rawLineGeoJson) {
-            try {
-                lineGeoJson = JSON.parse(rawLineGeoJson);
-            } catch (err) {
-                console.error('Could not parse obstacle line GeoJSON', err);
-            }
-        }
-
-        if (lineGeoJson && lineGeoJson.type === 'LineString' && Array.isArray(lineGeoJson.coordinates)) {
-            const latLngs = lineGeoJson.coordinates
-                .filter(coord => Array.isArray(coord) && coord.length >= 2)
-                .map(coord => [coord[1], coord[0]]);
-
-            if (latLngs.length > 0) {
-                const polyline = L.polyline(latLngs, { color: '#4f46e5', weight: 4 }).addTo(map);
-
-                latLngs.forEach((point, index) => {
-                    L.circleMarker(point, {
-                        radius: 6,
-                        color: '#4f46e5',
-                        fillColor: '#818cf8',
-                        fillOpacity: 0.9,
-                        weight: 2
-                    }).addTo(map).bindPopup(`Point ${index + 1}`);
-                });
-
-                if (latLngs.length > 1) {
-                    map.fitBounds(polyline.getBounds(), { padding: [20, 20] });
-                } else {
-                    map.setView(latLngs[0], 14);
-                }
-            }
-        } else if (hasPointGeometry) {
-            L.marker([parseFloat(fallbackLat), parseFloat(fallbackLng)]).addTo(map)
-                .bindPopup("@Model.ObstacleName").openPopup();
-        }
-
-        // Fix map sizing when the page finishes layout
-        setTimeout(() => {
-            map.invalidateSize();
-        }, 100);
-    </script>
+    <script src="~/js/obstacle-overview.js"></script>
 }

@@ -136,11 +136,11 @@ app.Use(async (context, next) =>
     context.Response.Headers.Add("Referrer-Policy", "strict-origin-when-cross-origin");
     context.Response.Headers.Add("Content-Security-Policy",
         "default-src 'self'; " +
-        "script-src 'self' https://cdn.tailwindcss.com https://cdnjs.cloudflare.com https://code.jquery.com https://cdn.jsdelivr.net; " +
-        "style-src 'self' 'unsafe-inline' https://cdn.tailwindcss.com https://cdnjs.cloudflare.com; " +
+        "script-src 'self' https://cdn.tailwindcss.com https://cdnjs.cloudflare.com https://code.jquery.com https://cdn.jsdelivr.net https://unpkg.com; " +
+        "style-src 'self' 'unsafe-inline' https://cdn.tailwindcss.com https://cdnjs.cloudflare.com https://unpkg.com; " +
         "font-src 'self' https://cdnjs.cloudflare.com; " +
         "img-src 'self' data: https:; " +
-        "connect-src 'self'; " +
+        "connect-src 'self' https://unpkg.com; " +
         "frame-ancestors 'none';");
     await next();
 });

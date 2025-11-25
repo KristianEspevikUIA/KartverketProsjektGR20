@@ -209,7 +209,19 @@
             </div>
 
             <!-- MAP COLUMN -->
-            <div class="h-[300px] w-full rounded-2xl overflow-hidden ring-1 ring-gray-300 bg-white" id="map"></div>
+            <div class="h-[300px] w-full rounded-2xl overflow-hidden ring-1 ring-gray-300 bg-white"
+                 id="map"
+                 data-has-line="@Model.HasLine.ToString().ToLower()"
+                 data-lat="@Model.Latitude?.ToString(CultureInfo.InvariantCulture)"
+                 data-lng="@Model.Longitude?.ToString(CultureInfo.InvariantCulture)"
+                 data-obstacle-name="@Model.ObstacleName"></div>
+
+            @if (Model.HasLine && Model.LineCoordinates != null)
+            {
+                <script type="application/json" id="line-coordinates-data">
+                    @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.LineCoordinates.Select(c => new { latitude = c.Latitude, longitude = c.Longitude })))
+                </script>
+            }
 
         </div>
         
@@ -220,54 +232,5 @@
     <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
     <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
 
-    <script>
-        @if (Model.HasLine)
-        {
-                <text>
-                const coords = [
-                    @foreach (var c in Model.LineCoordinates)
-                    {
-                            <text>[ @c.Latitude, @c.Longitude ],</text>
-                    }
-                ];
-
-                const map = L.map('map');
-                L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
-
-                const poly = L.polyline(coords, { color: 'red' }).addTo(map);
-                map.fitBounds(poly.getBounds());
-                map.setZoom(map.getZoom() - 1);
-                </text>
-        }
-        else
-        {
-                <text>
-                const map = L.map('map').setView([@Model.Latitude, @Model.Longitude], 13);
-                L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
-
-                L.marker([@Model.Latitude, @Model.Longitude])
-                    .addTo(map)
-                    .bindPopup("@Model.ObstacleName")
-                    .openPopup();
-                </text>
-        }
-        const showBtn = document.getElementById("showReasonBtn");
-        // Character counter for decline reason
-        const declineTextarea = document.querySelector("textarea[name='declineReason']");
-        const declineCounter = document.getElementById("declineCount");
-
-        if (declineTextarea && declineCounter) {
-            declineTextarea.addEventListener("input", () => {
-                declineCounter.textContent = declineTextarea.value.length;
-            });
-        }
-        const reasonBox = document.getElementById("reasonContainer");
-
-        if (showBtn && reasonBox) {
-            showBtn.addEventListener("click", () => {
-                reasonBox.classList.remove("hidden");
-                showBtn.classList.add("hidden");
-            });
-        }
-    </script>
+    <script src="~/js/obstacle-details.js"></script>
 }
