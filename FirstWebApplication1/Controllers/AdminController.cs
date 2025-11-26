@@ -4,7 +4,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using FirstWebApplication1.Models;
 using FirstWebApplication1.Models.Admin; // Importerer modeller fra prosjektet
-
+using System.Security.Claims;
 
 namespace FirstWebApplication1.Controllers
 {
@@ -105,14 +105,15 @@ namespace FirstWebApplication1.Controllers
             }
 
             // Prevent deleting your own account
-            var currentUser = await _userManager.GetUserAsync(User);
-            if (currentUser?.Id == id)
+            var currentUserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (currentUserId == id)
             {
                 TempData["ErrorMessage"] = "You cannot delete your own account.";
                 return RedirectToAction(nameof(Users));
             }
 
             var result = await _userManager.DeleteAsync(user);
+
             if (result.Succeeded)
             {
                 TempData["SuccessMessage"] = "User deleted successfully.";
