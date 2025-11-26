@@ -156,7 +156,8 @@
                 </div>
 
                 <!-- Approval Actions -->
-                @if (User.IsInRole("Caseworker") || User.IsInRole("Admin"))
+                @if ((User.IsInRole("Caseworker") || User.IsInRole("Admin")) 
+                     && Model.Status == "Pending")
                 {
                     <h2 class="text-lg font-semibold text-gray-900 mt-3">Approval Actions</h2>
 
@@ -206,6 +207,19 @@
                         ← Back
                     </a>
                 </div>
+                
+                @if ((User.IsInRole("Caseworker") || User.IsInRole("Admin")) 
+                     && (Model.Status == "Approved" || Model.Status == "Declined"))
+                {
+                    <form asp-action="Revalidate" asp-route-id="@Model.Id" method="post" class="mt-4">
+                        @Html.AntiForgeryToken()
+                        <button type="submit"
+                                class="bg-yellow-600 text-white px-4 py-2 rounded-lg hover:bg-yellow-700 text-sm">
+                            Revalidate
+                        </button>
+                    </form>
+                }
+                
             </div>
 
             <!-- MAP COLUMN -->
