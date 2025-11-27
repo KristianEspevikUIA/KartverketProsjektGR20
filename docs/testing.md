@@ -39,3 +39,8 @@
 - Automatisere scenariene over i integrasjonstester for hinderflyt og rollebegrensninger.
 - Legge til lastertest mot rate limiter og database under realistisk volum.
 - UX-test med 1–2 brukere for navigasjon, spesielt mobilnav og kartinteraksjon.
+
+# UX-test gjennomført av pilot fra luftambulansen 
+Resultat:
+- legge til pending obstacles på kartet også, for å få bedre oversikt. 
+
