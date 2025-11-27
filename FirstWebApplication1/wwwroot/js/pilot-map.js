@@ -19,34 +19,39 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     const layers = [];
 
+    const statusStyles = {
+        Approved: {
+            color: '#0b7a3a',
+            fillColor: '#0b7a3a'
+        },
+        Pending: {
+            color: '#d97706',
+            fillColor: '#facc15'
+        }
+    };
+
     obstacles.forEach(o => {
         if (!o.latitude || !o.longitude) return;
 
-        let iconUrl = '';
+        const markerStyle = statusStyles[o.status] ?? {
+            color: '#dc2626',
+            fillColor: '#fca5a5'
+        };
 
-        if (o.status === "Approved") {
-            iconUrl = 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-green.png';
-        }
-        else if (o.status === "Pending") {
-            iconUrl = 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-yellow.png';
-        }
-
-        const marker = L.marker([o.latitude, o.longitude], {
-            icon: L.icon({
-                iconUrl: iconUrl,
-                shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/images/marker-shadow.png',
-                iconSize: [25, 41],
-                iconAnchor: [12, 41]
-            })
+        const marker = L.circleMarker([o.latitude, o.longitude], {
+            ...markerStyle,
+            radius: 9,
+            weight: 3,
+            fillOpacity: 0.95
         })
             .addTo(map)
-            .bindPopup(`<b>${o.obstacleName}</b><br/>${o.obstacleHeight} m`);
+            .bindPopup(`<b>${o.obstacleName}</b><br/>${o.obstacleHeight} m (${o.status})`);
 
         //  DRAW LINESTRING IF EXISTS
         if (o.lineGeoJson) {
             try {
                 const geojson = JSON.parse(o.lineGeoJson);
-                const lineColor = o.status === "Approved" ? "#0b7a3a" : "#e6b800"; 
+                const lineColor = statusStyles[o.status]?.color ?? '#dc2626';
 
                 const lineLayer = L.geoJSON(geojson, {
                     style: {
