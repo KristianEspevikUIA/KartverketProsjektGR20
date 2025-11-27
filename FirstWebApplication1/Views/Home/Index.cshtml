@@ -49,22 +49,22 @@
                         @if (User.IsInRole("Admin"))
                         {
                             <a asp-controller="Admin" asp-action="Users"
-                               class="inline-flex items-center px-3 py-1 bg-purple-600 text-white rounded-full text-sm hover:bg-purple-700">
+                               class="inline-flex items-center px-4 py-2 bg-purple-300 text-black rounded-full text-sm hover:bg-purple-400 focus:outline-none focus:ring-2 focus:ring-purple-300">
                                 Manage Users
                             </a>
                         }
                         @if (User.IsInRole("Admin") || User.IsInRole("Caseworker"))
                         {
                             <a asp-controller="Obstacle" asp-action="List" asp-route-statusFilter="Pending"
-                               class="inline-flex items-center px-3 py-1 bg-yellow-400 text-white rounded-full text-sm hover:bg-yellow-700">
+                               class="inline-flex items-center px-3 py-1 bg-yellow-400 text-black rounded-full text-sm hover:bg-yellow-500">
                                 Review Pending Obstacles
                             </a>
                             <a asp-controller="Obstacle" asp-action="List" asp-route-statusFilter="Approved"
-                               class="inline-flex items-center px-3 py-1 bg-green-600 text-white rounded-full text-sm hover:bg-green-700">
+                               class="inline-flex items-center px-3 py-1 bg-green-300 text-black rounded-full text-sm hover:bg-green-400">
                                 View Approved Obstacles
                             </a>
                             <a asp-controller="Obstacle" asp-action="List" asp-route-statusFilter="Declined"
-                               class="inline-flex items-center px-3 py-1 bg-red-600 text-white rounded-full text-sm hover:bg-red-700">
+                               class="inline-flex items-center px-3 py-1 bg-red-300 text-black rounded-full text-sm hover:bg-red-400">
                                 View Rejected Obstacles
                             </a>
                         }
