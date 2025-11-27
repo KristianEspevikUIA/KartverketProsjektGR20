@@ -141,7 +141,7 @@ throughout the IS-202 course
 
 Pilots have two dedicated entry points for situational awareness:
 
-- **Pilot map (`/Pilot/Map`)** – loads Leaflet with approved obstacles from `PilotController.GetApprovedObstacles`, rendering both point markers and optional line geometry. A floating button links directly to the obstacle submission flow so pilots can report new findings.
+- **Pilot map (`/Pilot/Map`)** – loads Leaflet with approved and pending obstacles from `PilotController.GetApprovedObstacles`, rendering both point markers and optional line geometry. A floating button links directly to the obstacle submission flow so pilots can report new findings.
 
 - **Obstacle list (`/Obstacle/List`)** – role-gated for Pilot, Caseworker, and Admin, exposing filtering by status, type, text search, and date range. Each row links to detail and edit actions, giving pilots a clear, filterable overview of all stored obstacles.
 
