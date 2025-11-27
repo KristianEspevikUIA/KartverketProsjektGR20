@@ -178,6 +178,33 @@ namespace FirstWebApplication1.Tests.Controller
         }
 
         [Fact]
+        public async Task DataForm_Post_RespectsUseFeetPreference_WhenProvided()
+        {
+            // Arrange
+            using var context = CreateDbContext();
+            var controller = CreateController(context, isPilot: false);
+
+            controller.TempData["ObstacleType"] = "Tower";
+
+            var model = new ObstacleData
+            {
+                ObstacleHeight = 20,
+                Latitude = null,
+                Longitude = null
+            };
+
+            controller.ModelState.AddModelError("Latitude", "Required");
+
+            // Act
+            var result = await controller.DataForm(model, useFeet: true);
+
+            // Assert
+            var view = Assert.IsType<ViewResult>(result);
+            Assert.Same(model, view.Model);
+            Assert.True((bool)controller.ViewBag.UsesFeet);
+        }
+
+        [Fact]
         public async Task DataForm_Post_ValidModel_SavesPendingObstacleAndReturnsOverviewView()
         {
             // Arrange
