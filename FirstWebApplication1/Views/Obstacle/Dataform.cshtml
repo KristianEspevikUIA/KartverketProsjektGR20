@@ -14,7 +14,7 @@
     var defaultHeightFeet = defaultHeightMeters * 3.28084; // ~49 feet
 }
 
-<body class="bg-cover bg-center" style="background-image: url('/images/BackgroundImageGreen.png');">
+<div class="bg-cover bg-center" style="background-image: url('/images/BackgroundImageGreen.png');">
     <section class="mx-auto max-w-6xl px-4 pb-12">
         <div class="bg-white rounded-2xl shadow-sm ring-1 ring-gray-200 p-8">
             <header class="mb-4 text-center">
@@ -34,12 +34,7 @@
 
                 <div asp-validation-summary="ModelOnly" class="text-red-600 text-sm bg-red-50 p-4 rounded-lg"></div>
 
-                <div class="grid grid-cols-1 lg:grid-cols-1 gap-8">
-                    <!-- Left Column: Form Fields -->
-                    <div class="space-y-6">
-                        
-
-                    <!-- Right Column: Map -->
+                <div class="space-y-8">
                     <div class="space-y-4">
                         <div>
                             <label class="block text-sm font-medium text-gray-800 mb-1">
@@ -56,7 +51,7 @@
                              class="rounded-lg shadow-sm"
                              data-approved-obstacles='@(ViewBag.ApprovedObstaclesJson ?? "[]")'>
                         </div>
-                        
+
                         <div class="flex flex-wrap gap-3">
                             <button type="button" id="undoPoint"
                                     class="inline-flex items-center justify-center rounded-lg bg-gray-100 px-8 py-4 text-sm font-medium text-gray-800 hover:bg-gray-200 transition-colors">
@@ -69,8 +64,7 @@
                                 Clear All
                             </button>
                         </div>
-                        
-                        
+
                         <!-- HEIGHT SLIDER WITH UNIT TOGGLE -->
                         <div class="bg-gradient-to-br from-indigo-50 to-purple-50 p-3 rounded-xl border-2 border-indigo-200">
                             <div class="flex justify-between items-center mb-1">
@@ -81,17 +75,17 @@
 
                                 @if (isPilot)
                                 {
-                                <div class="flex items-center space-x-2 bg-white px-3 py-1 rounded-full shadow-sm">
-                                    <span class="text-xs font-medium text-gray-600">Unit:</span>
-                                    <button type="button" id="unitToggle" class="text-sm font-semibold text-indigo-600 hover:text-indigo-800 focus:outline-none">
-                                        <span id="currentUnit">Feet</span>
-                                        <i class="fa-solid fa-exchange-alt ml-1 text-xs"></i>
-                                    </button>
-                                </div>
+                                    <div class="flex items-center space-x-2 bg-white px-3 py-1 rounded-full shadow-sm">
+                                        <span class="text-xs font-medium text-gray-600">Unit:</span>
+                                        <button type="button" id="unitToggle" class="text-sm font-semibold text-indigo-600 hover:text-indigo-800 focus:outline-none">
+                                            <span id="currentUnit">Feet</span>
+                                            <i class="fa-solid fa-exchange-alt ml-1 text-xs"></i>
+                                        </button>
+                                    </div>
                                 }
                                 else
                                 {
-                                <span class="text-xs font-medium text-gray-600 bg-white px-3 py-1 rounded-full shadow-sm">
+                                    <span class="text-xs font-medium text-gray-600 bg-white px-3 py-1 rounded-full shadow-sm">
                                         Unit: Meters
                                     </span>
                                 }
@@ -100,22 +94,17 @@
                             <div class="flex justify-center mb-4">
                                 <input id="heightInputDisplay"
                                        type="number"
-                                       class="text-center text-2xl font-bold text-indigo-600 
-                  border border-indigo-300 rounded-lg 
-                  bg-white 
-                  px-4 py-1 
-                  focus:outline-none focus:ring-2 focus:ring-indigo-400 
-                  w-28"
+                                       class="text-center text-2xl font-bold text-indigo-600 border border-indigo-300 rounded-lg bg-white px-4 py-1 focus:outline-none focus:ring-2 focus:ring-indigo-400 w-28"
                                        value="@(usesFeet ? defaultHeightFeet.ToString("F0") : defaultHeightMeters.ToString("F1"))" />
                             </div>
 
                             <!-- Visible slider for user interaction -->
                             <input type="range"
                                    id="heightSlider"
-                                   min="@(usesFeet? minHeightFeet.ToString("F0") : minHeightMeters)"
-                                   max="@(usesFeet? maxHeightFeet.ToString("F0") : maxHeightMeters)"
+                                   min="@(usesFeet ? minHeightFeet.ToString("F0") : minHeightMeters)"
+                                   max="@(usesFeet ? maxHeightFeet.ToString("F0") : maxHeightMeters)"
                                    step="@(usesFeet ? "1" : "0.5")"
-                                   value="@(usesFeet? defaultHeightFeet.ToString("F0") : defaultHeightMeters)"
+                                   value="@(usesFeet ? defaultHeightFeet.ToString("F0") : defaultHeightMeters)"
                                    data-unit="@(usesFeet ? "feet" : "meters")"
                                    class="w-full h-2 bg-indigo-200 rounded-lg appearance-none cursor-pointer slider" />
 
@@ -129,25 +118,22 @@
 
                             <span asp-validation-for="ObstacleHeight" class="text-sm text-red-600 block mt-2"></span>
 
-                                @if (isPilot)
-                                {
-                                    <div class="mt-3 text-xs text-gray-500 text-center">
-                                        <i class="fa-solid fa-info-circle mr-1"></i>
-                                        Value stored in meters:
-                                        <span id="feetValue" class="font-mono font-semibold">@defaultHeightMeters.ToString("F2")</span> m
-                                    </div>
-                                }
-
+                            @if (isPilot)
+                            {
+                                <div class="mt-3 text-xs text-gray-500 text-center">
+                                    <i class="fa-solid fa-info-circle mr-1"></i>
+                                    Value stored in meters:
+                                    <span id="feetValue" class="font-mono font-semibold">@defaultHeightMeters.ToString("F2")</span> m
+                                </div>
+                            }
                         </div>
-                        
-                        
 
                         <div>
                             <label asp-for="ObstacleDescription" class="block text-sm font-medium text-gray-800 mb-2">
                                 <i class="fa-solid fa-file-alt mr-2 text-gray-600"></i>
                                 Obstacle Description <span class="text-gray-500 text-xs">(Optional)</span>
                             </label>
-                            <textarea asp-for="ObstacleDescription" rows="3" maxlength=300"
+                            <textarea asp-for="ObstacleDescription" rows="3" maxlength="300"
                                       class="block w-full rounded-lg border-gray-300 focus:border-indigo-600 focus:ring-indigo-600 px-4 py-3 text-lg"
                                       placeholder="Add additional details about the obstacle (optional)"></textarea>
                             <div class="text-xs text-gray-500 mt-1">
@@ -157,28 +143,27 @@
                         </div>
                     </div>
 
-                        <div class="grid grid-cols-2 gap-4">
-                            <div>
-                                <label asp-for="Latitude" class="block text-xs font-medium text-gray-600 mb-1">Latitude</label>
-                                <input asp-for="Latitude" readonly
-                                       class="block w-full rounded-lg border-gray-300 bg-gray-50 px-3 py-2 text-sm text-gray-800 font-mono" />
-                                <span asp-validation-for="Latitude" class="text-xs text-red-600"></span>
-                            </div>
-                            <div>
-                                <label asp-for="Longitude" class="block text-xs font-medium text-gray-600 mb-1">Longitude</label>
-                                <input asp-for="Longitude" readonly
-                                       class="block w-full rounded-lg border-gray-300 bg-gray-50 px-3 py-2 text-sm text-gray-800 font-mono" />
-                                <span asp-validation-for="Longitude" class="text-xs text-red-600"></span>
-                            </div>
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <label asp-for="Latitude" class="block text-xs font-medium text-gray-600 mb-1">Latitude</label>
+                            <input asp-for="Latitude" readonly
+                                   class="block w-full rounded-lg border-gray-300 bg-gray-50 px-3 py-2 text-sm text-gray-800 font-mono" />
+                            <span asp-validation-for="Latitude" class="text-xs text-red-600"></span>
                         </div>
-
-                        <div id="lineSummary" class="text-sm font-medium text-gray-700 bg-gray-50 p-3 rounded-lg"></div>
-
-                        <div id="vertexList" class="rounded-lg border border-gray-200 bg-gray-50 p-3 text-sm max-h-48 overflow-y-auto"></div>
-
-                        <input asp-for="LineGeoJson" type="hidden" />
-                        <span asp-validation-for="LineGeoJson" class="text-sm text-red-600"></span>
+                        <div>
+                            <label asp-for="Longitude" class="block text-xs font-medium text-gray-600 mb-1">Longitude</label>
+                            <input asp-for="Longitude" readonly
+                                   class="block w-full rounded-lg border-gray-300 bg-gray-50 px-3 py-2 text-sm text-gray-800 font-mono" />
+                            <span asp-validation-for="Longitude" class="text-xs text-red-600"></span>
+                        </div>
                     </div>
+
+                    <div id="lineSummary" class="text-sm font-medium text-gray-700 bg-gray-50 p-3 rounded-lg"></div>
+
+                    <div id="vertexList" class="rounded-lg border border-gray-200 bg-gray-50 p-3 text-sm max-h-48 overflow-y-auto"></div>
+
+                    <input asp-for="LineGeoJson" type="hidden" />
+                    <span asp-validation-for="LineGeoJson" class="text-sm text-red-600"></span>
                 </div>
 
                 <div class="flex justify-between items-center pt-8 border-t">
@@ -189,10 +174,8 @@
                     </a>
 
                     <button type="submit" id="submitBtn"
-                    <button type="submit" id="submitBtn"
                             class="inline-flex items-center justify-center rounded-xl bg-indigo-600 px-12 py-6 text-2xl font-semibold text-white hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
                             disabled>
-                           
                         Submit
                         <i class="fa-solid fa-arrow-right ml-2"></i>
                     </button>
@@ -200,8 +183,9 @@
             </form>
         </div>
     </section>
+</div>
 
-    @section Scripts {
+@section Scripts {
         <partial name="_ValidationScriptsPartial" />
 
         <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
@@ -345,4 +329,3 @@
         </script>
 
     }
-</body>

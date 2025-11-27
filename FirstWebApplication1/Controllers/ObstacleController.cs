@@ -369,6 +369,31 @@ namespace FirstWebApplication1.Controllers
 
             return RedirectToAction(nameof(List), new { statusFilter = "Pending" });
         }
+        
+        [Authorize(Roles = "Caseworker,Admin")]
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Revalidate(int id)
+        {
+            var obstacle = await _context.Obstacles.FindAsync(id);
+
+            if (obstacle == null)
+            {
+                return NotFound();
+            }
+
+            obstacle.Status = "Pending";
+
+            obstacle.LastModifiedBy = User.Identity?.Name ?? "Unknown";
+            obstacle.LastModifiedDate = DateTime.UtcNow;
+
+            await _context.SaveChangesAsync();
+
+            TempData["NotificationMessage"] = "Obstacle was set back to Pending for re-evaluation";
+            TempData["NotificationType"] = "warning";
+
+            return RedirectToAction(nameof(Details), new { id });
+        }
 
         [Authorize(Roles = "Admin")]
         [HttpPost]
