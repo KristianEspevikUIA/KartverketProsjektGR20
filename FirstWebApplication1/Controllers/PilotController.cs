@@ -23,10 +23,10 @@ namespace FirstWebApplication1.Controllers
 
         // === API ENDPOINT: returns APPROVED obstacles ===
         [HttpGet]
-        public async Task<IActionResult> GetApprovedObstacles()
+        public async Task<IActionResult> GetPilotObstacles()
         {
             var approved = await _context.Obstacles
-                .Where(o => o.Status == "Approved")
+                .Where(o => o.Status == "Approved" || o.Status == "Pending")
                 .ToListAsync();
 
             return Json(approved.Select(o => new {
@@ -35,7 +35,8 @@ namespace FirstWebApplication1.Controllers
                 o.ObstacleHeight,
                 o.Latitude,
                 o.Longitude,
-                o.LineGeoJson,     // 🔥 dette gjør hele forskjellen
+                o.LineGeoJson,
+                o.Status,
             }));
         }
     }
