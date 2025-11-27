@@ -49,10 +49,10 @@ namespace FirstWebApplication1.Tests.Controllers
         }
 
         // --------------------------------------------------------
-        // TEST 2: GetApprovedObstacles returns only Approved ones
+        // TEST 2: GetApprovedObstacles returns Approved + Pending
         // --------------------------------------------------------
         [Fact]
-        public async Task GetApprovedObstacles_ReturnsOnlyApproved()
+        public async Task GetApprovedObstacles_ReturnsApprovedAndPending()
         {
             var context = CreateDbContext();
 
@@ -71,6 +71,17 @@ namespace FirstWebApplication1.Tests.Controllers
             context.Obstacles.Add(new ObstacleData
             {
                 Id = 2,
+                ObstacleName = "Pending Tower",
+                Status = "Pending",
+                ObstacleHeight = 30,
+                Latitude = 59.2,
+                Longitude = 8.8,
+                ObstacleDescription = "Pending"
+            });
+
+            context.Obstacles.Add(new ObstacleData
+            {
+                Id = 3,
                 ObstacleName = "Rejected Tower",
                 Status = "Rejected",
                 ObstacleHeight = 100,
@@ -86,15 +97,16 @@ namespace FirstWebApplication1.Tests.Controllers
             var result = await controller.GetApprovedObstacles();
             var json = Assert.IsType<JsonResult>(result);
 
-            var data = Assert.IsAssignableFrom<IEnumerable<object>>(json.Value);
+            var data = Assert.IsAssignableFrom<IEnumerable<object>>(json.Value).ToList();
 
-            // Skal bare være én approved
-            var item = Assert.Single(data);
+            // Skal være Approved + Pending
+            var propsById = data.ToDictionary(
+                obj => (int)obj.GetType().GetProperty("Id")!.GetValue(obj)!,
+                obj => obj.GetType().GetProperties());
 
-            var props = item.GetType().GetProperties();
-
-            Assert.Equal(1, (int)props.Single(p => p.Name == "Id").GetValue(item)!);
-            Assert.Equal("Approved Tower", (string)props.Single(p => p.Name == "ObstacleName").GetValue(item)!);
+            Assert.Equal(2, propsById.Count);
+            Assert.Contains(1, propsById.Keys);
+            Assert.Contains(2, propsById.Keys);
         }
 
         // ------------------------------------------------------------------
@@ -135,6 +147,7 @@ namespace FirstWebApplication1.Tests.Controllers
             Assert.Equal(60.1, (double)props.Single(p => p.Name == "Latitude").GetValue(item)!);
             Assert.Equal(5.2, (double)props.Single(p => p.Name == "Longitude").GetValue(item)!);
             Assert.NotNull(props.Single(p => p.Name == "LineGeoJson").GetValue(item));
+            Assert.NotNull(props.Single(p => p.Name == "Status").GetValue(item));
         }
     }
 }

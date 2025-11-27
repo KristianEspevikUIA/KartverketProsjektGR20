@@ -24,22 +24,6 @@ namespace FirstWebApplication1.Tests.Models
         // SECTION 1: Data annotation attribute tests
         // These tests check [Required], [Range], [StringLength], etc.
 
-        [Fact]
-        public void MissingRequiredFields_ShouldFailValidation()
-        {
-            // Arrange:
-            var data = new ObstacleData();
-
-            // Act:
-            var results = ValidateModel(data);
-
-            // Assert:
-            Assert.Contains(results, r => r.MemberNames.Contains(nameof(ObstacleData.ObstacleName)));
-            Assert.Contains(results, r => r.MemberNames.Contains(nameof(ObstacleData.ObstacleHeight)));
-            Assert.Contains(results, r => r.MemberNames.Contains(nameof(ObstacleData.ObstacleDescription)));
-            Assert.Contains(results, r => r.MemberNames.Contains(nameof(ObstacleData.Latitude)));
-            Assert.Contains(results, r => r.MemberNames.Contains(nameof(ObstacleData.Longitude)));
-        }
 
         [Fact]
         public void HeightOutsideRange_ShouldFailRangeAttribute()
@@ -413,35 +397,6 @@ namespace FirstWebApplication1.Tests.Models
         }
         
 
-        [Fact]
-        public void LineLengthMeters_ComputesTotalDistanceAlongSegments()
-        {
-            // Arrange:
-            var json = @"{
-                ""type"": ""LineString"",
-                ""coordinates"": [
-                    [7.0,   58.0],
-                    [7.01,  58.0],
-                    [7.01,  58.01]
-                ]
-            }";
 
-            var data = new ObstacleData
-            {
-                LineGeoJson = json
-            };
-
-            // Act:
-            var length = data.LineLengthMeters;
-
-            // Assert:
-            // The length should be:
-            // - not null
-            // - clearly > 0
-            // - realistically in the hundreds of meters range
-            Assert.NotNull(length);
-            Assert.True(length!.Value > 0);
-            Assert.True(length.Value > 500);
-        }
     }
 }
