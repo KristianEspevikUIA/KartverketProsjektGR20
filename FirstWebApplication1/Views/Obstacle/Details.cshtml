@@ -208,18 +208,34 @@
                     </a>
                 </div>
                 
-                @if ((User.IsInRole("Caseworker") || User.IsInRole("Admin")) 
+                @if ((User.IsInRole("Caseworker") || User.IsInRole("Admin"))
                      && (Model.Status == "Approved" || Model.Status == "Declined"))
                 {
-                    <form asp-action="Revalidate" asp-route-id="@Model.Id" method="post" class="mt-4">
-                        @Html.AntiForgeryToken()
-                        <button type="submit"
-                                class="bg-yellow-600 text-white px-4 py-2 rounded-lg hover:bg-yellow-700 text-sm">
-                            Revalidate
-                        </button>
-                    </form>
+                    <div class="flex gap-3 mt-4">
+                        <form asp-action="Revalidate" asp-route-id="@Model.Id" method="post" class="mt-4">
+                            @Html.AntiForgeryToken()
+                            <button type="submit"
+                                    class="bg-yellow-600 text-white px-4 py-2 rounded-lg hover:bg-yellow-700 text-sm">
+                                Revalidate
+                            </button>
+                        </form>
+
+
+                        @if (User.IsInRole("Admin") && Model.Status == "Declined")
+                        {
+                            <form asp-action="Delete" asp-controller="Obstacle" asp-route-id="@Model.Id" method="post" class="mt-4">
+                                @Html.AntiForgeryToken()
+                                <button type="submit"
+                                        onclick="return confirm('Are you sure you want to delete this rejected report?')"
+                                        class="bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700 text-sm">
+                                    Delete Report
+                                </button>
+                            </form>
+
+                        }
+                    </div>
                 }
-                
+
             </div>
 
             <!-- MAP COLUMN -->
