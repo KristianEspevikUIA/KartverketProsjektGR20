@@ -21,15 +21,15 @@ namespace FirstWebApplication1.Controllers
             return View();
         }
 
-        // === API ENDPOINT: returns APPROVED obstacles ===
+        // === API ENDPOINT: returns APPROVED + PENDING obstacles ===
         [HttpGet]
-        public async Task<IActionResult> GetPilotObstacles()
+        public async Task<IActionResult> GetApprovedObstacles()
         {
-            var approved = await _context.Obstacles
+            var obstacles = await _context.Obstacles
                 .Where(o => o.Status == "Approved" || o.Status == "Pending")
                 .ToListAsync();
 
-            return Json(approved.Select(o => new {
+            return Json(obstacles.Select(o => new {
                 o.Id,
                 o.ObstacleName,
                 o.ObstacleHeight,
@@ -39,5 +39,9 @@ namespace FirstWebApplication1.Controllers
                 o.Status,
             }));
         }
+
+        // Backwards compatibility for older JS clients
+        [HttpGet]
+        public Task<IActionResult> GetPilotObstacles() => GetApprovedObstacles();
     }
 }

@@ -7,8 +7,14 @@ document.addEventListener('DOMContentLoaded', async () => {
         maxZoom: 18
     }).addTo(map);
 
-    // Fetch approved obstacles from backend
-    const response = await fetch('/Pilot/GetPilotObstacles');
+    // Fetch approved + pending obstacles from backend
+    const response = await fetch('/Pilot/GetApprovedObstacles');
+
+    if (!response.ok) {
+        console.error('Failed to load obstacles:', response.status, response.statusText);
+        return;
+    }
+
     const obstacles = await response.json();
 
     const layers = [];
