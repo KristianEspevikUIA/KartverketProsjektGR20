@@ -65,8 +65,7 @@ namespace FirstWebApplication1.Controllers
                 ObstacleType = obstacleType,
                 ObstacleHeight = 15 // Default minimum height in meters
             };
-
-            // --- CORRECTED CODE START ---
+            
             var approvedObstacles = await _context.Obstacles
                 .Where(o => o.Status == "Approved")
                 .AsNoTracking()
@@ -88,8 +87,6 @@ namespace FirstWebApplication1.Controllers
             }), serializerOptions); // Apply the options here
 
             ViewBag.ApprovedObstaclesJson = approvedObstaclesJson;
-            // --- CORRECTED CODE END ---
-
 
             // Pass user role info to view
             ViewBag.IsPilot = IsPilot();
@@ -107,10 +104,10 @@ namespace FirstWebApplication1.Controllers
             try
             {
                 // Retrieve obstacle type from TempData
-                if (TempData["ObstacleType"] != null)
+                var obstacleType = TempData.Peek("ObstacleType")?.ToString();
+                if (!string.IsNullOrWhiteSpace(obstacleType))
                 {
-                    obstacledata.ObstacleType = TempData["ObstacleType"].ToString();
-
+                    obstacledata.ObstacleType = obstacleType;
                 }
 
                 // Auto-generate obstacle name from type
@@ -134,10 +131,14 @@ namespace FirstWebApplication1.Controllers
                 ModelState.Remove("ObstacleName");
                 ModelState.Remove("ObstacleDescription");
 
+                var isPilot = IsPilot();
+                var usesFeetPreference = useFeet ?? isPilot;
+
+
                 if (!ModelState.IsValid)
                 {
-                    ViewBag.IsPilot = IsPilot();
-                    ViewBag.UsesFeet = IsPilot();
+                    ViewBag.IsPilot = isPilot;
+                    ViewBag.UsesFeet = usesFeetPreference;
                     return View(obstacledata);
                 }
 
@@ -150,8 +151,8 @@ namespace FirstWebApplication1.Controllers
                 await _context.SaveChangesAsync();
 
                 // Pass user role to overview
-                ViewBag.IsPilot = IsPilot();
-                ViewBag.UsesFeet = IsPilot();
+                ViewBag.IsPilot = isPilot;
+                ViewBag.UsesFeet = usesFeetPreference;
 
                 return View("Overview", obstacledata);
             }
@@ -160,8 +161,9 @@ namespace FirstWebApplication1.Controllers
                 var innerMessage = ex.InnerException?.Message ?? ex.Message;
                 ModelState.AddModelError("", $"Error saving obstacle: {innerMessage}");
 
-                ViewBag.IsPilot = IsPilot();
-                ViewBag.UsesFeet = IsPilot();
+                var isPilot = IsPilot();
+                ViewBag.IsPilot = isPilot;
+                ViewBag.UsesFeet = useFeet ?? isPilot;
 
                 return View(obstacledata);
             }
