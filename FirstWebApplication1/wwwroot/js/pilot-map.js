@@ -7,8 +7,14 @@ document.addEventListener('DOMContentLoaded', async () => {
         maxZoom: 18
     }).addTo(map);
 
-    // Fetch approved obstacles from backend
+    // Fetch approved + pending obstacles from backend
     const response = await fetch('/Pilot/GetApprovedObstacles');
+
+    if (!response.ok) {
+        console.error('Failed to load obstacles:', response.status, response.statusText);
+        return;
+    }
+
     const obstacles = await response.json();
 
     const layers = [];
@@ -16,14 +22,22 @@ document.addEventListener('DOMContentLoaded', async () => {
     obstacles.forEach(o => {
         if (!o.latitude || !o.longitude) return;
 
+        let iconUrl = '';
+
+        if (o.status === "Approved") {
+            iconUrl = 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-green.png';
+        }
+        else if (o.status === "Pending") {
+            iconUrl = 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-yellow.png';
+        }
+
         const marker = L.marker([o.latitude, o.longitude], {
             icon: L.icon({
-                iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-red.png',
+                iconUrl: iconUrl,
                 shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/images/marker-shadow.png',
                 iconSize: [25, 41],
                 iconAnchor: [12, 41]
             })
-            
         })
             .addTo(map)
             .bindPopup(`<b>${o.obstacleName}</b><br/>${o.obstacleHeight} m`);
@@ -32,9 +46,11 @@ document.addEventListener('DOMContentLoaded', async () => {
         if (o.lineGeoJson) {
             try {
                 const geojson = JSON.parse(o.lineGeoJson);
+                const lineColor = o.status === "Approved" ? "#0b7a3a" : "#e6b800"; 
+
                 const lineLayer = L.geoJSON(geojson, {
                     style: {
-                        color: "red",
+                        color: lineColor,
                         weight: 4
                     }
                 }).addTo(map);
