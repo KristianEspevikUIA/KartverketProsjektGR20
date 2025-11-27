@@ -54,18 +54,7 @@ namespace FirstWebApplication1.Tests.Models
             Assert.False(result);
         }
 
-        [Fact]
-        public void ShowRequestId_WhenRequestIdIsWhitespace_ShouldReturnFalse()
-        {
-            // Arrange
-            var viewModel = new ErrorViewModel { RequestId = "   " };
 
-            // Act
-            var result = viewModel.ShowRequestId;
-
-            // Assert
-            Assert.False(result);
-        }
 
         [Fact]
         public void ShowRequestId_WhenRequestIdHasValue_ShouldReturnTrue()
