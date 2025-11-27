@@ -22,21 +22,22 @@ document.addEventListener('DOMContentLoaded', async () => {
     obstacles.forEach(o => {
         if (!o.latitude || !o.longitude) return;
 
-        const status = (o.status || '').toLowerCase();
+        let iconUrl = '';
 
-        const statusColors = {
-            approved: { marker: '#16a34a', line: '#0b7a3a' }, // green shades
-            pending: { marker: '#facc15', line: '#e6b800' }    // yellow shades
-        };
+        if (o.status === "Approved") {
+            iconUrl = 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-green.png';
+        }
+        else if (o.status === "Pending") {
+            iconUrl = 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-yellow.png';
+        }
 
-        const resolvedColors = statusColors[status] ?? { marker: '#f87171', line: '#b91c1c' }; // fallback red
-
-        const marker = L.circleMarker([o.latitude, o.longitude], {
-            radius: 10,
-            color: resolvedColors.line,
-            fillColor: resolvedColors.marker,
-            fillOpacity: 0.9,
-            weight: 2
+        const marker = L.marker([o.latitude, o.longitude], {
+            icon: L.icon({
+                iconUrl: iconUrl,
+                shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/images/marker-shadow.png',
+                iconSize: [25, 41],
+                iconAnchor: [12, 41]
+            })
         })
             .addTo(map)
             .bindPopup(`<b>${o.obstacleName}</b><br/>${o.obstacleHeight} m`);
@@ -45,7 +46,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         if (o.lineGeoJson) {
             try {
                 const geojson = JSON.parse(o.lineGeoJson);
-                const lineColor = resolvedColors.line;
+                const lineColor = o.status === "Approved" ? "#0b7a3a" : "#e6b800"; 
 
                 const lineLayer = L.geoJSON(geojson, {
                     style: {
@@ -55,7 +56,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 }).addTo(map);
 
                 layers.push(lineLayer);
-
+                
             } catch (err) {
                 console.error("Bad GeoJSON:", err);
             }
