@@ -48,6 +48,11 @@ namespace FirstWebApplication1.Models
         private string? _cachedSource;
         private bool _lineParseFailed;
 
+
+
+        [StringLength(100)]
+        public string? Organization { get; set; }
+
         [NotMapped]
         public IReadOnlyList<GeoCoordinate> LineCoordinates
         {
@@ -99,6 +104,8 @@ namespace FirstWebApplication1.Models
         public string? DeclineReason { get; set; }
         public string DeclinedBy { get; set; } = string.Empty;
         public DateTime DeclinedDate { get; set; }
+
+    
 
         public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
         {

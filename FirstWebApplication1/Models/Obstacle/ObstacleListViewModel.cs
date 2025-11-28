@@ -19,6 +19,8 @@ namespace FirstWebApplication1.Models
         // property for type filtering
         public string? ObstacleTypeFilter { get; set; }
 
+         public string? OrganizationFilter { get; set; }
+
         // dynamic title and description based on status filter
         public string Title => StatusFilter switch
         {

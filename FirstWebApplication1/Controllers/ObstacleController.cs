@@ -189,7 +189,7 @@ namespace FirstWebApplication1.Controllers
 
         [Authorize(Roles = "Pilot,Caseworker,Admin")]
         [HttpGet]
-        public async Task<IActionResult> List(string? statusFilter = null, string? searchTerm = null, DateTime? startDate = null, DateTime? endDate = null, string? obstacleTypeFilter = null)
+        public async Task<IActionResult> List(string? statusFilter = null, string? searchTerm = null, DateTime? startDate = null, DateTime? endDate = null, string? obstacleTypeFilter = null, string? orgFilter = null)
         {
             var obstaclesQuery = _context.Obstacles.AsQueryable();
 
@@ -227,8 +227,22 @@ namespace FirstWebApplication1.Controllers
                 obstaclesQuery = obstaclesQuery.Where(o => o.SubmittedDate < endDate.Value.AddDays(1));
             }
 
+            if (!string.IsNullOrWhiteSpace(orgFilter))
+            {
+                obstaclesQuery = obstaclesQuery.Where(o => o.Organization == orgFilter);
+            }
+
+    // 2. Hent unike organisasjoner til dropdown-menyen
+    // Vi bruker ViewBag for å sende listen til Viewet
+                                            ViewBag.Organizations = await _context.Obstacles
+                                            .Where(o => o.Organization != null && o.Organization != "")
+                                            .Select(o => o.Organization)
+                                            .Distinct()
+                                            .OrderBy(o => o)
+                                            .ToListAsync();
+
             var obstacles = await obstaclesQuery
-                .OrderByDescending(o => o.SubmittedDate)
+                .OrderByDescending(o => o.SubmittedDate)    
                 .ToListAsync();
 
             var viewModel = new ObstacleListViewModel
