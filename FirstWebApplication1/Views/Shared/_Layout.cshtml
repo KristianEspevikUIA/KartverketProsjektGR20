@@ -18,7 +18,6 @@
     @await RenderSectionAsync("Head", required: false)
 </head>
 <body class="min-h-screen bg-gray-50">
-    @using Microsoft.AspNetCore.Identity
     @inject SignInManager<IdentityUser> SignInManager
     @inject UserManager<IdentityUser> UserManager
 
