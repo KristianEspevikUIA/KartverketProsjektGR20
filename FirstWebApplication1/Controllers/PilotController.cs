@@ -9,7 +9,7 @@ namespace FirstWebApplication1.Controllers
     public class PilotController : Controller
     {
         private readonly ApplicationDbContext _context;
-
+// Constructor injecting the database context
         public PilotController(ApplicationDbContext context)
         {
             _context = context;

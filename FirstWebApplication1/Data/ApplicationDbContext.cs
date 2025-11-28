@@ -14,13 +14,14 @@ namespace FirstWebApplication1.Data
         public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options)
             : base(options)
         {
+            // Constructor injecting the database context
         }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             // Important: call base so Identity can configure its schema
             base.OnModelCreating(modelBuilder);
-
+            // Configure the ObstacleData entity    
             modelBuilder.Entity<ObstacleData>(entity =>
             {
                 entity.HasKey(e => e.Id);

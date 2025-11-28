@@ -11,9 +11,14 @@ namespace FirstWebApplication1.Controllers
     [Authorize(Roles = "Admin")]
     public class AdminController : Controller
     {
+
+        // Dependencies for UserManager and RoleManager
         private readonly UserManager<IdentityUser> _userManager;
         private readonly RoleManager<IdentityRole> _roleManager;
+       
 
+
+        // Constructor which injects UserManager and RoleManager dependencies
         public AdminController(
             UserManager<IdentityUser> userManager,
             RoleManager<IdentityRole> roleManager)
@@ -29,7 +34,7 @@ namespace FirstWebApplication1.Controllers
             var users = await _userManager.Users.ToListAsync();
             var userViewModels = new List<UsersViewModel>();
 
-            foreach (var user in users)
+            foreach (var user in users) // Iterate through each user and get their roles    
             {
                 var roles = await _userManager.GetRolesAsync(user);
                 userViewModels.Add(new UsersViewModel
@@ -47,6 +52,8 @@ namespace FirstWebApplication1.Controllers
         [HttpGet]
         public async Task<IActionResult> EditUser(string id)
         {
+
+            // Find the user by ID 
             var user = await _userManager.FindByIdAsync(id);
             if (user == null)
             {
@@ -55,7 +62,8 @@ namespace FirstWebApplication1.Controllers
 
             var userRoles = await _userManager.GetRolesAsync(user);
             var allRoles = await _roleManager.Roles.Select(r => r.Name).ToListAsync();
-
+            
+            // Prepare the model for the view so that it contains user details and roles
             var model = new EditUserViewModel
             {
                 Id = user.Id,
@@ -71,7 +79,7 @@ namespace FirstWebApplication1.Controllers
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> EditUser(string id, string selectedRole)
-        {
+        { 
             var user = await _userManager.FindByIdAsync(id);
             if (user == null)
             {
@@ -111,12 +119,12 @@ namespace FirstWebApplication1.Controllers
                 TempData["ErrorMessage"] = "You cannot delete your own account.";
                 return RedirectToAction(nameof(Users));
             }
-
+           
             var result = await _userManager.DeleteAsync(user);
 
             if (result.Succeeded)
             {
-                TempData["SuccessMessage"] = "User deleted successfully.";
+                TempData["SuccessMessage"] = "User deleted successfully.";  // Message for successful deletion
             }
             else
             {

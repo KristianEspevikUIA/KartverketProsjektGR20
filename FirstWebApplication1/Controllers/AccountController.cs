@@ -124,6 +124,8 @@ namespace FirstWebApplication1.Controllers
             return View();
         }
 
+
+           // Helper method to redirect to local URL or home if invalid 
         private IActionResult RedirectToLocal(string? returnUrl)
         {
             if (Url.IsLocalUrl(returnUrl))
