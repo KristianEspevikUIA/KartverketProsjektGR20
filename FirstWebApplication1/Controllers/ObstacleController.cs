@@ -150,11 +150,7 @@ namespace FirstWebApplication1.Controllers
                 _context.Obstacles.Add(obstacledata);
                 await _context.SaveChangesAsync();
 
-                // Pass user role to overview
-                ViewBag.IsPilot = isPilot;
-                ViewBag.UsesFeet = usesFeetPreference;
-
-                return View("Overview", obstacledata);
+                return RedirectToAction(nameof(Overview), new { id = obstacledata.Id, useFeet = usesFeetPreference });
             }
             catch (Exception ex)
             {
@@ -167,6 +163,28 @@ namespace FirstWebApplication1.Controllers
 
                 return View(obstacledata);
             }
+        }
+
+        [Authorize]
+        [HttpGet]
+        public async Task<IActionResult> Overview(int id, bool? useFeet)
+        {
+            var obstacle = await _context.Obstacles
+                .AsNoTracking()
+                .FirstOrDefaultAsync(o => o.Id == id);
+
+            if (obstacle is null)
+            {
+                return NotFound();
+            }
+
+            var isPilot = IsPilot();
+            var usesFeetPreference = useFeet ?? isPilot;
+
+            ViewBag.IsPilot = isPilot;
+            ViewBag.UsesFeet = usesFeetPreference;
+
+            return View(obstacle);
         }
 
         [Authorize(Roles = "Pilot,Caseworker,Admin")]
