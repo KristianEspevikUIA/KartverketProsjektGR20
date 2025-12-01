@@ -15,22 +15,22 @@ Denne applikasjonen er en ASP.NET Core MVC-løsning for rapportering og behandli
   - Migrasjoner opprettes/kjøres ved oppstart av webapplikasjonen.
 - **Presentasjon/klient**
   - Responsiv layout levert via Tailwind CDN, med font- og ikonstøtte fra Font Awesome.
-  - Leaflet-kart for å vise godkjente hindre på kart.
+  - Leaflet-kart for å vise registrerte hindre (punkt og linje). Pilot-kartet laster både godkjente og ventende hindre, mens registreringsskjemaet viser godkjente hindre for referanse.
 - **Sikkerhetslag**
   - Rate limiting (fast vindu) på kontrolleren for hinder (`[EnableRateLimiting("Fixed")]`).
-  - Sikkerhetshoder (CSP, X-Frame-Options, Referrer-Policy, X-Content-Type-Options, X-XSS-Protection).
+  - Standard antiforgery på POST-handlinger; HTTPS/HSTS aktivt utenfor utvikling. Ingen ekstra sikkerhetshoder er konfigurert i koden utover rammeverkets default.
 
 ## Flyt gjennom systemet
 1. **Innlogging/registrering**
    - Brukere registrerer seg med ønsket rolle (pilot eller saksbehandler). Admin opprettes via konfigurasjon.
    - Identitet lagres i databasen via EF Core.
 2. **Rapportering av hinder**
-   - Brukeren velger hindertype, fyller ut skjemaet og sender inn. Data valideres server-side og lagres som `Pending`.
+   - Brukeren velger hindertype, fyller ut skjemaet (inkludert karttegning) og sender inn. Data valideres server-side og lagres som `Pending`.
    - Et oversiktsbilde viser registrert hinder og kvittering.
 3. **Behandling**
-   - Autoriserte roller (`Caseworker`/`Admin`) kan filtrere og oppdatere status på hindre, inkludert historikk.
+   - Autoriserte roller (`Caseworker`/`Admin`) kan filtrere og oppdatere status på hindre, inkludert historikk for sist endret og godkjent/avslått.
 4. **Visning**
-   - Pilot- og kartvisninger bruker Leaflet til å vise godkjente hindre. Data leveres via kontrollere som henter godkjente rader fra databasen og serialiserer dem som JSON.
+   - Pilot-kartet viser godkjente og ventende hindre som JSON for Leaflet. Listevisningen filtrerer og sorterer alle hindre med server-side querying.
 
 ## Database
 - MariaDB kjører i egen container via Docker Compose.

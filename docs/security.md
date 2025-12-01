@@ -2,22 +2,20 @@
 
 ## Oversikt over tiltak
 - **Autentisering/autorisasjon:** ASP.NET Core Identity med roller (`Admin`, `Caseworker`, `Pilot`). Registrering av Admin begrenses til forhåndsdefinert e-post i konfigurasjon.
-- **Ressurskontroll:** Controller for hinder er beskyttet med rate limiting (10 requests / 10 sek, med kø på 5), og tilgangskrav per rolle på handlinger.
-- **Sikkerhetshoder:**
-  - `Content-Security-Policy`: begrenser skript, stilark, fonter og bilder til kjente kilder.
-  - `X-Frame-Options: DENY`
-  - `X-Content-Type-Options: nosniff`
-  - `X-XSS-Protection: 1; mode=block`
-  - `Referrer-Policy: strict-origin-when-cross-origin`
+- **Ressurskontroll:** `ObstacleController` er beskyttet med rate limiting (10 requests / 10 sek, med kø på 5), og tilgangskrav per rolle på handlinger.
 - **HTTPS/HSTS:** Aktiv ved ikke-utviklingsmiljø.
-- **CSRF-beskyttelse:** `[ValidateAntiForgeryToken]` på POST-handlinger i registreringsflyten for hinder.
+- **CSRF-beskyttelse:** `[ValidateAntiForgeryToken]` på POST-handlinger i registreringsflyten for hinder og brukerinnlogging.
+- **XSS-beskyttelse:** Razor view-engine HTML-encoder utdata som standard. Kart- og tabellvisninger bruker ikke `Html.Raw` eller user-generert scriptinnstikk, men CSP anbefales ved produksjon.
+- **SQL-injection-beskyttelse:** Databasetilgang går gjennom Entity Framework Core (parameteriserte queries). Ingen manuelle SQL-strenger brukes i koden.
 
 ## Misbruksscenarier og mitigering
 - **Pilot forsøker å få admin-tilgang:** Admin-registrering er eksplisitt sperret i `AccountController` og admin-rollene tildeles kun via seed/eksisterende admin.
 - **Brute force/skript-spam:** Rate limiting på hinderkontrolleren reduserer effekten av automatiserte innsendinger. Identity-passordkrav gir minimumssikring.
-- **Clickjacking:** `X-Frame-Options: DENY` hindrer innramming av siden.
-- **Dataeksfiltrasjon via third-party scripts:** CSP begrenser hvilke eksterne domener som kan levere script og stilark.
+- **Clickjacking:** Ingen egendefinerte anti-iframe-headere er satt; vurder å legge til `X-Frame-Options`/`Frame-Options` ved produksjonssetting.
+- **Dataeksfiltrasjon via third-party scripts:** Ingen CSP er konfigurert i koden per nå. Tailwind/Leaflet/Font Awesome lastes via CDN, så CSP bør vurderes før produksjon.
 - **Privilege escalation ved rollemisbruk:** Autorisasjonsattributter på controller-/action-nivå håndhever at kun riktige roller kan opprette, endre og godkjenne hinder.
+- **XSS via uventet renderingsvei:** Razor encoding reduserer risikoen, men mangel på CSP og tillit til CDN-innhold betyr at en supply-chain hendelse kan få injisert script. Innfør CSP og vurder subresource integrity.
+- **SQL-injection via manuelle spørringer:** Nåværende kodebase bruker EF Core; dersom rå SQL introduseres må parameterisering og `FromSqlRaw`-guardrails følges.
 
 ## Operasjonelle rutiner
 - **Konfigurasjon av admin-konto:** Sett `Admin:Email` og `Admin:Password` som miljøvariabler eller i secrets før oppstart.

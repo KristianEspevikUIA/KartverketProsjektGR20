@@ -11,8 +11,8 @@
    - Gitt pålogget pilot, når pilot velger hindertype og fyller ut skjema, så lagres hinder med status `Pending` og oversikt vises.
 2. **Saksbehandler oppdaterer status**
    - Gitt pending hinder, når Caseworker endrer status til `Approved`, så reflekteres oppdateringen i liste og kart-JSON.
-3. **Visning av godkjente hinder (Pilot/Caseworker/Admin)**
-   - Når bruker åpner kart/oversikt, returneres kun hindre med status `Approved` i JSON som konsumeres av Leaflet.
+3. **Visning av godkjente og ventende hinder (Pilot)**
+   - Når pilot åpner kartet, returneres hindre med status `Approved` eller `Pending` i JSON som konsumeres av Leaflet.
 4. **Feilhåndtering**
    - Ugyldige felter i registreringsskjema gir model state-feil og vises som valideringsmeldinger.
 5. **Rollebeskyttede ruter**
@@ -29,7 +29,7 @@
 | --- | --- | --- | --- |
 | 2025-01-15 | Pilot registrerer hinder og ser kvittering | Pilot | OK |
 | 2025-01-15 | Caseworker endrer status til Approved | Caseworker | OK |
-| 2025-01-15 | Pilot åpner kart og ser kun Approved | Pilot | OK |
+| 2025-01-15 | Pilot åpner kart og ser Approved + Pending | Pilot | OK |
 | 2025-01-15 | Ugyldig skjema viser valideringsfeil | Pilot | OK |
 | 2025-01-15 | Pilot prøver Admin-side | Pilot | Avvist |
 | 2025-01-15 | Rate limiting etter 10 forespørsler | Pilot | OK |
