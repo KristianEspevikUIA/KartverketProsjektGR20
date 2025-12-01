@@ -1,6 +1,6 @@
 ﻿@model IEnumerable<FirstWebApplication1.Models.UsersViewModel>
-﻿@{
-ViewData["Title"] = "User Management";
+@{
+    ViewData["Title"] = "User Management";
 }
 
 <body class="bg-cover bg-center" style="background-image: url('/images/BackgroundImageGreen.png');">
@@ -19,6 +19,7 @@ ViewData["Title"] = "User Management";
                             <tr>
                                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Email</th>
                                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Roles</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Organization</th>
                                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
                             </tr>
                         </thead>
@@ -28,9 +29,9 @@ ViewData["Title"] = "User Management";
                                 <tr>
                                     <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">@user.Email</td>
                                     <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">@string.Join(", ", user.Roles)</td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">@(user.Organization ?? "Ingen satt")</td>
                                     <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                                        <a asp-action="EditUser" asp-route-id="@user.Id" class="text-indigo-600 hover:text-indigo-900 mr-4">Edit Roles</a>
-
+                                        <a asp-action="EditUser" asp-route-id="@user.Id" class="text-indigo-600 hover:text-indigo-900 mr-4">Edit</a>
                                         <form asp-action="DeleteUser" asp-route-id="@user.Id" method="post" class="inline" onsubmit="return confirm('Remove this user? This action cannot be undone.');">
                                             @Html.AntiForgeryToken()
                                             <button type="submit" class="text-red-600 hover:text-red-900">Remove</button>
@@ -53,7 +54,6 @@ ViewData["Title"] = "User Management";
                 </div>
             }
 
-            <!-- Go back button moved BELOW the content -->
             <div class="mt-8">
                 <button type="button"
                         class="inline-flex items-center gap-2 px-4 py-2 rounded-md ring-1 ring-gray-300 text-gray-700 hover:bg-gray-50"
@@ -65,4 +65,4 @@ ViewData["Title"] = "User Management";
             </div>
         </div>
     </section>
-</body> 
+</body>

@@ -32,11 +32,15 @@ namespace FirstWebApplication1.Controllers
             foreach (var user in users)
             {
                 var roles = await _userManager.GetRolesAsync(user);
+                var claims = await _userManager.GetClaimsAsync(user);
+                var organizationClaim = claims.FirstOrDefault(c => c.Type == "Organization");
+
                 userViewModels.Add(new UsersViewModel
                 {
                     Id = user.Id,
                     Email = user.Email ?? "N/A",
-                    Roles = roles.ToList()
+                    Roles = roles.ToList(),
+                    Organization = organizationClaim?.Value
                 });
             }
 
@@ -55,13 +59,17 @@ namespace FirstWebApplication1.Controllers
 
             var userRoles = await _userManager.GetRolesAsync(user);
             var allRoles = await _roleManager.Roles.Select(r => r.Name).ToListAsync();
+            var claims = await _userManager.GetClaimsAsync(user);
+            var organizationClaim = claims.FirstOrDefault(c => c.Type == "Organization");
 
             var model = new EditUserViewModel
             {
                 Id = user.Id,
                 Email = user.Email ?? "N/A",
                 CurrentRoles = userRoles.ToList(),
-                AvailableRoles = allRoles!
+                SelectedRole = userRoles.FirstOrDefault(),
+                AvailableRoles = allRoles!,
+                Organization = organizationClaim?.Value
             };
 
             return View(model);
@@ -70,7 +78,7 @@ namespace FirstWebApplication1.Controllers
         // POST: /Admin/EditUser/{id}
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> EditUser(string id, string selectedRole)
+        public async Task<IActionResult> EditUser(string id, string? selectedRole, string? organization)
         {
             var user = await _userManager.FindByIdAsync(id);
             if (user == null)
@@ -78,18 +86,29 @@ namespace FirstWebApplication1.Controllers
                 return NotFound();
             }
 
+            // Update Roles
             var currentRoles = await _userManager.GetRolesAsync(user);
-
-            // Remove all current roles
             await _userManager.RemoveFromRolesAsync(user, currentRoles);
-
-            // Add the new selected role, if one was provided
             if (!string.IsNullOrEmpty(selectedRole))
             {
                 await _userManager.AddToRoleAsync(user, selectedRole);
             }
 
-            TempData["SuccessMessage"] = "User roles updated successfully.";
+            // Update Organization Claim
+            var claims = await _userManager.GetClaimsAsync(user);
+            var organizationClaim = claims.FirstOrDefault(c => c.Type == "Organization");
+
+            if (organizationClaim != null)
+            {
+                await _userManager.RemoveClaimAsync(user, organizationClaim);
+            }
+            if (!string.IsNullOrEmpty(organization))
+            {
+                await _userManager.AddClaimAsync(user, new Claim("Organization", organization));
+            }
+
+
+            TempData["SuccessMessage"] = "User updated successfully.";
             return RedirectToAction(nameof(Users));
         }
 

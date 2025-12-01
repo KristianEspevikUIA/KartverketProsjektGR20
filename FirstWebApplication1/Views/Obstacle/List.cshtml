@@ -1,18 +1,10 @@
 ﻿@model FirstWebApplication1.Models.ObstacleListViewModel
 @{
     ViewData["Title"] = Model.Title;
-    var filterLabel = Model.StatusFilter switch
-    {
-        "Approved" => "Approved",
-        "Declined" => "Rejected",
-        "Pending" => "Pending",
-        _ => string.Empty
-    };
-    var hasActiveFilter = !string.IsNullOrWhiteSpace(Model.SearchTerm) || Model.StartDate.HasValue || Model.EndDate.HasValue || !string.IsNullOrWhiteSpace(Model.ObstacleTypeFilter);
 }
 
 <body class="bg-cover bg-center" style="background-image: url('/images/BackgroundImageGreen.png');">
-    <section class="mx-auto max-w-6xl mt-8">
+    <section class="mx-auto max-w-7xl mt-8">
         <div class="bg-white rounded-2xl shadow-sm ring-1 ring-gray-200 p-8">
             <div class="flex justify-between items-start mb-4">
                 <div>
@@ -28,49 +20,54 @@
             <!-- Filter UI -->
             <div class="bg-gray-50 p-4 rounded-lg border border-gray-200 mb-8">
                 <form asp-action="List" method="get" class="space-y-4">
-                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                        <!-- Obstacle Type Filter -->
+                    <input type="hidden" name="statusFilter" value="@Model.StatusFilter" />
+                    <div class="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-3 gap-4">
+                        <!-- Row 1 -->
                         <div>
-                            <label for="obstacleTypeFilter" class="block text-sm font-medium text-gray-700">Filter by Type</label>
+                            <label for="obstacleTypeFilter" class="block text-sm font-medium text-gray-700">Obstacle Type</label>
                             <select name="obstacleTypeFilter" id="obstacleTypeFilter" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
-                                <option value="">All Types</option>
+                                <option value="">All</option>
                                 @foreach (var type in FirstWebApplication1.Models.ObstacleTypes.Types)
                                 {
                                     <option value="@type.Value" selected="@(Model.ObstacleTypeFilter == type.Value)">@type.DisplayName</option>
                                 }
                             </select>
                         </div>
-                        <!-- Start Date -->
                         <div>
-                            <label for="startDate" class="block text-sm font-medium text-gray-700">From Date</label>
-                            <input type="date" name="startDate" id="startDate" value="@Model.StartDate?.ToString("yyyy-MM-dd")" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
+                            <label for="minHeight" class="block text-sm font-medium text-gray-700">Min Height (m)</label>
+                            <input type="number" name="minHeight" id="minHeight" value="@Model.MinHeight" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm" placeholder="e.g. 15" />
                         </div>
-                        <!-- End Date -->
                         <div>
-                            <label for="endDate" class="block text-sm font-medium text-gray-700">To Date</label>
-                            <input type="date" name="endDate" id="endDate" value="@Model.EndDate?.ToString("yyyy-MM-dd")" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
+                            <label for="maxHeight" class="block text-sm font-medium text-gray-700">Max Height (m)</label>
+                            <input type="number" name="maxHeight" id="maxHeight" value="@Model.MaxHeight" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm" placeholder="e.g. 300" />
+                        </div>
+                        <!-- Row 2 -->
+                        <div>
+                            <label for="organizationFilter" class="block text-sm font-medium text-gray-700">Organization</label>
+                            <select name="organizationFilter" id="organizationFilter" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
+                                <option value="">All</option>
+                                @foreach (var org in Model.AvailableOrganizations)
+                                {
+                                    <option value="@org" selected="@(Model.OrganizationFilter == org)">@org</option>
+                                }
+                            </select>
+                        </div>
+                        <div>
+                            <label for="startDate" class="block text-sm font-medium text-gray-700">Registered From</label>
+                            <input type="date" name="startDate" id="startDate" value="@Model.StartDate?.ToString("yyyy-MM-dd")" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm" />
+                        </div>
+                        <div>
+                            <label for="endDate" class="block text-sm font-medium text-gray-700">Registered To</label>
+                            <input type="date" name="endDate" id="endDate" value="@Model.EndDate?.ToString("yyyy-MM-dd")" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm" />
                         </div>
                     </div>
-                    <div class="flex items-center justify-between pt-4">
-                        <div class="flex items-center">
-                            <button type="submit" class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
-                                Apply Filters
-                            </button>
-                            <a asp-action="List" asp-route-statusFilter="@Model.StatusFilter" class="ml-3 text-sm text-gray-600 hover:text-gray-900">
-                                Clear Filters
-                            </a>
-                        </div>
-                        @if (!string.IsNullOrWhiteSpace(filterLabel))
-                        {
-                            <div class="flex items-center space-x-3">
-                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-indigo-100 text-indigo-800">
-                                    Status: @filterLabel
-                                </span>
-                                <a asp-action="List" class="text-sm text-indigo-600 hover:text-indigo-800">
-                                    View all
-                                </a>
-                            </div>
-                        }
+                    <div class="flex items-center pt-4">
+                        <button type="submit" class="inline-flex items-center px-6 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-indigo-600 hover:bg-indigo-700">
+                            Filter
+                        </button>
+                        <a asp-action="List" asp-route-statusFilter="@Model.StatusFilter" class="ml-3 text-sm text-gray-600 hover:text-gray-900">
+                            Reset
+                        </a>
                     </div>
                 </form>
             </div>
@@ -81,81 +78,51 @@
                     <table class="min-w-full divide-y divide-gray-300">
                         <thead class="bg-gray-50">
                             <tr>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Obstacle Name</th>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Height</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">#</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Obstacle</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Height (m)</th>
                                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Submitted Date</th>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Registered</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Organization</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Handled By</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">View</th>
                             </tr>
                         </thead>
                         <tbody class="bg-white divide-y divide-gray-200">
                             @foreach (var obstacle in Model.Obstacles)
                             {
                                 <tr class="hover:bg-gray-50">
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">@obstacle.Id</td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">@obstacle.ObstacleName</td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">@obstacle.ObstacleHeight</td>
                                     <td class="px-6 py-4 whitespace-nowrap">
-                                        <div class="text-sm font-medium text-gray-900">@obstacle.ObstacleName</div>
-                                    </td>
-                                    <td class="px-6 py-4 whitespace-nowrap">
-                                        <div class="text-sm text-gray-900">@obstacle.ObstacleHeight m</div>
-                                    </td>
-                                    <td class="px-6 py-4 whitespace-nowrap">
-                                        @{ 
-                                            var statusClass = obstacle.Status switch
-                                            {
+                                        @{
+                                            var statusClass = obstacle.Status switch {
                                                 "Approved" => "bg-green-100 text-green-800",
                                                 "Declined" => "bg-red-100 text-red-800",
-                                                "Pending" => "bg-yellow-100 text-yellow-800",
-                                                _ => "bg-gray-100 text-gray-800"
+                                                _ => "bg-yellow-100 text-yellow-800"
                                             };
-                                            var statusLabel = obstacle.Status == "Declined" ? "Rejected" : obstacle.Status;
                                         }
-
                                         <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium @statusClass">
-                                            @statusLabel
+                                            @(obstacle.Status == "Declined" ? "Rejected" : obstacle.Status)
                                         </span>
                                     </td>
-                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                        @obstacle.SubmittedDate.ToString("MMM dd, yyyy")
-                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">@obstacle.SubmittedDate.ToString("yyyy-MM-dd HH:mm")</td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">@(obstacle.Organization ?? "-")</td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">@(obstacle.Status == "Pending" ? "-" : (obstacle.ApprovedBy ?? obstacle.DeclinedBy))</td>
                                     <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
                                         <a asp-action="Details" asp-route-id="@obstacle.Id"
-                                           class="text-indigo-600 hover:text-indigo-900 mr-4">View</a>
-                                        <a asp-action="Edit" asp-route-id="@obstacle.Id"
-                                           class="text-indigo-600 hover:text-indigo-900 mr-4">Edit</a>
+                                           class="text-white bg-blue-600 hover:bg-blue-700 rounded-md px-3 py-1">View</a>
                                     </td>
                                 </tr>
                             }
                         </tbody>
                     </table>
                 </div>
-                <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-4">
-                    <button type="button"
-                            class="inline-flex items-center gap-2 px-3 py-2 rounded-md ring-1 ring-gray-300 text-gray-700 hover:bg-gray-50"
-                            onclick="window.location.href='@Url.Action("Index","Home")';"
-                            aria-label="Go back">
-                        <i class="fa-solid fa-arrow-left"></i>
-                        Back
-                    </button>
-                </div>
             }
             else
             {
-                <div class="text-center py-12">
-                    <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.172 16.172a4 4 0 015.656 0M9 12h6m-6-4h6m2 5.291A7.962 7.962 0 0112 15c-2.34 0-4.47-.88-6.08-2.32M3 8.69C4.51 6.32 8.03 4.5 12 4.5c3.97 0 7.49 1.82 9 4.19M3 15.31c1.51 2.37 5.03 4.19 9 4.19 3.97 0 7.49-1.82 9-4.19"></path>
-                    </svg>
-                    <h3 class="mt-2 text-sm font-medium text-gray-900">No Obstacles Found</h3>
-                    <p class="mt-1 text-sm text-gray-500">
-                        @if(hasActiveFilter)
-                        {
-                            <span>Try adjusting your filter criteria.</span>
-                        }
-                        else
-                        {
-                            <span>Get started by creating a new obstacle report.</span>
-                        }
-                    </p>
-                </div>
+                <p class="text-center py-10 text-gray-500">No obstacles found matching the criteria.</p>
             }
         </div>
     </section>

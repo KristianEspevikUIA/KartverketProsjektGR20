@@ -91,6 +91,7 @@ namespace FirstWebApplication1.Models
 
         public string Status { get; set; } = string.Empty;
         public string SubmittedBy { get; set; } = string.Empty;
+        public string? Organization { get; set; } // Added organization
         public DateTime SubmittedDate { get; set; }
         public string LastModifiedBy { get; set; } = string.Empty;
         public DateTime LastModifiedDate { get; set; }
