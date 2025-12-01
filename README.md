@@ -1,12 +1,10 @@
 # FirstWebApplication1 – IS-202 Programmeringsprosjekt (Høst 2025)
 
-FirstWebApplication1 is an ASP.NET Core MVC web application developed as part of
-IS-202 Programmeringsprosjekt (Høst 2025) at the University of Agder.
+FirstWebApplication1 is an ASP.NET Core MVC web application developed as part of IS-202 Programmeringsprosjekt (Høst 2025) at the University of Agder.
 
-The application allows users to register aviation-related obstacles through a structured form and view submitted entries in a clear overview table.
-It integrates a simple interactive map for visualising registered coordinates and provides a user-friendly submission workflow designed for further extension.
+The application lets authenticated users register aviation-related obstacles through a two-step form (choose type → register details with map input) and view submitted entries in a sortable/filterable list. Pilots can also open a Leaflet-based map that shows both pending and approved submissions for situational awareness.
 
-The project is developed and run in Visual Studio using Docker Compose for the database container and for managing environment variables. Docker runs in the background while Visual Studio launches the web application automatically.
+The solution can run fully in Docker (ASP.NET Core 9 container + MariaDB) or directly from `dotnet`/Visual Studio with a running database. Docker Compose files are provided for the simplest setup.
 
 ## Repository structure
 - `FirstWebApplication1/` – ASP.NET Core MVC app (controllers, models, Razor views, static assets).
@@ -16,11 +14,11 @@ The project is developed and run in Visual Studio using Docker Compose for the d
 
 ## Teknologi og nøkkelfunksjoner
 - ASP.NET Core 9 MVC med Identity og EF Core (Pomelo MariaDB-driver)
-- Tailwind CSS via CDN og Leaflet-kart for godkjente hinder
-- Rollebasert tilgang (`Admin`, `Caseworker`, `Pilot`) med rate limiting på hindercontroller
-- Sikkerhetshoder (CSP, X-Frame-Options, Referrer-Policy m.m.) og HTTPS/HSTS i produksjon
+- Tailwind CSS via CDN og Leaflet-kart (viser godkjente **og** ventende hindre)
+- Rollebasert tilgang (`Admin`, `Caseworker`, `Pilot`) med rate limiting på `ObstacleController`
+- HTTPS/HSTS utenfor utvikling, standard antiforgery på POST-aksjoner, Razor-encoding mot XSS og EF Core-parameterisering mot SQL-injection; ingen ekstra sikkerhetshoder er satt i koden
 
-# Technologies and tools used 
+# Technologies and tools used
 - JavaScript
 - C#
 - JSON
@@ -29,38 +27,26 @@ The project is developed and run in Visual Studio using Docker Compose for the d
 - Docker
 - Nuget
 
+# How the project is run
 
+You can start the system with Docker Compose **or** run it directly from `dotnet run` once MariaDB is available.
 
-# How the project is run:
+1. Clone the repository
+   - `git clone https://github.com/KristianEspevikUIA/KartVerketProsjektGR20.git`
+   - `cd KartverketProsjektGR20`
 
-Development and execution are done directly from Visual Studio:
+2. Restore packages
+   - `dotnet restore`
 
-1. Clone the repository.
-- git clone https://github.com/KristianEspevikUIA/KartverketProsjektGR20.git
+3. Start the services (Docker)
+   - Ensure Docker is running and the external network `appnet` exists (`docker network create appnet` if missing)
+   - `docker compose up --build`
+   - The web app listens on http://localhost:5010 and connects to the bundled MariaDB instance
 
-2. Navigate to the project directory
-- cd KartverketProsjektGR20
-
-3. Install the dependecies
-- docker build -t KristianEspevikUIA/KartVerketProsjektGR20
-
-4. using nuget
-- dotnet restore 
-
-
-USAGE -----
-5. Open the solution file:
-FirstWebApplication1.sln
-
-6. Make sure Docker Desktop is running in the background
-
-7. In Visual Studio, select the Docker Compose target
-(green play-button dropdown)
-
-7. Press ▶ Docker Compose to start the app
-
-Visual Studio builds both the Docker services and the ASP.NET Core application.
-You do not need to manually run Docker commands.
+4. Alternative local run (without Docker for the app)
+   - Start MariaDB separately and set `ConnectionStrings__DefaultConnection`
+   - Run `dotnet ef database update` (applies migrations) then `dotnet run --project FirstWebApplication1`
+   - Open http://localhost:5010 (or the port shown in the output)
 
 # Project Setup
 ## Docker Background Services
@@ -69,48 +55,32 @@ The project uses:
 
 - A MariaDB container for storing obstacle data
 
-- An ASP.NET Core 9 container for running the application
-(automatically launched by Visual Studio)
+- An ASP.NET Core 9 container for running the application (automatically launched by Visual Studio or Docker Compose)
 
 ## Admin account setup
 
-An admin user is provisioned automatically during startup when the following configuration values are present:
+Roles (`Admin`, `Pilot`, `Caseworker`) are seeded on startup. An admin user is provisioned only when the following configuration values are present:
 
-- `Admin:Email` – the admin username (default: `admin@kartverket.no`)
-- `Admin:Password` – the initial admin password (default development value: `Admin123`)
+- `Admin:Email` – the admin username (default suggestion: `admin@kartverket.no`)
+- `Admin:Password` – the initial admin password (example development value: `Admin123`)
 
 If these values are missing, the application logs a warning and no admin user is created. Only the configured admin email can sign up as an administrator; the public registration form exposes Pilot and Caseworker roles only.
 
 # Running the Application
 
-1. Start Docker Desktop
-
-2. Open the solution
-
-3. Select Docker Compose from the Visual Studio run dropdown
-(usually located next to the green start button)
-
-4. Press Run
-
-Visual Studio will:
-
-- Start the MariaDB container
-
-- Build and run the ASP.NET Core application
-
-- Open the website in your browser
-
-The default exposed port (for local development) is: http://localhost:5010
+- Start Docker Desktop (if using containers)
+- Open the solution or run `dotnet run --project FirstWebApplication1`
+- The default exposed port (for local development) is: http://localhost:5010
 
 ## How the system works (high level)
-- Users register/login via ASP.NET Identity. Only preconfigured emails kan bli Admin; andre velger Pilot/Caseworker.
-- Obstacle flow: velg hindertype → fyll inn skjema → innsending lagrer data som `Pending` → kvittering vises.
-- Behandling: Caseworker/Admin filtrerer hinder, oppdaterer status (Approved/Declined) og historikk.
-- Visning: Godkjente hinder leveres som JSON til Leaflet-kartet og listes i tabell.
+- Users register/login via ASP.NET Identity. Only preconfigured emails can become Admin; other users choose Pilot/Caseworker.
+- Obstacle flow: select obstacle type → fill out form (map + metadata) → submission saves as `Pending` → confirmation view.
+- Review: Caseworker/Admin filter obstacles, update status (Approved/Declined/Pending) and see modification metadata.
+- Visibility: Approved and pending obstacles are exposed as JSON to the pilot map, while the list view is role-gated (Pilot/Caseworker/Admin) with filtering by status, date range, height, type, and organization.
 
 ## Documentation
 - Systemarkitektur: `docs/architecture.md`
-- Sikkerhet (CSP, rate limiting, hoder, roller): `docs/security.md`
+- Sikkerhet (authn/autorisasjon, rate limiting): `docs/security.md`
 - Testing (plan, scenarier, logg): `docs/testing.md`
 - Mobil og responsivitet: `docs/mobile.md` (inkl. skjermbilder)
 
@@ -123,19 +93,12 @@ The default exposed port (for local development) is: http://localhost:5010
 
 The application includes:
 
-- A clean obstacle registration form
-capturing height, location, coordinates, category, and metadata
-
+- A clean obstacle registration form capturing height, location, coordinates, category, and metadata
 - A result/confirmation view that shows the submitted information
-
-- A table overview of reported obstacles
-
-- A Leaflet-based interactive map for displaying positions
-
+- A table overview of reported obstacles with filters for status, dates, height, type, organization, and text search
+- A Leaflet-based interactive map for displaying positions (point or drawn line) of approved and pending obstacles
 - Feet/meters conversion support based on user role
-
-- A simple and extendable architecture for further development
-throughout the IS-202 course
+- A simple and extendable architecture for further development throughout the IS-202 course
 
 ## Pilot-facing obstacle overview
 
@@ -143,7 +106,7 @@ Pilots have two dedicated entry points for situational awareness:
 
 - **Pilot map (`/Pilot/Map`)** – loads Leaflet with approved and pending obstacles from `PilotController.GetApprovedObstacles`, rendering both point markers and optional line geometry. A floating button links directly to the obstacle submission flow so pilots can report new findings.
 
-- **Obstacle list (`/Obstacle/List`)** – role-gated for Pilot, Caseworker, and Admin, exposing filtering by status, type, text search, and date range. Each row links to detail and edit actions, giving pilots a clear, filterable overview of all stored obstacles.
+- **Obstacle list (`/Obstacle/List`)** – role-gated for Pilot, Caseworker, and Admin, exposing filtering by status, type, text search, date range, height, and organization. Each row links to detail and edit actions, giving pilots a clear, filterable overview of all stored obstacles.
 
 This is a practical programming assignment focused on:
 
@@ -158,7 +121,7 @@ This is a practical programming assignment focused on:
 - Basic JavaScript map integration
 
 # Project Purpose and Context
-The project is developed for IS-202 Programmeringsprosjekt, where students are tasked with building a functioning software solution based on given requirements. Our group implemented an obstacle reporting system inspired by processes used by Kartverket and Norsk Luftambulanse. The application supports creating new obstacle reports, managing them, and displaying the data in dynamic interfaces such as tables and a map view.
+The project was developed for IS-202 Programmeringsprosjekt, where students are tasked with building a functioning software solution based on given requirements. Our group implemented an obstacle reporting system inspired by processes used by Kartverket and Norsk Luftambulanse. The application supports creating new obstacle reports, managing them, and displaying the data in dynamic interfaces such as tables and a map view.
 
 All features were developed collaboratively by the group, including form validation, data handling, UI adjustments, status history, and map integration.
 
