@@ -15,9 +15,14 @@ namespace FirstWebApplication1.Models
         public string? SearchTerm { get; set; }
         public DateTime? StartDate { get; set; }
         public DateTime? EndDate { get; set; }
+        public double? MinHeight { get; set; }
+        public double? MaxHeight { get; set; }
+
 
         // property for type filtering
         public string? ObstacleTypeFilter { get; set; }
+        public string? OrganizationFilter { get; set; }
+        public List<string> AvailableOrganizations { get; set; } = new List<string> { "Luftforsvaret", "Norsk Luftambulanse", "Politiets helikoptertjeneste" };
 
         // dynamic title and description based on status filter
         public string Title => StatusFilter switch

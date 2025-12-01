@@ -6,7 +6,10 @@ using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.EntityFrameworkCore;
 using System;
 using System.Linq;
+using System.Security.Claims;
 using System.Text.Json;
+using Microsoft.AspNetCore.Identity;
+
 
 namespace FirstWebApplication1.Controllers
 {
@@ -14,10 +17,12 @@ namespace FirstWebApplication1.Controllers
     public class ObstacleController : Controller
     {
         private readonly ApplicationDbContext _context;
+        private readonly UserManager<IdentityUser> _userManager;
 
-        public ObstacleController(ApplicationDbContext context)
+        public ObstacleController(ApplicationDbContext context, UserManager<IdentityUser> userManager)
         {
             _context = context;
+            _userManager = userManager;
         }
 
         // Helper method to check if user is a pilot
@@ -130,6 +135,8 @@ namespace FirstWebApplication1.Controllers
                 ModelState.Remove("ObstacleType");
                 ModelState.Remove("ObstacleName");
                 ModelState.Remove("ObstacleDescription");
+                ModelState.Remove("Organization");
+
 
                 var isPilot = IsPilot();
                 var usesFeetPreference = useFeet ?? isPilot;
@@ -142,9 +149,13 @@ namespace FirstWebApplication1.Controllers
                     return View(obstacledata);
                 }
 
+                // Get organization from user claims
+                var organizationClaim = User.Claims.FirstOrDefault(c => c.Type == "Organization");
+
                 // Set status to Pending
                 obstacledata.Status = "Pending";
                 obstacledata.SubmittedBy = User.Identity?.Name ?? "Unknown";
+                obstacledata.Organization = organizationClaim?.Value;
                 obstacledata.SubmittedDate = DateTime.UtcNow;
 
                 _context.Obstacles.Add(obstacledata);
@@ -189,7 +200,7 @@ namespace FirstWebApplication1.Controllers
 
         [Authorize(Roles = "Pilot,Caseworker,Admin")]
         [HttpGet]
-        public async Task<IActionResult> List(string? statusFilter = null, string? searchTerm = null, DateTime? startDate = null, DateTime? endDate = null, string? obstacleTypeFilter = null)
+        public async Task<IActionResult> List(string? statusFilter = null, string? searchTerm = null, DateTime? startDate = null, DateTime? endDate = null, string? obstacleTypeFilter = null, string? organizationFilter = null, double? minHeight = null, double? maxHeight = null)
         {
             var obstaclesQuery = _context.Obstacles.AsQueryable();
 
@@ -204,6 +215,12 @@ namespace FirstWebApplication1.Controllers
                 obstaclesQuery = obstaclesQuery.Where(o => o.Status == normalizedFilter);
             }
 
+            // Organization filter
+            if (!string.IsNullOrWhiteSpace(organizationFilter))
+            {
+                obstaclesQuery = obstaclesQuery.Where(o => o.Organization == organizationFilter);
+            }
+
             // Obstacle type filter
             if (!string.IsNullOrWhiteSpace(obstacleTypeFilter))
             {
@@ -214,6 +231,16 @@ namespace FirstWebApplication1.Controllers
             if (!string.IsNullOrWhiteSpace(searchTerm))
             {
                 obstaclesQuery = obstaclesQuery.Where(o => o.ObstacleName != null && o.ObstacleName.Contains(searchTerm));
+            }
+            
+            // Height filters
+            if (minHeight.HasValue)
+            {
+                obstaclesQuery = obstaclesQuery.Where(o => o.ObstacleHeight >= minHeight.Value);
+            }
+            if (maxHeight.HasValue)
+            {
+                obstaclesQuery = obstaclesQuery.Where(o => o.ObstacleHeight <= maxHeight.Value);
             }
 
             // Date range filter
@@ -238,7 +265,10 @@ namespace FirstWebApplication1.Controllers
                 SearchTerm = searchTerm,
                 StartDate = startDate,
                 EndDate = endDate,
-                ObstacleTypeFilter = obstacleTypeFilter
+                ObstacleTypeFilter = obstacleTypeFilter,
+                OrganizationFilter = organizationFilter,
+                MinHeight = minHeight,
+                MaxHeight = maxHeight
             };
 
             ViewBag.IsPilot = IsPilot();
@@ -290,6 +320,8 @@ namespace FirstWebApplication1.Controllers
             {
                 return NotFound();
             }
+
+            ModelState.Remove("Organization");
 
             if (!ModelState.IsValid)
             {
