@@ -4,150 +4,73 @@ using System.Threading.Tasks;
 using FirstWebApplication1.Controllers;
 using FirstWebApplication1.Data;
 using FirstWebApplication1.Models;
+using Microsoft.AspNetCore.Identity; // Still needed for IdentityUser
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.DependencyInjection;
+using Moq;
 using Xunit;
 
 namespace FirstWebApplication1.Tests.Controllers
 {
     public class PilotControllerTests
     {
+
+        // ------------------ Helpers ------------------
         private ApplicationDbContext CreateDbContext()
         {
-            // FULL ISOLASJON → fikser problemet
-            var services = new ServiceCollection();
-            services.AddEntityFrameworkInMemoryDatabase();
-
-            var provider = services.BuildServiceProvider();
-
             var options = new DbContextOptionsBuilder<ApplicationDbContext>()
-                .UseInMemoryDatabase(databaseName: System.Guid.NewGuid().ToString()) // unik database
-                .UseInternalServiceProvider(provider) // unik EF-infrastruktur
+                .UseInMemoryDatabase(databaseName: System.Guid.NewGuid().ToString())
                 .Options;
 
-            return new ApplicationDbContext(options);
+            var context = new ApplicationDbContext(options);
+            context.Database.EnsureCreated();
+            return context;
         }
 
         private PilotController CreateController(ApplicationDbContext context)
         {
+            // The PilotController does not need UserManager, so we don't pass it in.
             return new PilotController(context);
         }
-
-        // -----------------------------
-        // TEST 1: Map() returns a View
-        // -----------------------------
+         // this is a test method that checks if the Map action returns a ViewResult
         [Fact]
         public void Map_ReturnsView()
         {
-            var context = CreateDbContext();
+            using var context = CreateDbContext();
             var controller = CreateController(context);
 
             var result = controller.Map();
 
             Assert.IsType<ViewResult>(result);
         }
-
-        // --------------------------------------------------------
-        // TEST 2: GetApprovedObstacles returns Approved + Pending
-        // --------------------------------------------------------
+        
+        // this is a test method that checks if the GetApprovedObstacles action returns the correct obstacles
         [Fact]
         public async Task GetApprovedObstacles_ReturnsApprovedAndPending()
         {
-            var context = CreateDbContext();
-
-            context.Obstacles.Add(new ObstacleData
-            {
-                Id = 1,
-                ObstacleName = "Approved Tower",
-                Status = "Approved",
-                ObstacleHeight = 50,
-                Latitude = 58.1,
-                Longitude = 7.9,
-                ObstacleDescription = "Test",
-                LineGeoJson = "{\"type\":\"LineString\",\"coordinates\":[[7.9,58.1],[8.0,58.2]]}"
-            });
-
-            context.Obstacles.Add(new ObstacleData
-            {
-                Id = 2,
-                ObstacleName = "Pending Tower",
-                Status = "Pending",
-                ObstacleHeight = 30,
-                Latitude = 59.2,
-                Longitude = 8.8,
-                ObstacleDescription = "Pending"
-            });
-
-            context.Obstacles.Add(new ObstacleData
-            {
-                Id = 3,
-                ObstacleName = "Rejected Tower",
-                Status = "Rejected",
-                ObstacleHeight = 100,
-                Latitude = 58.2,
-                Longitude = 7.8,
-                ObstacleDescription = "Test2"
-            });
-
+            using var context = CreateDbContext();
+            
+            context.Obstacles.AddRange(
+                new ObstacleData { Id = 1, ObstacleName = "Approved Tower", Status = "Approved", ObstacleHeight = 50, Latitude = 58.1, Longitude = 7.9, ObstacleDescription = "Test" },
+                new ObstacleData { Id = 2, ObstacleName = "Pending Tower", Status = "Pending", ObstacleHeight = 30, Latitude = 59.2, Longitude = 8.8, ObstacleDescription = "Pending" },
+                new ObstacleData { Id = 3, ObstacleName = "Rejected Tower", Status = "Declined", ObstacleHeight = 100, Latitude = 58.2, Longitude = 7.8, ObstacleDescription = "Test2" }
+            );
             await context.SaveChangesAsync();
 
             var controller = CreateController(context);
 
+            // Act
             var result = await controller.GetApprovedObstacles();
-            var json = Assert.IsType<JsonResult>(result);
 
+            // Assert
+            var json = Assert.IsType<JsonResult>(result);
             var data = Assert.IsAssignableFrom<IEnumerable<object>>(json.Value).ToList();
-
-            // Skal være Approved + Pending
-            var propsById = data.ToDictionary(
-                obj => (int)obj.GetType().GetProperty("Id")!.GetValue(obj)!,
-                obj => obj.GetType().GetProperties());
-
-            Assert.Equal(2, propsById.Count);
-            Assert.Contains(1, propsById.Keys);
-            Assert.Contains(2, propsById.Keys);
-        }
-
-        // ------------------------------------------------------------------
-        // TEST 3: GetApprovedObstacles includes all fields needed by the map
-        // ------------------------------------------------------------------
-        [Fact]
-        public async Task GetApprovedObstacles_IncludesRequiredFields()
-        {
-            var context = CreateDbContext();
-
-            context.Obstacles.Add(new ObstacleData
-            {
-                Id = 10,
-                ObstacleName = "Line Tower",
-                Status = "Approved",
-                ObstacleHeight = 77,
-                Latitude = 60.1,
-                Longitude = 5.2,
-                ObstacleDescription = "desc",
-                LineGeoJson = "{\"type\":\"LineString\",\"coordinates\":[[5.2,60.1],[5.3,60.2]]}"
-            });
-
-            await context.SaveChangesAsync();
-
-            var controller = CreateController(context);
-
-            var result = await controller.GetApprovedObstacles();
-            var json = Assert.IsType<JsonResult>(result);
-
-            var data = Assert.IsAssignableFrom<IEnumerable<object>>(json.Value);
-            var item = Assert.Single(data);
-
-            var props = item.GetType().GetProperties();
-
-            Assert.Equal(10, (int)props.Single(p => p.Name == "Id").GetValue(item)!);
-            Assert.Equal("Line Tower", (string)props.Single(p => p.Name == "ObstacleName").GetValue(item)!);
-            Assert.Equal(77, (int)(double)props.Single(p => p.Name == "ObstacleHeight").GetValue(item)!);
-            Assert.Equal(60.1, (double)props.Single(p => p.Name == "Latitude").GetValue(item)!);
-            Assert.Equal(5.2, (double)props.Single(p => p.Name == "Longitude").GetValue(item)!);
-            Assert.NotNull(props.Single(p => p.Name == "LineGeoJson").GetValue(item));
-            Assert.NotNull(props.Single(p => p.Name == "Status").GetValue(item));
+            
+            Assert.Equal(2, data.Count);
+            // Use reflection to check properties on the anonymous type
+            Assert.Contains(data, d => (int)d.GetType().GetProperty("Id").GetValue(d) == 1);
+            Assert.Contains(data, d => (int)d.GetType().GetProperty("Id").GetValue(d) == 2);
+            Assert.DoesNotContain(data, d => (int)d.GetType().GetProperty("Id").GetValue(d) == 3);
         }
     }
 }

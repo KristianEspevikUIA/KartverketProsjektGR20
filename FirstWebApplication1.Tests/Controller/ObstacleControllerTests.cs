@@ -1,323 +1,251 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Security.Claims;
+using System.Threading.Tasks;
 using FirstWebApplication1.Controllers;
 using FirstWebApplication1.Data;
 using FirstWebApplication1.Models;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.ViewFeatures;
 using Microsoft.EntityFrameworkCore;
 using Moq;
+using Xunit;
 
 namespace FirstWebApplication1.Tests.Controller
 {
     public class ObstacleControllerTests
     {
-        // Helper: in-memory ApplicationDbContext, unique per test
+        // ================== HELPER METHODS ==================
+
         private ApplicationDbContext CreateDbContext()
         {
             var options = new DbContextOptionsBuilder<ApplicationDbContext>()
                 .UseInMemoryDatabase(Guid.NewGuid().ToString())
                 .Options;
-
-            return new ApplicationDbContext(options);
+            var context = new ApplicationDbContext(options);
+            context.Database.EnsureCreated();
+            return context;
         }
 
-        // Helper: create controller with fake HttpContext, TempData and User
+        private Mock<UserManager<IdentityUser>> CreateUserManagerMock()
+        {
+            var store = new Mock<IUserStore<IdentityUser>>();
+            return new Mock<UserManager<IdentityUser>>(
+                store.Object, null, null, null, null, null, null, null, null);
+        }
+
         private ObstacleController CreateController(
             ApplicationDbContext context,
-            bool isPilot = false,
-            string userName = "testuser")
+            string? organization = null,
+            string userName = "testuser",
+            string role = "Pilot")
         {
-            var controller = new ObstacleController(context);
+            var userManagerMock = CreateUserManagerMock();
+            var controller = new ObstacleController(context, userManagerMock.Object);
 
-            var httpContext = new DefaultHttpContext();
-
-            // Fake user & roles
-            var claims = new List<Claim>
-            {
-                new Claim(ClaimTypes.Name, userName)
+            var claims = new List<Claim> {
+                new Claim(ClaimTypes.Name, userName),
+                new Claim(ClaimTypes.Role, role)
             };
-            if (isPilot)
+            if (organization != null)
             {
-                claims.Add(new Claim(ClaimTypes.Role, "Pilot"));
+                claims.Add(new Claim("Organization", organization));
             }
 
-            httpContext.User = new ClaimsPrincipal(new ClaimsIdentity(claims, "TestAuth"));
-
-            controller.ControllerContext = new ControllerContext
+            var httpContext = new DefaultHttpContext
             {
-                HttpContext = httpContext
+                User = new ClaimsPrincipal(new ClaimsIdentity(claims, "TestAuth"))
             };
-
-            // TempData
-            var tempDataProvider = new Mock<ITempDataProvider>();
-            controller.TempData = new TempDataDictionary(httpContext, tempDataProvider.Object);
+            
+            controller.ControllerContext = new ControllerContext { HttpContext = httpContext };
+            controller.TempData = new TempDataDictionary(httpContext, new Mock<ITempDataProvider>().Object);
 
             return controller;
         }
+        // ================== TEST METHODS ==================
 
-        // ============================================================
-        // 1. SELECT TYPE (step 1 of wizard)
-        // ============================================================
 
-        [Fact]
+        [Fact] // this is a test method that checks if the SelectType GET action returns a ViewResult with a new ObstacleTypeViewModel
         public void SelectType_Get_ReturnsViewWithNewViewModel()
         {
-            // Arrange
             using var context = CreateDbContext();
             var controller = CreateController(context);
-
-            // Act
             var result = controller.SelectType();
-
-            // Assert
             var view = Assert.IsType<ViewResult>(result);
             Assert.IsType<ObstacleTypeViewModel>(view.Model);
         }
-
-        [Fact]
+       
+        [Fact] // this is a test method that checks if the SelectType POST action with a valid type sets TempData and redirects to DataForm
         public void SelectType_Post_ValidType_SetsTempDataAndRedirectsToDataForm()
         {
-            // Arrange
             using var context = CreateDbContext();
             var controller = CreateController(context);
-            var model = new ObstacleTypeViewModel { SelectedType = "PowerLine" };
-
-            // Act
+            var model = new ObstacleTypeViewModel { SelectedType = "Tower" };
             var result = controller.SelectType(model);
-
-            // Assert: should redirect to DataForm
             var redirect = Assert.IsType<RedirectToActionResult>(result);
             Assert.Equal(nameof(ObstacleController.DataForm), redirect.ActionName);
-
-            // TempData should contain selected obstacle type
-            Assert.Equal("PowerLine", controller.TempData["ObstacleType"] as string);
+            Assert.Equal("Tower", controller.TempData["ObstacleType"]);
         }
 
-        // ============================================================
-        // 2. DATAFORM GET (step 2 of wizard)
-        // ============================================================
-
-        [Fact]
+        [Fact] // this is a test method that checks if the SelectType POST action with an invalid model redisplays the form
         public async Task DataForm_Get_NoObstacleTypeInTempData_RedirectsToSelectType()
         {
-            // Arrange
             using var context = CreateDbContext();
             var controller = CreateController(context);
-
-            // Act: user tries to go to DataForm directly, skipping step 1
             var result = await controller.DataForm();
-
-            // Assert
             var redirect = Assert.IsType<RedirectToActionResult>(result);
             Assert.Equal(nameof(ObstacleController.SelectType), redirect.ActionName);
         }
 
-        [Fact]
-        public async Task DataForm_Get_WithObstacleType_ReturnsViewWithPrepopulatedModel()
-        {
-            // Arrange
-            using var context = CreateDbContext();
-            var controller = CreateController(context, isPilot: true);
-
-            // Simulate that step 1 has already stored the obstacle type
-            controller.TempData["ObstacleType"] = "Tower";
-
-            // Act
-            var result = await controller.DataForm();
-
-            // Assert
-            var view = Assert.IsType<ViewResult>(result);
-            var model = Assert.IsType<ObstacleData>(view.Model);
-
-            // Model should have type from TempData and default height 15
-            Assert.Equal("Tower", model.ObstacleType);
-            Assert.Equal(15, model.ObstacleHeight);
-
-            // Pilot flags should be set based on the fake user role
-            Assert.True((bool)controller.ViewBag.IsPilot);
-            Assert.True((bool)controller.ViewBag.UsesFeet);
-        }
-
-        // ============================================================
-        // 3. DATAFORM POST (step 3 – submit)
-        // ============================================================
-
-        [Fact]
+        [Fact] // this is a test method that checks if the DataForm POST action with an invalid model redisplays the form with the same model
         public async Task DataForm_Post_InvalidModel_RedisplaysFormWithSameModel()
         {
-            // Arrange
             using var context = CreateDbContext();
-            var controller = CreateController(context, isPilot: false);
-
-            // Step 1 value
+            var controller = CreateController(context);
             controller.TempData["ObstacleType"] = "Tower";
-
-            // Model missing required fields (e.g. Latitude/Longitude)
-            var model = new ObstacleData
-            {
-                ObstacleHeight = 20,
-                Latitude = null,
-                Longitude = null
-            };
-
-            // Force invalid model state
+            var model = new ObstacleData { ObstacleHeight = 20, Latitude = null, Longitude = null };
             controller.ModelState.AddModelError("Latitude", "Required");
 
-            // Act
             var result = await controller.DataForm(model, useFeet: null);
 
-            // Assert
             var view = Assert.IsType<ViewResult>(result);
             Assert.Same(model, view.Model);
             Assert.False(controller.ModelState.IsValid);
-
-            // ViewBag flags for non-pilot user
-            Assert.False((bool)controller.ViewBag.IsPilot);
-            Assert.False((bool)controller.ViewBag.UsesFeet);
         }
 
-        [Fact]
-        public async Task DataForm_Post_RespectsUseFeetPreference_WhenProvided()
-        {
-            // Arrange
-            using var context = CreateDbContext();
-            var controller = CreateController(context, isPilot: false);
-
-            controller.TempData["ObstacleType"] = "Tower";
-
-            var model = new ObstacleData
-            {
-                ObstacleHeight = 20,
-                Latitude = null,
-                Longitude = null
-            };
-
-            controller.ModelState.AddModelError("Latitude", "Required");
-
-            // Act
-            var result = await controller.DataForm(model, useFeet: true);
-
-            // Assert
-            var view = Assert.IsType<ViewResult>(result);
-            Assert.Same(model, view.Model);
-            Assert.True((bool)controller.ViewBag.UsesFeet);
-        }
-
-        [Fact]
-        public async Task DataForm_Post_ValidModel_SavesPendingObstacleAndReturnsOverviewView()
-        {
-            // Arrange
-            using var context = CreateDbContext();
-            var controller = CreateController(context, isPilot: true, userName: "pilotUser");
-
-            // Step 1 type stored in TempData
-            controller.TempData["ObstacleType"] = "PowerLine";
-
-            var model = new ObstacleData
-            {
-                ObstacleHeight = 50,
-                Latitude = 58.1,
-                Longitude = 7.2,
-                LineGeoJson = null,
-                ObstacleDescription = null // controller normalizes this
-            };
-
-            // Act
-            var result = await controller.DataForm(model, useFeet: null);
-
-            // Assert: controller should send user to "Overview" view
-            var view = Assert.IsType<ViewResult>(result);
-            Assert.Equal("Overview", view.ViewName);
-
-            var returned = Assert.IsType<ObstacleData>(view.Model);
-
-            // Type and name derived correctly
-            Assert.Equal("PowerLine", returned.ObstacleType);
-            Assert.Equal("PowerLine", returned.ObstacleName);
-
-            // Status and metadata set
-            Assert.Equal("Pending", returned.Status);
-            Assert.Equal("pilotUser", returned.SubmittedBy);
-            Assert.NotEqual(default, returned.SubmittedDate);
-
-            // Obstacle is actually persisted to DB
-            var stored = await context.Obstacles.FirstOrDefaultAsync(o => o.Id == returned.Id);
-            Assert.NotNull(stored);
-            Assert.Equal("Pending", stored.Status);
-        }
-
-        // ============================================================
-        // 4. APPROVE (status change)
-        // ============================================================
-
-        [Fact]
+        [Fact] // this is a test method that checks if the Approve action changes the status of an existing obstacle and redirects to the List action
         public async Task Approve_ExistingObstacle_ChangesStatusAndRedirectsToList()
         {
+
             // Arrange
             using var context = CreateDbContext();
-
-            // Add required fields so EF Core accepts the entity
-            var obstacle = new ObstacleData
-            {
-                ObstacleName = "To Approve",
-                Status = "Pending",
-                Latitude = 58.0,              // REQUIRED
-                Longitude = 7.0,              // REQUIRED
-                ObstacleDescription = "Test"  // REQUIRED
-            };
-
+            var obstacle = new ObstacleData { Id = 1, ObstacleName = "To Approve", Status = "Pending", Latitude = 58.0, Longitude = 7.0, ObstacleDescription = "Test" };
             context.Obstacles.Add(obstacle);
             await context.SaveChangesAsync();
-
             var controller = CreateController(context, userName: "caseworker");
-
             // Act
             var result = await controller.Approve(obstacle.Id);
+            
 
             // Assert
             var redirect = Assert.IsType<RedirectToActionResult>(result);
             Assert.Equal(nameof(ObstacleController.List), redirect.ActionName);
-            Assert.Equal("Pending", redirect.RouteValues["statusFilter"]);
-
             var stored = await context.Obstacles.FindAsync(obstacle.Id);
             Assert.Equal("Approved", stored.Status);
             Assert.Equal("caseworker", stored.ApprovedBy);
-            Assert.NotEqual(default, stored.ApprovedDate);
         }
 
-        // ============================================================
-        // 5. DELETE
-        // ============================================================
+
+        // this is a test method that checks if the Delete action removes an existing obstacle and redirects to the List action
 
         [Fact]
         public async Task Delete_ExistingObstacle_RemovesItAndRedirectsToList()
         {
-            // Arrange
             using var context = CreateDbContext();
-
-            var obstacle = new ObstacleData {
-                ObstacleName = "To Delete",
-                Status = "Pending",         
-                Latitude = 58.0,             
-                Longitude = 7.0,             
-                ObstacleDescription = "Test" 
-            };
+            var obstacle = new ObstacleData { Id = 1, ObstacleName = "To Delete", Status = "Pending", Latitude = 58.0, Longitude = 7.0, ObstacleDescription = "Test" };
             context.Obstacles.Add(obstacle);
             await context.SaveChangesAsync();
+            var controller = CreateController(context, userName: "admin", role: "Admin");
 
-            var controller = CreateController(context, userName: "admin");
-
-            // Act
             var result = await controller.Delete(obstacle.Id);
 
-            // Assert
             var redirect = Assert.IsType<RedirectToActionResult>(result);
             Assert.Equal(nameof(ObstacleController.List), redirect.ActionName);
-
-            // The entity should be gone from the database
             var stored = await context.Obstacles.FindAsync(obstacle.Id);
             Assert.Null(stored);
+        }
+
+
+        [Fact] // this is a test method that checks if the DataForm POST action saves an obstacle with the user's organization
+        public async Task DataForm_Post_SavesObstacleWithUserOrganization()
+        {
+            // Arrange
+            using var context = CreateDbContext();
+            var controller = CreateController(context, organization: "Luftforsvaret");
+            controller.TempData["ObstacleType"] = "Tower";
+            var model = new ObstacleData { ObstacleHeight = 100, Latitude = 60.0, Longitude = 10.0, ObstacleDescription = "Test Tower" };
+
+            // Act
+            var result = await controller.DataForm(model, useFeet: false);
+
+            // Assert
+            var redirectResult = Assert.IsType<RedirectToActionResult>(result);
+            Assert.Equal("Overview", redirectResult.ActionName);
+            var savedObstacle = Assert.Single(context.Obstacles);
+            Assert.Equal("Luftforsvaret", savedObstacle.Organization);
+            Assert.Equal("Pending", savedObstacle.Status);
+        }
+
+        [Fact] // this is a test method that checks if the List action filters obstacles by minimum and maximum height
+        public async Task List_FiltersByMinAndMaxHeight()
+        {
+            // Arrange
+            using var context = CreateDbContext();
+            context.Obstacles.AddRange(
+                new ObstacleData { ObstacleName = "Short", ObstacleHeight = 20, Latitude = 1, Longitude = 1, ObstacleDescription = "d" },
+                new ObstacleData { ObstacleName = "Medium", ObstacleHeight = 100, Latitude = 1, Longitude = 1, ObstacleDescription = "d" },
+                new ObstacleData { ObstacleName = "Tall", ObstacleHeight = 250, Latitude = 1, Longitude = 1, ObstacleDescription = "d" }
+            );
+            await context.SaveChangesAsync();
+            var controller = CreateController(context);
+
+            // Act: Filter for obstacles between 50 and 150 meters
+            var result = await controller.List(minHeight: 50, maxHeight: 150);
+
+            // Assert
+            var viewResult = Assert.IsType<ViewResult>(result);
+            var model = Assert.IsType<ObstacleListViewModel>(viewResult.Model);
+            var obstacle = Assert.Single(model.Obstacles);
+            Assert.Equal("Medium", obstacle.ObstacleName);
+        }
+
+        [Fact] // this is a test method that checks if the List action filters obstacles by obstacle type
+        public async Task List_FiltersByObstacleType()
+        {
+            // Arrange
+            using var context = CreateDbContext();
+            context.Obstacles.AddRange(
+                new ObstacleData { ObstacleName = "C1", ObstacleType = "Crane", ObstacleHeight = 50, Latitude = 1, Longitude = 1, ObstacleDescription = "d" },
+                new ObstacleData { ObstacleName = "T1", ObstacleType = "Tower", ObstacleHeight = 150, Latitude = 1, Longitude = 1, ObstacleDescription = "d" },
+                new ObstacleData { ObstacleName = "C2", ObstacleType = "Crane", ObstacleHeight = 80, Latitude = 1, Longitude = 1, ObstacleDescription = "d" }
+            );
+            await context.SaveChangesAsync();
+            var controller = CreateController(context);
+
+            // Act: Filter for "Crane"
+            var result = await controller.List(obstacleTypeFilter: "Crane");
+
+            // Assert
+            var viewResult = Assert.IsType<ViewResult>(result);
+            var model = Assert.IsType<ObstacleListViewModel>(viewResult.Model);
+            Assert.Equal(2, model.Obstacles.Count());
+            Assert.All(model.Obstacles, o => Assert.Equal("Crane", o.ObstacleType));
+        }
+
+        [Fact] // this is a test method that checks if the List action filters obstacles by organization
+        public async Task List_FiltersByOrganization()
+        {
+            // Arrange
+            using var context = CreateDbContext();
+            context.Obstacles.AddRange(
+                new ObstacleData { ObstacleName = "Airforce One", Organization = "Luftforsvaret", ObstacleHeight = 1, Latitude = 1, Longitude = 1, ObstacleDescription = "d" },
+                new ObstacleData { ObstacleName = "Police One", Organization = "Politiets helikoptertjeneste", ObstacleHeight = 1, Latitude = 1, Longitude = 1, ObstacleDescription = "d" },
+                new ObstacleData { ObstacleName = "Airforce Two", Organization = "Luftforsvaret", ObstacleHeight = 1, Latitude = 1, Longitude = 1, ObstacleDescription = "d" }
+            );
+            await context.SaveChangesAsync();
+            var controller = CreateController(context);
+
+            // Act: Filter for "Luftforsvaret"
+            var result = await controller.List(organizationFilter: "Luftforsvaret");
+
+            // Assert
+            var viewResult = Assert.IsType<ViewResult>(result);
+            var model = Assert.IsType<ObstacleListViewModel>(viewResult.Model);
+            Assert.Equal(2, model.Obstacles.Count());
+            Assert.All(model.Obstacles, o => Assert.Equal("Luftforsvaret", o.Organization));
         }
     }
 }

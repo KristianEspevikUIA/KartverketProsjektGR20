@@ -176,10 +176,14 @@ namespace FirstWebApplication1.Controllers
             }
         }
 
+        // STEP 4: Overview
+
+
         [Authorize]
         [HttpGet]
         public async Task<IActionResult> Overview(int id, bool? useFeet)
         {
+            // Retrieve the obstacle by ID from the database 
             var obstacle = await _context.Obstacles
                 .AsNoTracking()
                 .FirstOrDefaultAsync(o => o.Id == id);
@@ -198,6 +202,7 @@ namespace FirstWebApplication1.Controllers
             return View(obstacle);
         }
 
+// List, Details, Edit, Approve, Decline, Revalidate, Delete actions
         [Authorize(Roles = "Pilot,Caseworker,Admin")]
         [HttpGet]
         public async Task<IActionResult> List(string? statusFilter = null, string? searchTerm = null, DateTime? startDate = null, DateTime? endDate = null, string? obstacleTypeFilter = null, string? organizationFilter = null, double? minHeight = null, double? maxHeight = null)
@@ -277,6 +282,7 @@ namespace FirstWebApplication1.Controllers
             return View(viewModel);
         }
 
+
         [Authorize(Roles = "Pilot,Caseworker,Admin")]
         [HttpGet]
         public async Task<IActionResult> Details(int id)
@@ -288,6 +294,8 @@ namespace FirstWebApplication1.Controllers
                 return NotFound();
             }
 
+            // Pass user role info to view  
+
             ViewBag.IsPilot = IsPilot();
             ViewBag.UsesFeet = IsPilot();
 
@@ -296,7 +304,7 @@ namespace FirstWebApplication1.Controllers
 
         [Authorize(Roles = "Pilot,Caseworker,Admin")]
         [HttpGet]
-        public async Task<IActionResult> Edit(int id)
+        public async Task<IActionResult> Edit(int id) // 'Get' action to load the edit form
         {
             var obstacle = await _context.Obstacles.FindAsync(id);
 
@@ -311,12 +319,13 @@ namespace FirstWebApplication1.Controllers
             return View(obstacle);
         }
 
+// 'Post' action to handle form submission
         [Authorize(Roles = "Pilot,Caseworker,Admin")]
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Edit(int id, [Bind("Id, ObstacleName, ObstacleHeight, ObstacleDescription, Longitude, Latitude, LineGeoJson")] ObstacleData obstacledata)
         {
-            if (id != obstacledata.Id)
+            if (id != obstacledata.Id) // Ensure the ID in the URL matches the ID in the form data
             {
                 return NotFound();
             }
@@ -339,7 +348,7 @@ namespace FirstWebApplication1.Controllers
                 return View(fullObstacle);
             }
 
-            try
+            try // Try to update the obstacle in the database 
             {
                 var obstacleToUpdate = await _context.Obstacles.FindAsync(id);
                 if (obstacleToUpdate == null)
@@ -361,7 +370,7 @@ namespace FirstWebApplication1.Controllers
 
                 await _context.SaveChangesAsync();
             }
-            catch (DbUpdateConcurrencyException)
+            catch (DbUpdateConcurrencyException) // Handle concurrency issues   
             {
                 if (!await ObstacleExists(id))
                 {
@@ -376,7 +385,7 @@ namespace FirstWebApplication1.Controllers
         [Authorize(Roles = "Caseworker,Admin")]
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Approve(int id)
+        public async Task<IActionResult> Approve(int id) // 'Post' action to approve an obstacle
         {
             var obstacle = await _context.Obstacles.FindAsync(id);
 
@@ -385,6 +394,7 @@ namespace FirstWebApplication1.Controllers
                 return NotFound();
             }
 
+            // Update obstacle status and approval metadata 
             obstacle.Status = "Approved";
             obstacle.ApprovedBy = User.Identity?.Name ?? "Unknown";
             obstacle.ApprovedDate = DateTime.UtcNow;
