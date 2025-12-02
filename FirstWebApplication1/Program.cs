@@ -56,7 +56,7 @@ using (var scope = app.Services.CreateScope())
     {
         // Apply pending EF Core migrations (creates Identity tables if needed)
         var db = services.GetRequiredService<ApplicationDbContext>();
-        await db.Database.MigrateAsync(); // Changed to async
+       // await db.Database.MigrateAsync(); // Changed to async
 
         // Seed roles - using async properly
         var roleManager = services.GetRequiredService<RoleManager<IdentityRole>>();
