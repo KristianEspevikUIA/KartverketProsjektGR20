@@ -45,8 +45,11 @@ if (string.IsNullOrWhiteSpace(connectionString))
 
 // Konfigurerer Entity Framework Core med MariaDB
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
-    options.UseMySql(connectionString, new MySqlServerVersion(new Version(10, 6, 0))));
-
+    options.UseMySql(connectionString, new MySqlServerVersion(new Version(10, 6, 0)),
+        // === THIS IS THE NEW LINE TO ADD ===
+        mySqlOptions => mySqlOptions.EnableRetryOnFailure()
+        // ===================================
+    ));
 var app = builder.Build();
 
 using (var scope = app.Services.CreateScope())
