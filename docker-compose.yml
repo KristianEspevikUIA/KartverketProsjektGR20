@@ -4,7 +4,6 @@
     container_name: kartverket-mariadb
     restart: unless-stopped
     environment:
-      # Use a non-root user for better security
       MARIADB_USER: app_user
       MARIADB_PASSWORD: StrongPassword123!
       MARIADB_DATABASE: ObstacleDb
@@ -12,10 +11,9 @@
     ports:
       - "3308:3306"
     volumes:
-      # This volume persists the database data
       - mariadb_data:/var/lib/mysql
-      # This volume runs our SQL script on first startup
       - ./db-init:/docker-entrypoint-initdb.d:ro
+    # The 'networks' definition under the service is still needed
     networks:
       - appnet
     healthcheck:
@@ -32,20 +30,20 @@
     container_name: kartverket-app
     depends_on:
       mariadb:
-        condition: service_healthy # This now waits for the DB to be ready
+        condition: service_healthy
     environment:
       - ASPNETCORE_ENVIRONMENT=Development
-      # Updated connection string to use the new non-root user
       - ConnectionStrings__DefaultConnection=server=mariadb;port=3306;database=ObstacleDb;user=app_user;password=StrongPassword123!;TreatTinyAsBoolean=false
     ports:
       - "5010:8080"
+    # The 'networks' definition under the service is still needed
     networks:
       - appnet
 
 volumes:
   mariadb_data:
 
+# Add this new, simpler network definition
 networks:
   appnet:
-    external: true
-    name: appnet
+    driver: bridge
