@@ -65,10 +65,10 @@ namespace FirstWebApplication1.Tests.Controller
 
             return controller;
         }
+        // ================== TEST METHODS ==================
 
-        // ================== ORIGINAL TESTS (RESTORED & VERIFIED) ==================
 
-        [Fact]
+        [Fact] // this is a test method that checks if the SelectType GET action returns a ViewResult with a new ObstacleTypeViewModel
         public void SelectType_Get_ReturnsViewWithNewViewModel()
         {
             using var context = CreateDbContext();
@@ -77,8 +77,8 @@ namespace FirstWebApplication1.Tests.Controller
             var view = Assert.IsType<ViewResult>(result);
             Assert.IsType<ObstacleTypeViewModel>(view.Model);
         }
-
-        [Fact]
+       
+        [Fact] // this is a test method that checks if the SelectType POST action with a valid type sets TempData and redirects to DataForm
         public void SelectType_Post_ValidType_SetsTempDataAndRedirectsToDataForm()
         {
             using var context = CreateDbContext();
@@ -90,7 +90,7 @@ namespace FirstWebApplication1.Tests.Controller
             Assert.Equal("Tower", controller.TempData["ObstacleType"]);
         }
 
-        [Fact]
+        [Fact] // this is a test method that checks if the SelectType POST action with an invalid model redisplays the form
         public async Task DataForm_Get_NoObstacleTypeInTempData_RedirectsToSelectType()
         {
             using var context = CreateDbContext();
@@ -100,7 +100,7 @@ namespace FirstWebApplication1.Tests.Controller
             Assert.Equal(nameof(ObstacleController.SelectType), redirect.ActionName);
         }
 
-        [Fact]
+        [Fact] // this is a test method that checks if the DataForm POST action with an invalid model redisplays the form with the same model
         public async Task DataForm_Post_InvalidModel_RedisplaysFormWithSameModel()
         {
             using var context = CreateDbContext();
@@ -116,23 +116,30 @@ namespace FirstWebApplication1.Tests.Controller
             Assert.False(controller.ModelState.IsValid);
         }
 
-        [Fact]
+        [Fact] // this is a test method that checks if the Approve action changes the status of an existing obstacle and redirects to the List action
         public async Task Approve_ExistingObstacle_ChangesStatusAndRedirectsToList()
         {
+
+            // Arrange
             using var context = CreateDbContext();
             var obstacle = new ObstacleData { Id = 1, ObstacleName = "To Approve", Status = "Pending", Latitude = 58.0, Longitude = 7.0, ObstacleDescription = "Test" };
             context.Obstacles.Add(obstacle);
             await context.SaveChangesAsync();
             var controller = CreateController(context, userName: "caseworker");
-
+            // Act
             var result = await controller.Approve(obstacle.Id);
+            
 
+            // Assert
             var redirect = Assert.IsType<RedirectToActionResult>(result);
             Assert.Equal(nameof(ObstacleController.List), redirect.ActionName);
             var stored = await context.Obstacles.FindAsync(obstacle.Id);
             Assert.Equal("Approved", stored.Status);
             Assert.Equal("caseworker", stored.ApprovedBy);
         }
+
+
+        // this is a test method that checks if the Delete action removes an existing obstacle and redirects to the List action
 
         [Fact]
         public async Task Delete_ExistingObstacle_RemovesItAndRedirectsToList()
@@ -151,9 +158,8 @@ namespace FirstWebApplication1.Tests.Controller
             Assert.Null(stored);
         }
 
-        // ================== NEW & IMPROVED TESTS ==================
 
-        [Fact]
+        [Fact] // this is a test method that checks if the DataForm POST action saves an obstacle with the user's organization
         public async Task DataForm_Post_SavesObstacleWithUserOrganization()
         {
             // Arrange
@@ -173,7 +179,7 @@ namespace FirstWebApplication1.Tests.Controller
             Assert.Equal("Pending", savedObstacle.Status);
         }
 
-        [Fact]
+        [Fact] // this is a test method that checks if the List action filters obstacles by minimum and maximum height
         public async Task List_FiltersByMinAndMaxHeight()
         {
             // Arrange
@@ -196,7 +202,7 @@ namespace FirstWebApplication1.Tests.Controller
             Assert.Equal("Medium", obstacle.ObstacleName);
         }
 
-        [Fact]
+        [Fact] // this is a test method that checks if the List action filters obstacles by obstacle type
         public async Task List_FiltersByObstacleType()
         {
             // Arrange
@@ -219,7 +225,7 @@ namespace FirstWebApplication1.Tests.Controller
             Assert.All(model.Obstacles, o => Assert.Equal("Crane", o.ObstacleType));
         }
 
-        [Fact]
+        [Fact] // this is a test method that checks if the List action filters obstacles by organization
         public async Task List_FiltersByOrganization()
         {
             // Arrange

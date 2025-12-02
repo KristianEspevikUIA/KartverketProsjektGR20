@@ -14,6 +14,8 @@ namespace FirstWebApplication1.Tests.Controllers
 {
     public class PilotControllerTests
     {
+
+        // ------------------ Helpers ------------------
         private ApplicationDbContext CreateDbContext()
         {
             var options = new DbContextOptionsBuilder<ApplicationDbContext>()
@@ -25,13 +27,12 @@ namespace FirstWebApplication1.Tests.Controllers
             return context;
         }
 
-        // CORRECTED: This method now correctly creates the PilotController.
         private PilotController CreateController(ApplicationDbContext context)
         {
             // The PilotController does not need UserManager, so we don't pass it in.
             return new PilotController(context);
         }
-
+         // this is a test method that checks if the Map action returns a ViewResult
         [Fact]
         public void Map_ReturnsView()
         {
@@ -43,6 +44,7 @@ namespace FirstWebApplication1.Tests.Controllers
             Assert.IsType<ViewResult>(result);
         }
         
+        // this is a test method that checks if the GetApprovedObstacles action returns the correct obstacles
         [Fact]
         public async Task GetApprovedObstacles_ReturnsApprovedAndPending()
         {
