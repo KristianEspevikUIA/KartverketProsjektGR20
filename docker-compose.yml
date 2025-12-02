@@ -1,28 +1,44 @@
 ﻿services:
   mariadb:
     image: mariadb:11
+    container_name: kartverket-mariadb
+    restart: unless-stopped
+    environment:
+      # Use a non-root user for better security
+      MARIADB_USER: app_user
+      MARIADB_PASSWORD: StrongPassword123!
+      MARIADB_DATABASE: ObstacleDb
+      MARIADB_ROOT_PASSWORD: KlokkeklangKrissegutt04
     ports:
       - "3308:3306"
-    environment:
-      MARIADB_ROOT_PASSWORD: KlokkeklangKrissegutt04
-      MARIADB_DATABASE: ObstacleDb
     volumes:
+      # This volume persists the database data
       - mariadb_data:/var/lib/mysql
+      # This volume runs our SQL script on first startup
+      - ./db-init:/docker-entrypoint-initdb.d:ro
     networks:
       - appnet
+    healthcheck:
+      test: ["CMD", "mariadb-admin", "ping", "-h", "localhost", "-u", "root", "-p${MARIADB_ROOT_PASSWORD}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
 
   firstwebapplication1:
-    image: firstwebapplication
     build:
       context: .
       dockerfile: FirstWebApplication1/Dockerfile
-    ports:
-      - "5010:8080"
+    container_name: kartverket-app
+    depends_on:
+      mariadb:
+        condition: service_healthy # This now waits for the DB to be ready
     environment:
       - ASPNETCORE_ENVIRONMENT=Development
-      - ConnectionStrings__DefaultConnection=server=mariadb;port=3306;database=ObstacleDb;user=root;password=KlokkeklangKrissegutt04;TreatTinyAsBoolean=false;ConnectionTimeout=15;DefaultCommandTimeout=30
-    depends_on:
-      - mariadb
+      # Updated connection string to use the new non-root user
+      - ConnectionStrings__DefaultConnection=server=mariadb;port=3306;database=ObstacleDb;user=app_user;password=StrongPassword123!;TreatTinyAsBoolean=false
+    ports:
+      - "5010:8080"
     networks:
       - appnet
 
