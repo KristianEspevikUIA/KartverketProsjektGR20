@@ -40,7 +40,8 @@
 - Legge til lastertest mot rate limiter og database under realistisk volum.
 - UX-test med 1–2 brukere for navigasjon, spesielt mobilnav og kartinteraksjon.
 
-# UX-test gjennomført av pilot fra luftambulansen 
+# UX-test gjennomført av pilot fra luftambulansen
 Resultat:
-- legge til pending obstacles på kartet også, for å få bedre oversikt. 
+- legge til pending obstacles på kartet også, for å få bedre oversikt.
+- legg til WCAG-godkjente primærknapper på forsiden/landingssider for tydelig fokus og kontrast (implementert etter testen).
 
