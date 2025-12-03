@@ -33,6 +33,9 @@ Trinn:
 4. Når containerne er ferdig startet, er appen tilgjengelig på http://localhost:5010.
 
 > **Ikke støttet:** Vi tilbyr ikke CLI-basert oppstart (`dotnet run`/`docker compose up`) eller kjøring fra andre IDE-er. Eventuelle avvik fra Visual Studio-arbeidsflyten er på egen risiko og dokumenteres ikke.
+ 
+## Kjøring og deploy (fremtidig dokumentasjon)
+Vi har forsøkt å beskrive en CLI-basert «Kjøring og deploy»-flyt (f.eks. `dotnet ef database update`, `docker compose up`, miljøvariabler og helse-sjekker, samt en kort produksjonsguide med reverse proxy, logging og HSTS/CSP-konfigurasjon). Dette ble satt på vent fordi kombinasjonen av Leaflet via CDN og strengere sikkerhetshoder skapte kompatibilitetsutfordringer som vi ikke rakk å løse. Seksjonen legges til ved en senere oppdatering når vi har avklart anbefalt oppstart utenfor Visual Studio og kan gi verifiserte kommandoer og sikkerhetsoppsett.
 
 ## Prosjektoppsett
 ### Docker-bakgrunnstjenester
