@@ -1,137 +1,106 @@
 # FirstWebApplication1 – IS-202 Programmeringsprosjekt (Høst 2025)
 
-FirstWebApplication1 is an ASP.NET Core MVC web application developed as part of IS-202 Programmeringsprosjekt (Høst 2025) at the University of Agder.
+FirstWebApplication1 er en ASP.NET Core MVC-applikasjon utviklet som del av IS-202 Programmeringsprosjekt (Høst 2025) ved Universitetet i Agder.
 
-The application lets authenticated users register aviation-related obstacles through a two-step form (choose type → register details with map input) and view submitted entries in a sortable/filterable list. Pilots can also open a Leaflet-based map that shows both pending and approved submissions for situational awareness.
+Applikasjonen lar innloggede brukere registrere luftfartshindre gjennom et totrinnsskjema (velg type → registrer detaljer med kartdatainput) og se innsendte registreringer i en sorterbar/filtrerbar liste. Piloter kan også åpne et Leaflet-kart som viser både ventende og godkjente innsendelser for bedre situasjonsforståelse.
 
-The solution is designed to run via Visual Studio using the provided Docker Compose configuration, which starts both the ASP.NET Core 9 app and the MariaDB database from the solution drop-down.
+Løsningen er **utelukkende tiltenkt kjøring i Visual Studio** via det medfølgende Docker Compose-oppsettet, som starter både ASP.NET Core 9-appen og MariaDB-databasen fra nedtrekket for debug-profiler. Kjøring via CLI eller andre IDE-er er ikke støttet.
 
-## Repository structure
-- `FirstWebApplication1/` – ASP.NET Core MVC app (controllers, models, Razor views, static assets).
-- `FirstWebApplication1.Tests/` – Testprosjekt for å legge til enhets-/integrasjonstester.
-- `docs/` – Utfyllende dokumentasjon (arkitektur, sikkerhet, testing, mobil).
-- Docker Compose-filer – Starter MariaDB og app-containere i utvikling.
+## Mappe- og prosjektstruktur
+- `FirstWebApplication1/` – ASP.NET Core MVC-app (kontrollere, modeller, Razor-views, statiske ressurser).
+- `FirstWebApplication1.Tests/` – testprosjekt for enhets-/integrasjonstester.
+- `docs/` – utfyllende dokumentasjon (arkitektur, sikkerhet, testing, mobil).
+- Docker Compose-filer – starter MariaDB- og app-containere i utvikling.
 
 ## Teknologi og nøkkelfunksjoner
 - ASP.NET Core 9 MVC med Identity og EF Core (Pomelo MariaDB-driver)
 - Tailwind CSS via CDN og Leaflet-kart (viser godkjente **og** ventende hindre)
 - Rollebasert tilgang (`Admin`, `Caseworker`, `Pilot`) med rate limiting på `ObstacleController`
 - HTTPS/HSTS utenfor utvikling, standard antiforgery på POST-aksjoner, Razor-encoding mot XSS og EF Core-parameterisering mot SQL-injection; ingen ekstra sikkerhetshoder er satt i koden
+- WCAG-godkjente primærknapper på landingssider etter brukertesting (tilstrekkelig kontrast, fokusmarkering og god treffflate)
 
-# Technologies and tools used
-- JavaScript
-- C#
-- JSON
-- Markdown
-- MariaDB
-- Docker
-- Nuget
+## Slik kjører du prosjektet i Visual Studio (kun støttet modus)
+Bruk Visual Studio med Docker Compose for å starte hele løsningen fra `.sln`-fila. Installer følgende først:
 
-# How to run the project from Visual Studio
-
-Use Visual Studio with Docker Compose to launch the entire solution from the `.sln` file. Install the following prerequisites first:
-
-- Visual Studio (with ASP.NET and web development workload)
+- Visual Studio (arbeidsbelastning for ASP.NET og webutvikling)
 - .NET 9 SDK
 - Docker Desktop
 
-Steps:
+Trinn:
+1. Klon repoet: `git clone https://github.com/KristianEspevikUIA/KartVerketProsjektGR20.git` og åpne `FirstWebApplication1.sln` i Visual Studio.
+2. I verktøylinja i Visual Studio velger du **Docker Compose** fra nedtrekksmenyen for kjøreprofiler.
+3. Trykk **F5** (eller den grønne **Start**-knappen). Visual Studio bygger containerne og starter appen sammen med MariaDB-tjenesten definert i `docker-compose.dcproj`.
+4. Når containerne er ferdig startet, er appen tilgjengelig på http://localhost:5010.
 
-1. Clone the repository: `git clone https://github.com/KristianEspevikUIA/KartVerketProsjektGR20.git` and open `FirstWebApplication1.sln` in Visual Studio.
-2. In the Visual Studio toolbar, choose **Docker Compose** from the debug profile drop-down.
-3. Press **F5** (or click the green **Start**/play button). Visual Studio builds the containers and starts the app together with the MariaDB service defined in `docker-compose.dcproj`.
-4. When the containers finish starting, the app is available at http://localhost:5010.
+> **Ikke støttet:** Vi tilbyr ikke CLI-basert oppstart (`dotnet run`/`docker compose up`) eller kjøring fra andre IDE-er. Eventuelle avvik fra Visual Studio-arbeidsflyten er på egen risiko og dokumenteres ikke.
 
-# Project Setup
-## Docker Background Services
+## Prosjektoppsett
+### Docker-bakgrunnstjenester
+- En MariaDB-container for lagring av hinderdata
+- En ASP.NET Core 9-container for å kjøre applikasjonen (starter automatisk via Visual Studio/Docker Compose)
 
-The project uses:
+### Admin-kontooppsett
+Roller (`Admin`, `Pilot`, `Caseworker`) seedes ved oppstart. En admin-bruker opprettes kun når følgende konfigurasjonsverdier er satt:
 
-- A MariaDB container for storing obstacle data
+- `Admin:Email` – admin-brukernavn (standardforslag: `admin@kartverket.no`)
+- `Admin:Password` – initialt admin-passord (eksempel for utvikling: `Admin123`)
 
-- An ASP.NET Core 9 container for running the application (automatically launched by Visual Studio or Docker Compose)
+Hvis verdiene mangler, logger applikasjonen et varsel og ingen admin-bruker opprettes. Kun den konfigurerte admin-e-posten kan bli administrator; den offentlige registreringen eksponerer kun Pilot- og Caseworker-roller.
 
-## Admin account setup
+## Hvordan systemet fungerer (høy nivå)
+- Brukere registrerer/logger inn via ASP.NET Identity. Kun forhåndskonfigurert e-post kan bli Admin; andre brukere velger Pilot/Caseworker.
+- Hinderflyt: velg hindertype → fyll ut skjema (inkludert karttegning) → innsending lagres som `Pending` → kvittering vises.
+- Behandling: Caseworker/Admin filtrerer hindre, oppdaterer status (Approved/Declined/Pending) og ser endringsmetadata.
+- Synlighet: Godkjente og ventende hindre eksponeres som JSON til pilotkartet, mens listevisningen er rollebeskyttet (Pilot/Caseworker/Admin) med filtrering på status, datoperiode, høyde, type og organisasjon.
 
-Roles (`Admin`, `Pilot`, `Caseworker`) are seeded on startup. An admin user is provisioned only when the following configuration values are present:
-
-- `Admin:Email` – the admin username (default suggestion: `admin@kartverket.no`)
-- `Admin:Password` – the initial admin password (example development value: `Admin123`)
-
-If these values are missing, the application logs a warning and no admin user is created. Only the configured admin email can sign up as an administrator; the public registration form exposes Pilot and Caseworker roles only.
-
-
-## How the system works (high level)
-- Users register/login via ASP.NET Identity. Only preconfigured emails can become Admin; other users choose Pilot/Caseworker.
-- Obstacle flow: select obstacle type → fill out form (map + metadata) → submission saves as `Pending` → confirmation view.
-- Review: Caseworker/Admin filter obstacles, update status (Approved/Declined/Pending) and see modification metadata.
-- Visibility: Approved and pending obstacles are exposed as JSON to the pilot map, while the list view is role-gated (Pilot/Caseworker/Admin) with filtering by status, date range, height, type, and organization.
-
-## Documentation
+## Dokumentasjon
 - Systemarkitektur: `docs/architecture.md`
-- Sikkerhet (authn/autorisasjon, rate limiting): `docs/security.md`
+- Sikkerhet (autentisering/autorisasjon, rate limiting): `docs/security.md`
 - Testing (plan, scenarier, logg): `docs/testing.md`
 - Mobil og responsivitet: `docs/mobile.md` (inkl. skjermbilder)
 
-# Midlertidig håndtering av passord i repoet (kun for sensur)
+## Midlertidig håndtering av passord i repoet (kun for sensur)
 - Vi har **bevisst sjekket inn databasepassord og admin-passord** i Git for å forenkle oppsettet under sensur.
 - Dette er **ikke en anbefalt praksis** og bryter med våre egne retningslinjer om å bruke miljøvariabler/User Secrets for hemmeligheter.
 - Etter at prosjektet er ferdig vurdert vil passordene roteres, flyttes til secrets og slettes fra historikken for å gjenopprette sikkerhetsnivået.
 
-# Project Features
+## Funksjoner i applikasjonen
+- Et ryddig hinderegistreringsskjema som fanger høyde, lokasjon, koordinater, kategori og metadata
+- En resultat-/kvitteringsvisning som viser innsendt informasjon
+- Et tabelloversiktsbilde av rapporterte hindre med filtre for status, datoer, høyde, type, organisasjon og fritekst
+- Et Leaflet-basert interaktivt kart som viser posisjoner (punkt eller tegnet linje) for godkjente og ventende hindre
+- Støtte for konvertering mellom feet/meter basert på brukerrolle
+- Tilgjengelighetsjusterte (WCAG) primærknapper på landingssider med tydelig fokuslinje og fargekontrast
+- En enkel og utvidbar arkitektur for videre utvikling gjennom IS-202-kurset
 
-The application includes:
+## Pilot-oversikt over hindre
+Piloter har to dedikerte innganger for situasjonsforståelse:
 
-- A clean obstacle registration form capturing height, location, coordinates, category, and metadata
-- A result/confirmation view that shows the submitted information
-- A table overview of reported obstacles with filters for status, dates, height, type, organization, and text search
-- A Leaflet-based interactive map for displaying positions (point or drawn line) of approved and pending obstacles
-- Feet/meters conversion support based on user role
-- A simple and extendable architecture for further development throughout the IS-202 course
+- **Pilotkart (`/Pilot/Map`)** – laster Leaflet med godkjente og ventende hindre fra `PilotController.GetApprovedObstacles`, og viser både punkter og valgfri linjegeometri. En flytende knapp linker direkte til registreringsflyten slik at piloter kan rapportere nye funn.
+- **Hinderliste (`/Obstacle/List`)** – rollebeskyttet for Pilot, Caseworker og Admin, med filtrering på status, type, fritekst, datointervall, høyde og organisasjon. Hver rad lenker til detalj- og endrehandlinger og gir piloter en tydelig, filtrerbar oversikt over alle lagrede hindre.
 
-## Pilot-facing obstacle overview
+Dette er et praktisk programmeringsprosjekt med fokus på:
+- ASP.NET Core MVC-utvikling
+- Docker og containeriserte databaser
+- Skjema- og valideringshåndtering
+- Razor-views
+- Grunnleggende JavaScript-kartintegrasjon
 
-Pilots have two dedicated entry points for situational awareness:
+## Prosjektformål og kontekst
+Prosjektet ble utviklet for IS-202 Programmeringsprosjekt, der studentene skal bygge en fungerende programvareløsning basert på gitte krav. Gruppen implementerte et hinder-rapporteringssystem inspirert av prosesser hos Kartverket og Norsk Luftambulanse. Applikasjonen støtter opprettelse av nye hinderrapporter, forvaltning av dem og visning av data i dynamiske grensesnitt som tabeller og kart.
 
-- **Pilot map (`/Pilot/Map`)** – loads Leaflet with approved and pending obstacles from `PilotController.GetApprovedObstacles`, rendering both point markers and optional line geometry. A floating button links directly to the obstacle submission flow so pilots can report new findings.
-
-- **Obstacle list (`/Obstacle/List`)** – role-gated for Pilot, Caseworker, and Admin, exposing filtering by status, type, text search, date range, height, and organization. Each row links to detail and edit actions, giving pilots a clear, filterable overview of all stored obstacles.
-
-This is a practical programming assignment focused on:
-
-- ASP.NET Core MVC development
-
-- Docker and containerized databases
-
-- Form handling
-
-- Razor views
-
-- Basic JavaScript map integration
-
-# Project Purpose and Context
-The project was developed for IS-202 Programmeringsprosjekt, where students are tasked with building a functioning software solution based on given requirements. Our group implemented an obstacle reporting system inspired by processes used by Kartverket and Norsk Luftambulanse. The application supports creating new obstacle reports, managing them, and displaying the data in dynamic interfaces such as tables and a map view.
-
-All features were developed collaboratively by the group, including form validation, data handling, UI adjustments, status history, and map integration.
+Alle funksjoner er utviklet i fellesskap av gruppen, inkludert skjemavalidering, datahåndtering, UI-tilpasninger, statushistorikk og kartintegrasjon. Tilgjengelighetsforbedringene på landingssider ble lagt til etter brukertesting med pilotbruker.
 
 ## 📄 Dokumentasjon
-
 - [Systemarkitektur](docs/architecture.md)
 - [Mobiltilpasning](docs/mobile.md)
 - [Testing og testresultater](docs/testing.md)
 
-# Team Members
-
-This project was developed by Group 20:
-
-Nicolai Stephansen
-
-Brage Kristoffersen
-
-Endi Muriqi
-
-Kristian Espevik
-
-Rune Kvame
-
-Victor Ziadpour
+## Team
+Dette prosjektet ble utviklet av Gruppe 20:
+- Nicolai Stephansen
+- Brage Kristoffersen
+- Endi Muriqi
+- Kristian Espevik
+- Rune Kvame
+- Victor Ziadpour
