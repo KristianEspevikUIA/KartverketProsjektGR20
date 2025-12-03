@@ -42,22 +42,16 @@ Trinn:
 ### Admin-kontooppsett
 Roller (`Admin`, `Pilot`, `Caseworker`) seedes ved oppstart. En admin-bruker opprettes kun når følgende konfigurasjonsverdier er satt:
 
-- `Admin:Email` – admin-brukernavn (standardforslag: `admin@kartverket.no`)
-- `Admin:Password` – initialt admin-passord (eksempel for utvikling: `Admin123`)
+- `Admin:Email` – admin-brukernavn (`admin@kartverket.no`)
+- `Admin:Password` – admin-passord (`Admin123`)
 
 Hvis verdiene mangler, logger applikasjonen et varsel og ingen admin-bruker opprettes. Kun den konfigurerte admin-e-posten kan bli administrator; den offentlige registreringen eksponerer kun Pilot- og Caseworker-roller.
 
-## Hvordan systemet fungerer (høy nivå)
+## Hvordan systemet fungerer (høyt nivå)
 - Brukere registrerer/logger inn via ASP.NET Identity. Kun forhåndskonfigurert e-post kan bli Admin; andre brukere velger Pilot/Caseworker.
 - Hinderflyt: velg hindertype → fyll ut skjema (inkludert karttegning) → innsending lagres som `Pending` → kvittering vises.
 - Behandling: Caseworker/Admin filtrerer hindre, oppdaterer status (Approved/Declined/Pending) og ser endringsmetadata.
 - Synlighet: Godkjente og ventende hindre eksponeres som JSON til pilotkartet, mens listevisningen er rollebeskyttet (Pilot/Caseworker/Admin) med filtrering på status, datoperiode, høyde, type og organisasjon.
-
-## Dokumentasjon
-- Systemarkitektur: `docs/architecture.md`
-- Sikkerhet (autentisering/autorisasjon, rate limiting): `docs/security.md`
-- Testing (plan, scenarier, logg): `docs/testing.md`
-- Mobil og responsivitet: `docs/mobile.md` (inkl. skjermbilder)
 
 ## Midlertidig håndtering av passord i repoet (kun for sensur)
 - Vi har **bevisst sjekket inn databasepassord og admin-passord** i Git for å forenkle oppsettet under sensur.
@@ -79,12 +73,6 @@ Piloter har to dedikerte innganger for situasjonsforståelse:
 - **Pilotkart (`/Pilot/Map`)** – laster Leaflet med godkjente og ventende hindre fra `PilotController.GetApprovedObstacles`, og viser både punkter og valgfri linjegeometri. En flytende knapp linker direkte til registreringsflyten slik at piloter kan rapportere nye funn.
 - **Hinderliste (`/Obstacle/List`)** – rollebeskyttet for Pilot, Caseworker og Admin, med filtrering på status, type, fritekst, datointervall, høyde og organisasjon. Hver rad lenker til detalj- og endrehandlinger og gir piloter en tydelig, filtrerbar oversikt over alle lagrede hindre.
 
-Dette er et praktisk programmeringsprosjekt med fokus på:
-- ASP.NET Core MVC-utvikling
-- Docker og containeriserte databaser
-- Skjema- og valideringshåndtering
-- Razor-views
-- Grunnleggende JavaScript-kartintegrasjon
 
 ## Prosjektformål og kontekst
 Prosjektet ble utviklet for IS-202 Programmeringsprosjekt, der studentene skal bygge en fungerende programvareløsning basert på gitte krav. Gruppen implementerte et hinder-rapporteringssystem inspirert av prosesser hos Kartverket og Norsk Luftambulanse. Applikasjonen støtter opprettelse av nye hinderrapporter, forvaltning av dem og visning av data i dynamiske grensesnitt som tabeller og kart.
