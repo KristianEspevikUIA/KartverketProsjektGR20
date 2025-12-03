@@ -4,7 +4,7 @@ FirstWebApplication1 is an ASP.NET Core MVC web application developed as part of
 
 The application lets authenticated users register aviation-related obstacles through a two-step form (choose type → register details with map input) and view submitted entries in a sortable/filterable list. Pilots can also open a Leaflet-based map that shows both pending and approved submissions for situational awareness.
 
-The solution can run fully in Docker (ASP.NET Core 9 container + MariaDB) or directly from `dotnet`/Visual Studio with a running database. Docker Compose files are provided for the simplest setup.
+The solution is designed to run via Visual Studio using the provided Docker Compose configuration, which starts both the ASP.NET Core 9 app and the MariaDB database from the solution drop-down.
 
 ## Repository structure
 - `FirstWebApplication1/` – ASP.NET Core MVC app (controllers, models, Razor views, static assets).
@@ -27,26 +27,20 @@ The solution can run fully in Docker (ASP.NET Core 9 container + MariaDB) or dir
 - Docker
 - Nuget
 
-# How the project is run
+# How to run the project from Visual Studio
 
-You can start the system with Docker Compose **or** run it directly from `dotnet run` once MariaDB is available.
+Use Visual Studio with Docker Compose to launch the entire solution from the `.sln` file. Install the following prerequisites first:
 
-1. Clone the repository
-   - `git clone https://github.com/KristianEspevikUIA/KartVerketProsjektGR20.git`
-   - `cd KartverketProsjektGR20`
+- Visual Studio (with ASP.NET and web development workload)
+- .NET 9 SDK
+- Docker Desktop
 
-2. Restore packages
-   - `dotnet restore`
+Steps:
 
-3. Start the services (Docker)
-   - Ensure Docker is running and the external network `appnet` exists (`docker network create appnet` if missing)
-   - `docker compose up --build`
-   - The web app listens on http://localhost:5010 and connects to the bundled MariaDB instance
-
-4. Alternative local run (without Docker for the app)
-   - Start MariaDB separately and set `ConnectionStrings__DefaultConnection`
-   - Run `dotnet ef database update` (applies migrations) then `dotnet run --project FirstWebApplication1`
-   - Open http://localhost:5010 (or the port shown in the output)
+1. Clone the repository: `git clone https://github.com/KristianEspevikUIA/KartVerketProsjektGR20.git` and open `FirstWebApplication1.sln` in Visual Studio.
+2. In the Visual Studio toolbar, choose **Docker Compose** from the debug profile drop-down.
+3. Press **F5** (or click the green **Start**/play button). Visual Studio builds the containers and starts the app together with the MariaDB service defined in `docker-compose.dcproj`.
+4. When the containers finish starting, the app is available at http://localhost:5010.
 
 # Project Setup
 ## Docker Background Services
@@ -66,11 +60,6 @@ Roles (`Admin`, `Pilot`, `Caseworker`) are seeded on startup. An admin user is p
 
 If these values are missing, the application logs a warning and no admin user is created. Only the configured admin email can sign up as an administrator; the public registration form exposes Pilot and Caseworker roles only.
 
-# Running the Application
-
-- Start Docker Desktop (if using containers)
-- Open the solution or run `dotnet run --project FirstWebApplication1`
-- The default exposed port (for local development) is: http://localhost:5010
 
 ## How the system works (high level)
 - Users register/login via ASP.NET Identity. Only preconfigured emails can become Admin; other users choose Pilot/Caseworker.
