@@ -31,5 +31,4 @@ volumes:
 
 networks:
   appnet:
-    external: true
-    name: appnet
+    driver: bridge
