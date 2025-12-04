@@ -1,33 +1,33 @@
-﻿@model FirstWebApplication1.Models.Account.LoginViewModel
+@model FirstWebApplication1.Models.Account.LoginViewModel
 
 @{
     ViewData["Title"] = "Login";
 }
 
-<body class="bg-cover bg-center" style="background-image: url('/images/BackgroundImageGreen.png');">
-    <section class="mx-auto max-w-md mt-8">
-        <div class="bg-white rounded-2xl shadow-sm ring-1 ring-gray-200 p-8">
-            <div class="text-center mb-8">
-                <h1 class="text-3xl font-bold text-gray-900">Sign in to your account</h1>
-                <p class="mt-2 text-gray-600">Enter your credentials to access the system</p>
+<div class="bg-cover bg-center min-h-screen" style="background-image: url('/images/BackgroundImageGreen.png');">
+    <section class="mx-auto w-full max-w-xl sm:max-w-2xl mt-10 px-5 sm:px-8">
+        <div class="bg-white rounded-2xl shadow-sm ring-1 ring-gray-200 p-10 sm:p-12">
+            <div class="text-center mb-10">
+                <h1 class="text-3xl sm:text-4xl font-bold text-gray-900">Sign in to your account</h1>
+                <p class="mt-3 text-gray-600 text-base sm:text-lg">Enter your credentials to access the system</p>
             </div>
 
-            <form asp-action="Login" method="post" class="space-y-6">
+            <form asp-action="Login" method="post" class="space-y-7">
                 @Html.AntiForgeryToken()
                 <div asp-validation-summary="ModelOnly" class="text-red-600 text-sm"></div>
 
-                <div>
-                    <label asp-for="Email" class="block text-sm font-medium text-gray-700 mb-1"></label>
+                <div class="space-y-1">
+                    <label asp-for="Email" class="block text-sm font-medium text-gray-700"></label>
                     <input asp-for="Email"
-                           class="w-full rounded-lg border-gray-300 focus:border-indigo-600 focus:ring-indigo-600 px-3 py-2 border"
+                           class="w-full rounded-lg border-gray-300 focus:border-indigo-600 focus:ring-indigo-600 px-4 py-3"
                            placeholder="Enter your email" />
                     <span asp-validation-for="Email" class="text-red-600 text-sm"></span>
                 </div>
 
-                <div>
-                    <label asp-for="Password" class="block text-sm font-medium text-gray-700 mb-1"></label>
+                <div class="space-y-1">
+                    <label asp-for="Password" class="block text-sm font-medium text-gray-700"></label>
                     <input asp-for="Password" type="password"
-                           class="w-full rounded-lg border-gray-300 focus:border-indigo-600 focus:ring-indigo-600 px-3 py-2 border"
+                           class="w-full rounded-lg border-gray-300 focus:border-indigo-600 focus:ring-indigo-600 px-4 py-3"
                            placeholder="Enter your password" />
                     <span asp-validation-for="Password" class="text-red-600 text-sm"></span>
                 </div>
@@ -52,7 +52,19 @@
             </form>
         </div>
     </section>
-</body>
+</div>
+
+<style>
+    @@media (max-width: 800px) {
+        section.mx-auto {
+            max-width: 95vw;
+        }
+
+        section.mx-auto > div {
+            padding: 2.75rem;
+        }
+    }
+</style>
 
 @section Scripts {
     @{
