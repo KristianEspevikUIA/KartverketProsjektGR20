@@ -13,30 +13,30 @@ using Microsoft.AspNetCore.Identity;
 
 namespace FirstWebApplication1.Controllers
 {
-    [EnableRateLimiting("Fixed")]
+    [EnableRateLimiting("Fixed")] // Rate limiting for alle requests til denne controlleren
     public class ObstacleController : Controller
     {
-        private readonly ApplicationDbContext _context;
-        private readonly UserManager<IdentityUser> _userManager;
+        private readonly ApplicationDbContext _context; // DB-kontekst for hindere
+        private readonly UserManager<IdentityUser> _userManager; // Bruker/rollehåndtering
 
         public ObstacleController(ApplicationDbContext context, UserManager<IdentityUser> userManager)
         {
-            _context = context;
-            _userManager = userManager;
+            _context = context; // DI setter databasekonteksten
+            _userManager = userManager; // DI setter brukertjenesten
         }
 
-        // Helper method to check if user is a pilot
+        // Hjelpemetode: Sjekker om brukeren er pilot
         private bool IsPilot()
         {
             return User.IsInRole("Pilot");
         }
 
-        // STEP 1: Select obstacle type
+        // STEP 1: Velge hindertype
         [Authorize]
         [HttpGet]
         public IActionResult SelectType()
         {
-            return View(new ObstacleTypeViewModel());
+            return View(new ObstacleTypeViewModel()); // Sender tom modell til view
         }
 
         [Authorize]
@@ -44,44 +44,48 @@ namespace FirstWebApplication1.Controllers
         [ValidateAntiForgeryToken]
         public IActionResult SelectType(ObstacleTypeViewModel model)
         {
-            if (string.IsNullOrWhiteSpace(model.SelectedType))
+            if (string.IsNullOrWhiteSpace(model.SelectedType)) // Må velges
             {
                 ModelState.AddModelError("SelectedType", "Please select an obstacle type");
                 return View(model);
             }
 
-            TempData["ObstacleType"] = model.SelectedType;
-            return RedirectToAction(nameof(DataForm));
+            TempData["ObstacleType"] = model.SelectedType; // Lagrer valg midlertidig
+            return RedirectToAction(nameof(DataForm)); // Går videre til steg 2
         }
 
-        // STEP 2: Fill in details
+        // STEP 2: Fyll inn detaljer
         [Authorize]
         [HttpGet]
         public async Task<IActionResult> DataForm()
         {
-            if (TempData.Peek("ObstacleType") == null)
+            if (TempData.Peek("ObstacleType") == null) // Hindrer å hoppe over steg
             {
                 return RedirectToAction(nameof(SelectType));
             }
 
             var obstacleType = TempData.Peek("ObstacleType")?.ToString();
+
+            // Oppretter startmodell med defaulthøyde
             var obstacleData = new ObstacleData
             {
                 ObstacleType = obstacleType,
-                ObstacleHeight = 15 // Default minimum height in meters
+                ObstacleHeight = 15
             };
-            
+
+            // Henter godkjente hindere for å vise på kartet
             var approvedObstacles = await _context.Obstacles
                 .Where(o => o.Status == "Approved")
                 .AsNoTracking()
                 .ToListAsync();
 
-            // Create serializer options to keep property names as-is (PascalCase)
+            // Holder PascalCase i JSONet
             var serializerOptions = new JsonSerializerOptions
             {
                 PropertyNamingPolicy = null
             };
 
+            // Serialiserer enklere datasett til kartet
             var approvedObstaclesJson = JsonSerializer.Serialize(approvedObstacles.Select(o => new
             {
                 o.ObstacleName,
@@ -89,18 +93,18 @@ namespace FirstWebApplication1.Controllers
                 o.Latitude,
                 o.Longitude,
                 o.LineGeoJson
-            }), serializerOptions); // Apply the options here
+            }), serializerOptions);
 
-            ViewBag.ApprovedObstaclesJson = approvedObstaclesJson;
+            ViewBag.ApprovedObstaclesJson = approvedObstaclesJson; // Sender JSON til view
 
-            // Pass user role info to view
+            // Sender info om brukerens rolle
             ViewBag.IsPilot = IsPilot();
             ViewBag.UsesFeet = IsPilot();
 
             return View(obstacleData);
         }
 
-        // STEP 3: Submit and show overview
+        // STEP 3: Lagre og vis oversikt
         [Authorize]
         [HttpPost]
         [ValidateAntiForgeryToken]
@@ -108,14 +112,14 @@ namespace FirstWebApplication1.Controllers
         {
             try
             {
-                // Retrieve obstacle type from TempData
+                // Henter hinder-type fra TempData
                 var obstacleType = TempData.Peek("ObstacleType")?.ToString();
                 if (!string.IsNullOrWhiteSpace(obstacleType))
                 {
                     obstacledata.ObstacleType = obstacleType;
                 }
 
-                // Auto-generate obstacle name from type
+                // Automatisk navn dersom ikke annet oppgis
                 if (!string.IsNullOrWhiteSpace(obstacledata.ObstacleType))
                 {
                     obstacledata.ObstacleName = obstacledata.ObstacleType;
@@ -125,45 +129,43 @@ namespace FirstWebApplication1.Controllers
                     obstacledata.ObstacleName = "Unknown Obstacle";
                 }
 
-                // FIX: Ensure description is not null
+                // Hindrer null-beskrivelse
                 if (string.IsNullOrWhiteSpace(obstacledata.ObstacleDescription))
                 {
                     obstacledata.ObstacleDescription = "";
                 }
 
-                // Remove validation for optional/auto-generated fields
+                // Fjerner validering på auto-genererte felt
                 ModelState.Remove("ObstacleType");
                 ModelState.Remove("ObstacleName");
                 ModelState.Remove("ObstacleDescription");
                 ModelState.Remove("Organization");
 
-
                 var isPilot = IsPilot();
                 var usesFeetPreference = useFeet ?? isPilot;
 
-
-                if (!ModelState.IsValid)
+                if (!ModelState.IsValid) // Ved valideringsfeil: returner view
                 {
                     ViewBag.IsPilot = isPilot;
                     ViewBag.UsesFeet = usesFeetPreference;
                     return View(obstacledata);
                 }
 
-                // Get organization from user claims
+                // Henter organisasjon fra claims
                 var organizationClaim = User.Claims.FirstOrDefault(c => c.Type == "Organization");
 
-                // Set status to Pending
+                // Metadata ved innsending
                 obstacledata.Status = "Pending";
                 obstacledata.SubmittedBy = User.Identity?.Name ?? "Unknown";
                 obstacledata.Organization = organizationClaim?.Value;
                 obstacledata.SubmittedDate = DateTime.UtcNow;
 
-                _context.Obstacles.Add(obstacledata);
+                _context.Obstacles.Add(obstacledata); // Legger til i databasen
                 await _context.SaveChangesAsync();
 
                 return RedirectToAction(nameof(Overview), new { id = obstacledata.Id, useFeet = usesFeetPreference });
             }
-            catch (Exception ex)
+            catch (Exception ex) // Feilhåndtering
             {
                 var innerMessage = ex.InnerException?.Message ?? ex.Message;
                 ModelState.AddModelError("", $"Error saving obstacle: {innerMessage}");
@@ -176,14 +178,12 @@ namespace FirstWebApplication1.Controllers
             }
         }
 
-        // STEP 4: Overview
-
-
+        // STEP 4: Oversikt etter innsending
         [Authorize]
         [HttpGet]
         public async Task<IActionResult> Overview(int id, bool? useFeet)
         {
-            // Retrieve the obstacle by ID from the database 
+            // Henter hinderet by ID
             var obstacle = await _context.Obstacles
                 .AsNoTracking()
                 .FirstOrDefaultAsync(o => o.Id == id);
@@ -202,68 +202,72 @@ namespace FirstWebApplication1.Controllers
             return View(obstacle);
         }
 
-// List, Details, Edit, Approve, Decline, Revalidate, Delete actions
+        // LIST, FILTERING, SEARCHING
         [Authorize(Roles = "Pilot,Caseworker,Admin")]
         [HttpGet]
         public async Task<IActionResult> List(string? statusFilter = null, string? searchTerm = null, DateTime? startDate = null, DateTime? endDate = null, string? obstacleTypeFilter = null, string? organizationFilter = null, double? minHeight = null, double? maxHeight = null)
         {
-            var obstaclesQuery = _context.Obstacles.AsQueryable();
+            var obstaclesQuery = _context.Obstacles.AsQueryable(); // Start query
 
-            // Status filter
+            // Filter etter status
             if (!string.IsNullOrWhiteSpace(statusFilter))
             {
                 var normalizedFilter = statusFilter.Trim();
                 if (string.Equals(normalizedFilter, "Rejected", StringComparison.OrdinalIgnoreCase))
                 {
-                    normalizedFilter = "Declined";
+                    normalizedFilter = "Declined"; // Normaliserer "rejected" → "declined"
                 }
                 obstaclesQuery = obstaclesQuery.Where(o => o.Status == normalizedFilter);
             }
 
-            // Organization filter
+            // Filter etter organisasjon
             if (!string.IsNullOrWhiteSpace(organizationFilter))
             {
                 obstaclesQuery = obstaclesQuery.Where(o => o.Organization == organizationFilter);
             }
 
-            // Obstacle type filter
+            // Filter etter hinder-type
             if (!string.IsNullOrWhiteSpace(obstacleTypeFilter))
             {
                 obstaclesQuery = obstaclesQuery.Where(o => o.ObstacleType == obstacleTypeFilter);
             }
 
-            // Search term filter
+            // Tekstsøk i navn
             if (!string.IsNullOrWhiteSpace(searchTerm))
             {
                 obstaclesQuery = obstaclesQuery.Where(o => o.ObstacleName != null && o.ObstacleName.Contains(searchTerm));
             }
-            
-            // Height filters
+
+            // Minimum høyde
             if (minHeight.HasValue)
             {
                 obstaclesQuery = obstaclesQuery.Where(o => o.ObstacleHeight >= minHeight.Value);
             }
+
+            // Maksimum høyde
             if (maxHeight.HasValue)
             {
                 obstaclesQuery = obstaclesQuery.Where(o => o.ObstacleHeight <= maxHeight.Value);
             }
 
-            // Date range filter
+            // Dato fra …
             if (startDate.HasValue)
             {
                 obstaclesQuery = obstaclesQuery.Where(o => o.SubmittedDate >= startDate.Value);
             }
+
+            // … og til (inkluderer hele siste dag)
             if (endDate.HasValue)
             {
-                // Add one day to the end date to include all of that day
                 obstaclesQuery = obstaclesQuery.Where(o => o.SubmittedDate < endDate.Value.AddDays(1));
             }
 
+            // Kjører query og sorterer
             var obstacles = await obstaclesQuery
                 .OrderByDescending(o => o.SubmittedDate)
                 .ToListAsync();
 
-            var viewModel = new ObstacleListViewModel
+            var viewModel = new ObstacleListViewModel // Lager visningsmodell
             {
                 Obstacles = obstacles,
                 StatusFilter = statusFilter,
@@ -282,19 +286,17 @@ namespace FirstWebApplication1.Controllers
             return View(viewModel);
         }
 
-
+        // VIS DETALJER
         [Authorize(Roles = "Pilot,Caseworker,Admin")]
         [HttpGet]
         public async Task<IActionResult> Details(int id)
         {
-            var obstacle = await _context.Obstacles.FindAsync(id);
+            var obstacle = await _context.Obstacles.FindAsync(id); // Henter hinderet
 
             if (obstacle == null)
             {
                 return NotFound();
             }
-
-            // Pass user role info to view  
 
             ViewBag.IsPilot = IsPilot();
             ViewBag.UsesFeet = IsPilot();
@@ -302,21 +304,22 @@ namespace FirstWebApplication1.Controllers
             return View(obstacle);
         }
 
+        // REDIGER HINDER (GET)
         [Authorize(Roles = "Pilot,Caseworker,Admin")]
         [HttpGet]
-        public async Task<IActionResult> Edit(int id) // 'Get' action to load the edit form
+        public async Task<IActionResult> Edit(int id)
         {
-            var obstacle = await _context.Obstacles.FindAsync(id);
+            var obstacle = await _context.Obstacles.FindAsync(id); // Henter hinderet
 
             if (obstacle == null)
             {
                 return NotFound();
             }
 
-            // SECURITY: Pilots can only edit their own reports.
+            // Sikkerhet: Piloter kan kun redigere egne innsendelser
             if (User.IsInRole("Pilot") && obstacle.SubmittedBy != User.Identity.Name)
             {
-                return Forbid(); // Return 403 Access Denied
+                return Forbid();
             }
 
             ViewBag.IsPilot = IsPilot();
@@ -325,43 +328,44 @@ namespace FirstWebApplication1.Controllers
             return View(obstacle);
         }
 
-// 'Post' action to handle form submission
+        // REDIGER HINDER (POST)
         [Authorize(Roles = "Pilot,Caseworker,Admin")]
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Edit(int id, [Bind("Id, ObstacleName, ObstacleHeight, ObstacleDescription, Longitude, Latitude, LineGeoJson")] ObstacleData obstacledata)
         {
-            if (id != obstacledata.Id) // Ensure the ID in the URL matches the ID in the form data
+            if (id != obstacledata.Id) // URL-ID må matche skjema-ID
             {
                 return NotFound();
             }
-        
+
             var obstacleToUpdate = await _context.Obstacles.FindAsync(id);
-        
+
             if (obstacleToUpdate == null)
             {
                 return NotFound();
             }
-        
-            // SECURITY: Pilots can only edit their own reports.
+
+            // Sikkerhet: piloter kan kun redigere egne hindere
             if (User.IsInRole("Pilot") && obstacleToUpdate.SubmittedBy != User.Identity.Name)
             {
-                return Forbid(); // Return 403 Access Denied
+                return Forbid();
             }
 
-            ModelState.Remove("Organization");
+            ModelState.Remove("Organization"); // Fjerner validering av dette feltet
 
             if (!ModelState.IsValid)
             {
                 ViewBag.IsPilot = IsPilot();
                 ViewBag.UsesFeet = IsPilot();
-                // Return the original entity from the database, not the invalid one from the model binder.
+
+                // Returnerer original databaseentitet for å unngå tap av felt
                 return View(obstacleToUpdate);
             }
 
-            try // Try to update the obstacle in the database 
+            try
             {
-                // Apply the changes from the bound model
+                // Oppdaterer felter med data brukeren har endret
                 obstacleToUpdate.ObstacleName = obstacledata.ObstacleName;
                 obstacleToUpdate.ObstacleHeight = obstacledata.ObstacleHeight;
                 obstacleToUpdate.ObstacleDescription = obstacledata.ObstacleDescription ?? "";
@@ -369,28 +373,29 @@ namespace FirstWebApplication1.Controllers
                 obstacleToUpdate.Latitude = obstacledata.Latitude;
                 obstacleToUpdate.LineGeoJson = obstacledata.LineGeoJson;
 
-                // Set modification metadata
+                // Setter metadata for endring
                 obstacleToUpdate.LastModifiedBy = User.Identity?.Name ?? "Unknown";
                 obstacleToUpdate.LastModifiedDate = DateTime.UtcNow;
 
                 await _context.SaveChangesAsync();
             }
-            catch (DbUpdateConcurrencyException) // Handle concurrency issues   
+            catch (DbUpdateConcurrencyException)
             {
-                if (!await ObstacleExists(id))
+                if (!await ObstacleExists(id)) // Sjekker at hinderet fortsatt finnes
                 {
                     return NotFound();
                 }
                 throw;
             }
 
-            return RedirectToAction(nameof(List));
+            return RedirectToAction(nameof(List)); // Tilbake til listevisningen
         }
 
+        // GODKJENN HINDER
         [Authorize(Roles = "Caseworker,Admin")]
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Approve(int id) // 'Post' action to approve an obstacle
+        public async Task<IActionResult> Approve(int id)
         {
             var obstacle = await _context.Obstacles.FindAsync(id);
 
@@ -399,7 +404,7 @@ namespace FirstWebApplication1.Controllers
                 return NotFound();
             }
 
-            // Update obstacle status and approval metadata 
+            // Oppdaterer status og metadata
             obstacle.Status = "Approved";
             obstacle.ApprovedBy = User.Identity?.Name ?? "Unknown";
             obstacle.ApprovedDate = DateTime.UtcNow;
@@ -412,6 +417,7 @@ namespace FirstWebApplication1.Controllers
             return RedirectToAction(nameof(List), new { statusFilter = "Pending" });
         }
 
+        // AVSLÅ HINDER
         [Authorize(Roles = "Caseworker,Admin")]
         [HttpPost]
         [ValidateAntiForgeryToken]
@@ -436,7 +442,8 @@ namespace FirstWebApplication1.Controllers
 
             return RedirectToAction(nameof(List), new { statusFilter = "Pending" });
         }
-        
+
+        // GJØR HINDER TILBAKE TIL PENDING
         [Authorize(Roles = "Caseworker,Admin")]
         [HttpPost]
         [ValidateAntiForgeryToken]
@@ -462,6 +469,7 @@ namespace FirstWebApplication1.Controllers
             return RedirectToAction(nameof(Details), new { id });
         }
 
+        // SLETT HINDER (kun Admin)
         [Authorize(Roles = "Admin")]
         [HttpPost]
         [ValidateAntiForgeryToken]
@@ -474,12 +482,13 @@ namespace FirstWebApplication1.Controllers
                 return NotFound();
             }
 
-            _context.Obstacles.Remove(obstacle);
+            _context.Obstacles.Remove(obstacle); // Fjerner entitet
             await _context.SaveChangesAsync();
 
             return RedirectToAction(nameof(List));
         }
 
+        // Hjelpemetode: sjekker om hinder eksisterer
         private async Task<bool> ObstacleExists(int id)
         {
             return await _context.Obstacles.AnyAsync(e => e.Id == id);
