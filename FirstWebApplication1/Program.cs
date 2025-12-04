@@ -1,11 +1,12 @@
 using FirstWebApplication1.Data;
+using FirstWebApplication1.Services;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Localization;
 using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.EntityFrameworkCore;
 using Pomelo.EntityFrameworkCore.MySql.Infrastructure;
 using System.Globalization;
-using Microsoft.AspNetCore.Identity; 
-using Microsoft.AspNetCore.Authentication.Cookies; 
+using System.Threading.RateLimiting;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -14,7 +15,6 @@ builder.Services.AddControllersWithViews();
 
 builder.Services.AddIdentity<IdentityUser, IdentityRole>(options =>
 {
-    // Configure identity options
     options.SignIn.RequireConfirmedAccount = false;
     options.Password.RequireDigit = true;
     options.Password.RequiredLength = 6;
@@ -23,19 +23,19 @@ builder.Services.AddIdentity<IdentityUser, IdentityRole>(options =>
 }).AddEntityFrameworkStores<ApplicationDbContext>()
 .AddDefaultTokenProviders();
 
-//rate limiter configuration
+// Rate limiter configuration
 builder.Services.AddRateLimiter(options =>
 {
     options.AddFixedWindowLimiter("Fixed", opt =>
     {
-        opt.PermitLimit = 10; // 10 requests
-        opt.Window = TimeSpan.FromSeconds(10); // per 10 seconds
-        opt.QueueProcessingOrder = System.Threading.RateLimiting.QueueProcessingOrder.OldestFirst;
-        opt.QueueLimit = 5; // Allow queuing up to 5 requests
+        opt.PermitLimit = 10;
+        opt.Window = TimeSpan.FromSeconds(10);
+        opt.QueueProcessingOrder = QueueProcessingOrder.OldestFirst;
+        opt.QueueLimit = 5;
     });
 });
 
-// Henter connection string fra appsettings.json filen
+// Get connection string
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
 
 if (string.IsNullOrWhiteSpace(connectionString))
@@ -43,84 +43,25 @@ if (string.IsNullOrWhiteSpace(connectionString))
     throw new InvalidOperationException("The MariaDB connection string 'DefaultConnection' was not found.");
 }
 
-// Konfigurerer Entity Framework Core med MariaDB
+// Configure Entity Framework Core with MariaDB
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
-    options.UseMySql(connectionString, new MySqlServerVersion(new Version(10, 6, 0))));
+    options.UseMySql(
+        connectionString,
+        ServerVersion.AutoDetect(connectionString),
+        mySqlOptions =>
+        {
+            mySqlOptions.EnableRetryOnFailure(
+                maxRetryCount: 10,
+                maxRetryDelay: TimeSpan.FromSeconds(30),
+                errorNumbersToAdd: null);
+            mySqlOptions.CommandTimeout(60);
+        }
+    ));
+
+// Add the hosted service for database migrations and seeding
+builder.Services.AddHostedService<MigrationHostedService>();
 
 var app = builder.Build();
-
-using (var scope = app.Services.CreateScope())
-{
-    var services = scope.ServiceProvider;
-    try
-    {
-        // Apply pending EF Core migrations (creates Identity tables if needed)
-        var db = services.GetRequiredService<ApplicationDbContext>();
-        await db.Database.MigrateAsync(); // Changed to async
-
-        // Seed roles - using async properly
-        var roleManager = services.GetRequiredService<RoleManager<IdentityRole>>();
-        string[] roleNames = { "Admin", "Pilot", "Caseworker" };
-
-        foreach (var roleName in roleNames)
-        {
-            var exists = await roleManager.RoleExistsAsync(roleName); // Changed to await
-            if (!exists)
-            {
-                var createResult = await roleManager.CreateAsync(new IdentityRole(roleName)); // Changed to await
-                if (!createResult.Succeeded)
-                {
-                    var logger = services.GetRequiredService<ILogger<Program>>();
-                    logger.LogWarning("Failed to create role {Role}: {Errors}", roleName, string.Join(", ", createResult.Errors.Select(e => e.Description)));
-                }
-            }
-        }
-
-        // Seed admin user from configuration when credentials are provided
-        var configuration = services.GetRequiredService<IConfiguration>();
-        var adminEmail = configuration["Admin:Email"];
-        var adminPassword = configuration["Admin:Password"];
-
-        if (!string.IsNullOrWhiteSpace(adminEmail) && !string.IsNullOrWhiteSpace(adminPassword))
-        {
-            var userManager = services.GetRequiredService<UserManager<IdentityUser>>();
-            var adminUser = await userManager.FindByEmailAsync(adminEmail);
-
-            if (adminUser == null)
-            {
-                adminUser = new IdentityUser
-                {
-                    UserName = adminEmail,
-                    Email = adminEmail,
-                    EmailConfirmed = true
-                };
-
-                var createAdminResult = await userManager.CreateAsync(adminUser, adminPassword);
-                if (!createAdminResult.Succeeded)
-                {
-                    var logger = services.GetRequiredService<ILogger<Program>>();
-                    logger.LogWarning("Failed to create admin user {Email}: {Errors}", adminEmail, string.Join(", ", createAdminResult.Errors.Select(e => e.Description)));
-                }
-            }
-
-            if (adminUser != null && !await userManager.IsInRoleAsync(adminUser, "Admin"))
-            {
-                await userManager.AddToRoleAsync(adminUser, "Admin");
-            }
-        }
-        else
-        {
-            var logger = services.GetRequiredService<ILogger<Program>>();
-            logger.LogWarning("Admin credentials not configured; admin user was not created.");
-        }
-    }
-    catch (Exception ex)
-    {
-        var logger = services.GetRequiredService<ILogger<Program>>();
-        logger.LogError(ex, "An error occurred while migrating or seeding the database.");
-        throw;
-    }
-}
 
 // --- Fix culture for macOS parsing of latitude/longitude ---
 var defaultCulture = new CultureInfo("en-US");
@@ -138,17 +79,13 @@ if (!app.Environment.IsDevelopment())
 app.UseStaticFiles();
 app.UseHttpsRedirection();
 app.UseRouting();
-    
 app.UseRateLimiter();
-
 app.UseAuthentication();
-
 app.UseAuthorization();
 
-app.MapStaticAssets();
+// This is the standard and correct way to map your controllers
 app.MapControllerRoute(
     name: "default",
-    pattern: "{controller=Home}/{action=Index}/{id?}")
-    .WithStaticAssets();
+    pattern: "{controller=Home}/{action=Index}/{id?}");
 
 app.Run();

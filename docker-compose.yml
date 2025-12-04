@@ -4,15 +4,20 @@
     ports:
       - "3308:3306"
     environment:
+      # Corrected the typo here
       MARIADB_ROOT_PASSWORD: KlokkeklangKrissegutt04
       MARIADB_DATABASE: ObstacleDb
     volumes:
       - mariadb_data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-pKlokkeklangKrissegutt04"]
+      timeout: 20s
+      retries: 10
+      start_period: 40s
     networks:
       - appnet
 
   firstwebapplication1:
-    image: firstwebapplication
     build:
       context: .
       dockerfile: FirstWebApplication1/Dockerfile
@@ -20,9 +25,11 @@
       - "5010:8080"
     environment:
       - ASPNETCORE_ENVIRONMENT=Development
-      - ConnectionStrings__DefaultConnection=server=mariadb;port=3306;database=ObstacleDb;user=root;password=KlokkeklangKrissegutt04;TreatTinyAsBoolean=false;ConnectionTimeout=15;DefaultCommandTimeout=30
+      - ConnectionStrings__DefaultConnection=Server=mariadb;Port=3306;Database=ObstacleDb;User=root;Password=KlokkeklangKrissegutt04;TreatTinyAsBoolean=false
     depends_on:
-      - mariadb
+      mariadb:
+        condition: service_healthy
+    restart: unless-stopped
     networks:
       - appnet
 
