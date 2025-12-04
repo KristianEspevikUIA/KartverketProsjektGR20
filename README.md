@@ -72,6 +72,13 @@ Hvis verdiene mangler, logger applikasjonen et varsel og ingen admin-bruker oppr
 - Tilgjengelighetsjusterte (WCAG) primærknapper på landingssider med tydelig fokuslinje og fargekontrast
 - En enkel og utvidbar arkitektur for videre utvikling gjennom IS-202-kurset
 
+## Kjente mangler og ønskede forbedringer
+- **Mangler dokumentert CLI/produksjonsoppsett:** Vi har bevisst utelatt en verifisert «Kjøring og deploy»-guide utenfor Visual Studio. Leaflet via CDN og behovet for strenge sikkerhetshoder (HSTS/CSP) skapte problemer vi ikke har løst, så alternative oppstartsstier (`dotnet run`, `docker compose up` med miljøvariabler) er utestet og udokumentert.
+- **Manglende sikkerhetshoder:** Utover ASP.NET-standarden er ingen ekstra sikkerhetshoder konfigurert. Det betyr at Content Security Policy, `X-Frame-Options`/`Frame-Options` og subresource integrity for CDN-ressurser fortsatt mangler og bør legges til før reell produksjonsbruk.
+- **Passord og secrets er sjekket inn midlertidig:** Admin- og databasepassord ligger i repoet for sensur. Disse må flyttes til User Secrets/miljøvariabler og roteres i etterkant, men det er ikke gjort nå.
+- **Manglende automatisert testdekning:** Testplanen er kun kjørt manuelt. Integrasjonstester for hinderflyt/roller og last-/ytelsestester er ikke implementert, og det finnes ingen CI-jobber som kjører testene automatisk.
+- **Ufullstendig dokumentasjon for mobil/UX-verifisering:** Vi mangler skjermbilder og kort brukertestlogg for nettbrett/mobil i `docs/`, og forbedringspunkter (f.eks. justert Leaflet-zoom/knappestørrelse) er ikke utført.
+
 ## Pilot-oversikt over hindre
 Piloter har to dedikerte innganger for situasjonsforståelse:
 
