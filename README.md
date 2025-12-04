@@ -86,6 +86,7 @@ Alle funksjoner er utviklet i fellesskap av gruppen, inkludert skjemavalidering,
 - [Systemarkitektur](docs/architecture.md)
 - [Mobiltilpasning](docs/mobile.md)
 - [Testing og testresultater](docs/testing.md)
+- [Vurderingskriterier](docs/vurderingskriterier.md)
 
 ## Team
 Dette prosjektet ble utviklet av Gruppe 20:
