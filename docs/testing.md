@@ -23,6 +23,8 @@
    - Feil passord ved innlogging gir avvist forsøk, uten sesjonsopprettelse.
 8. **Kart og koordinater**
    - Godkjente hinder vises med korrekte koordinater og GeoJSON-linje når tilgjengelig.
+9. **Pilot-begrensning (redigere kun egne hindre)**
+- `ObstacleController.Edit` (GET) sjekker `if (User.IsInRole("Pilot") && obstacle.SubmittedBy != User.Identity.Name) return Forbid();` før viewet rendres. POST-varianten bruker `[Authorize(Roles = "Pilot,Caseworker,Admin")]` og samme `id`-kontroll, slik at piloter ikke kan redigere andres innsendelser.
 
 ## Testlogg og resultater
 | Dato | Scenario | Rolle | Resultat |
@@ -34,6 +36,7 @@
 | 01/12/2025 | Pilot prøver Admin-side | Pilot | Avvist |
 | 01/12/2025 | Rate limiting etter 10 forespørsler | Pilot | OK |
 | 01/12/2025 | Feil passord ved innlogging | Pilot | Avvist |
+| 04/12/2025 | Pilot prøver å redigere andre sitt hinder | Pilot | Avvist |
 
 ## Videre testarbeid
 - Automatisere scenariene over i integrasjonstester for hinderflyt og rollebegrensninger.
