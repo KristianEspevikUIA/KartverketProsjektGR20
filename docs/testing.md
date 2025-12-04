@@ -27,13 +27,13 @@
 ## Testlogg og resultater
 | Dato | Scenario | Rolle | Resultat |
 | --- | --- | --- | --- |
-| 2025-01-15 | Pilot registrerer hinder og ser kvittering | Pilot | OK |
-| 2025-01-15 | Caseworker endrer status til Approved | Caseworker | OK |
-| 2025-01-15 | Pilot åpner kart og ser Approved + Pending | Pilot | OK |
-| 2025-01-15 | Ugyldig skjema viser valideringsfeil | Pilot | OK |
-| 2025-01-15 | Pilot prøver Admin-side | Pilot | Avvist |
-| 2025-01-15 | Rate limiting etter 10 forespørsler | Pilot | OK |
-| 2025-01-15 | Feil passord ved innlogging | Pilot | Avvist |
+| 01/12/2025 | Pilot registrerer hinder og ser kvittering | Pilot | OK |
+| 01/12/2025 | Caseworker endrer status til Approved | Caseworker | OK |
+| 01/12/2025 | Pilot åpner kart og ser Approved + Pending | Pilot | OK |
+| 01/12/2025 | Ugyldig skjema viser valideringsfeil | Pilot | OK |
+| 01/12/2025 | Pilot prøver Admin-side | Pilot | Avvist |
+| 01/12/2025 | Rate limiting etter 10 forespørsler | Pilot | OK |
+| 01/12/2025 | Feil passord ved innlogging | Pilot | Avvist |
 
 ## Videre testarbeid
 - Automatisere scenariene over i integrasjonstester for hinderflyt og rollebegrensninger.
