@@ -4,16 +4,10 @@
 
 namespace FirstWebApplication1.Migrations
 {
-    /// <summary>
-    /// Removes the obsolete "Registerfører" role and reassigns users to the Caseworker role. Executed as
-    /// raw SQL to preserve data integrity during the migration.
-    /// </summary>
+    /// <inheritdoc />
     public partial class RemoveRegisterforerRole : Migration
     {
-        /// <summary>
-        /// Executes SQL to move users off the removed role and delete it.
-        /// </summary>
-        /// <param name="migrationBuilder">EF Core migration builder.</param>
+        /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
             // First, find the IDs of the roles we are working with.
@@ -39,10 +33,7 @@ namespace FirstWebApplication1.Migrations
             ");
         }
 
-        /// <summary>
-        /// Re-creates the removed role on downgrade (does not reassign users back).
-        /// </summary>
-        /// <param name="migrationBuilder">EF Core migration builder.</param>
+        /// <inheritdoc />
         protected override void Down(MigrationBuilder migrationBuilder)
         {
             // To make this migration reversible, the Down method should re-create the 'Registerfører' role.

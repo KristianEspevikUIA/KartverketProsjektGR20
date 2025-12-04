@@ -5,15 +5,10 @@ using Microsoft.EntityFrameworkCore.Migrations;
 
 namespace FirstWebApplication1.Migrations
 {
-    /// <summary>
-    /// Extends the obstacle schema with status/audit columns for review workflow metadata.
-    /// </summary>
+    /// <inheritdoc />
     public partial class AddObstacleStatusTracking : Migration
     {
-        /// <summary>
-        /// Adds tracking fields to the Obstacles table during migration application.
-        /// </summary>
-        /// <param name="migrationBuilder">EF Core migration builder.</param>
+        /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.AddColumn<string>(
@@ -87,10 +82,7 @@ namespace FirstWebApplication1.Migrations
                 defaultValue: new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified));
         }
 
-        /// <summary>
-        /// Removes tracking fields if the migration is rolled back.
-        /// </summary>
-        /// <param name="migrationBuilder">EF Core migration builder.</param>
+        /// <inheritdoc />
         protected override void Down(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.DropColumn(

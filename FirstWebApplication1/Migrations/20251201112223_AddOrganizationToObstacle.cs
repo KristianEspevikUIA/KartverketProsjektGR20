@@ -4,15 +4,10 @@
 
 namespace FirstWebApplication1.Migrations
 {
-    /// <summary>
-    /// Adds an Organization column to Obstacles to capture submitter affiliation for filtering/auditing.
-    /// </summary>
+    /// <inheritdoc />
     public partial class AddOrganizationToObstacle : Migration
     {
-        /// <summary>
-        /// Applies the Organization column to the table.
-        /// </summary>
-        /// <param name="migrationBuilder">EF Core migration builder.</param>
+        /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.AddColumn<string>(
@@ -23,10 +18,7 @@ namespace FirstWebApplication1.Migrations
                 .Annotation("MySql:CharSet", "utf8mb4");
         }
 
-        /// <summary>
-        /// Removes the Organization column on downgrade.
-        /// </summary>
-        /// <param name="migrationBuilder">EF Core migration builder.</param>
+        /// <inheritdoc />
         protected override void Down(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.DropColumn(

@@ -1,26 +1,19 @@
-using Microsoft.AspNetCore.Authorization;
+﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using FirstWebApplication1.Models;
-using FirstWebApplication1.Models.Admin;
+using FirstWebApplication1.Models.Admin; // Importerer modeller fra prosjektet
 using System.Security.Claims;
 
 namespace FirstWebApplication1.Controllers
 {
-    /// <summary>
-    /// Administrative controller for managing users and roles. Secured by [Authorize] so only Admin role
-    /// members can reach these actions.
-    /// </summary>
     [Authorize(Roles = "Admin")]
     public class AdminController : Controller
     {
         private readonly UserManager<IdentityUser> _userManager;
         private readonly RoleManager<IdentityRole> _roleManager;
 
-        /// <summary>
-        /// Inject Identity managers for querying and mutating users/roles.
-        /// </summary>
         public AdminController(
             UserManager<IdentityUser> userManager,
             RoleManager<IdentityRole> roleManager)
@@ -29,10 +22,7 @@ namespace FirstWebApplication1.Controllers
             _roleManager = roleManager;
         }
 
-        /// <summary>
-        /// Lists all users with their roles and organization claims.
-        /// </summary>
-        /// <returns>Users view.</returns>
+        // GET: /Admin/Users
         [HttpGet]
         public async Task<IActionResult> Users()
         {
@@ -57,11 +47,7 @@ namespace FirstWebApplication1.Controllers
             return View(userViewModels);
         }
 
-        /// <summary>
-        /// Displays the edit form for a user.
-        /// </summary>
-        /// <param name="id">User id from the route.</param>
-        /// <returns>Edit view or NotFound.</returns>
+        // GET: /Admin/EditUser/{id}
         [HttpGet]
         public async Task<IActionResult> EditUser(string id)
         {
@@ -89,14 +75,7 @@ namespace FirstWebApplication1.Controllers
             return View(model);
         }
 
-        /// <summary>
-        /// Processes the edit form, updating the user's single role and organization claim. Anti-forgery
-        /// token defends against CSRF. TempData is used to surface status messages after PRG redirect.
-        /// </summary>
-        /// <param name="id">User id being edited.</param>
-        /// <param name="selectedRole">Role selected in the form.</param>
-        /// <param name="organization">Organization claim value.</param>
-        /// <returns>Redirects to Users list.</returns>
+        // POST: /Admin/EditUser/{id}
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> EditUser(string id, string? selectedRole, string? organization)
@@ -107,7 +86,7 @@ namespace FirstWebApplication1.Controllers
                 return NotFound();
             }
 
-            // Update Roles (remove existing to enforce single role assignment)
+            // Update Roles
             var currentRoles = await _userManager.GetRolesAsync(user);
             await _userManager.RemoveFromRolesAsync(user, currentRoles);
             if (!string.IsNullOrEmpty(selectedRole))
@@ -115,7 +94,7 @@ namespace FirstWebApplication1.Controllers
                 await _userManager.AddToRoleAsync(user, selectedRole);
             }
 
-            // Update Organization Claim (stored as a claim to align with Identity's claims-based auth)
+            // Update Organization Claim
             var claims = await _userManager.GetClaimsAsync(user);
             var organizationClaim = claims.FirstOrDefault(c => c.Type == "Organization");
 
@@ -128,16 +107,12 @@ namespace FirstWebApplication1.Controllers
                 await _userManager.AddClaimAsync(user, new Claim("Organization", organization));
             }
 
-            TempData["SuccessMessage"] = "User updated successfully."; // PRG message
+
+            TempData["SuccessMessage"] = "User updated successfully.";
             return RedirectToAction(nameof(Users));
         }
 
-        /// <summary>
-        /// Deletes a user (except the current logged-in admin). Anti-forgery protects against CSRF and
-        /// TempData provides user feedback after redirect.
-        /// </summary>
-        /// <param name="id">Id of the user to delete.</param>
-        /// <returns>Redirect to Users list.</returns>
+        // POST: /Admin/DeleteUser/{id}
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteUser(string id)
@@ -148,7 +123,7 @@ namespace FirstWebApplication1.Controllers
                 return NotFound();
             }
 
-            // Prevent deleting your own account to avoid locking out all admins.
+            // Prevent deleting your own account
             var currentUserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
             if (currentUserId == id)
             {
@@ -170,10 +145,7 @@ namespace FirstWebApplication1.Controllers
             return RedirectToAction(nameof(Users));
         }
 
-        /// <summary>
-        /// Shows all roles defined in the system (currently unused by views but kept for completeness).
-        /// </summary>
-        /// <returns>Roles view.</returns>
+        // GET: /Admin/Roles
         [HttpGet]
         public async Task<IActionResult> Roles()
         {

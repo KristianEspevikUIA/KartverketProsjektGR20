@@ -1,6 +1,4 @@
-@* Login view binding to LoginViewModel. Uses antiforgery token to mitigate CSRF and Razor tag helpers to
-   HTML-encode values for XSS protection. Posts to AccountController.Login (POST) following PRG. *@
-@model FirstWebApplication1.Models.Account.LoginViewModel
+﻿@model FirstWebApplication1.Models.Account.LoginViewModel
 
 @{
     ViewData["Title"] = "Login";
@@ -15,7 +13,7 @@
             </div>
 
             <form asp-action="Login" method="post" class="space-y-6">
-                @Html.AntiForgeryToken() @* Anti-forgery token pairs with [ValidateAntiForgeryToken] in the controller *@
+                @Html.AntiForgeryToken()
                 <div asp-validation-summary="ModelOnly" class="text-red-600 text-sm"></div>
 
                 <div>

@@ -6,15 +6,10 @@ using Microsoft.EntityFrameworkCore.Migrations;
 
 namespace FirstWebApplication1.Migrations
 {
-    /// <summary>
-    /// Adds ASP.NET Core Identity schema (users, roles, claims) to support authentication/authorization.
-    /// </summary>
+    /// <inheritdoc />
     public partial class addIdentity : Migration
     {
-        /// <summary>
-        /// Creates Identity tables when applying the migration.
-        /// </summary>
-        /// <param name="migrationBuilder">EF Core migration builder.</param>
+        /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.CreateTable(
@@ -236,10 +231,7 @@ namespace FirstWebApplication1.Migrations
                 unique: true);
         }
 
-        /// <summary>
-        /// Drops Identity tables during rollback to keep schema consistent.
-        /// </summary>
-        /// <param name="migrationBuilder">EF Core migration builder.</param>
+        /// <inheritdoc />
         protected override void Down(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.DropTable(
