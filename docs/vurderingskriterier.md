@@ -1,4 +1,4 @@
-# IS-202 vurderingsbevis – teknisk dokumentasjon
+# IS-202 vurderingsbevis - teknisk dokumentasjon
 
 Dette dokumentet supplerer README og øvrige fagnotater for å dekke alle vurderingskriterier i IS-202-prosjektet. Innholdet peker direkte til kode (kontrollere, modeller, views), Docker-oppsettet og testene slik at sensor kan verifisere implementasjonen.
 
@@ -6,9 +6,9 @@ Dette dokumentet supplerer README og øvrige fagnotater for å dekke alle vurder
 
 | Del | Detaljer |
 | --- | --- |
-| Prosjektstruktur | `Controllers/` (MVC-endepunkter), `Models/` (domenemodeller og viewmodeller), `Views/` (Razor med Tailwind/Leaflet) – se f.eks. `ObstacleController` som bruker `ObstacleData` og rendrer `Dataform.cshtml`. |
+| Prosjektstruktur | `Controllers/` (MVC-endepunkter), `Models/` (domenemodeller og viewmodeller), `Views/` (Razor med Tailwind/Leaflet) - se f.eks. `ObstacleController` som bruker `ObstacleData` og rendrer `Dataform.cshtml`. |
 | Docker-komposisjon | `docker-compose.yml` starter `mariadb` (port 3308→3306, vedvarende volum `mariadb_data`) og webappen `firstwebapplication1` (port 5010→8080) med miljøvariabel for connection string. MariaDB og appen ligger på samme bridge-nettverk `appnet`. |
-| Kjøring | **Visual Studio:** velg profilen *Docker Compose* og trykk F5 – VS bygger containerne og kjører appen på http://localhost:5010. **CLI:** kjør `docker compose up --build` i rotmappen for å starte begge containere med samme portmapping. |
+| Kjøring | **Visual Studio:** velg profilen *Docker Compose* og trykk F5 - VS bygger containerne og kjører appen på http://localhost:5010. |
 
 ## 2. God praksis, MVC-logikk og bruk av GET/POST
 
