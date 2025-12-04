@@ -1,9 +1,19 @@
-namespace FirstWebApplication1.Models //namespace for å organisere koden, alle models i prosjektet samles her
+namespace FirstWebApplication1.Models
 {
-    public class ErrorViewModel //Klasse som representerer feilmelding, hvis noe går galt får brukeren feilmelding
+    /// <summary>
+    /// ViewModel for the shared error page. Provides a request identifier that helps correlate errors in logs
+    /// with what the user saw (supports diagnostics without exposing sensitive details).
+    /// </summary>
+    public class ErrorViewModel
     {
-        public string? RequestId { get; set; } //Gir en ID som viser hvilken forespørsel feilen skjedde på,? betyr at verdien kan være null
+        /// <summary>
+        /// Correlation identifier populated from Activity or HttpContext.TraceIdentifier.
+        /// </summary>
+        public string? RequestId { get; set; }
 
-        public bool ShowRequestId => !string.IsNullOrEmpty(RequestId); // sjekker om Requestid finnes, bool gir true or false, hvis Requestid har verdi (true), kan vises, hvis (false), kan ikke vises
+        /// <summary>
+        /// Indicates whether a request id is available for display.
+        /// </summary>
+        public bool ShowRequestId => !string.IsNullOrEmpty(RequestId);
     }
 }

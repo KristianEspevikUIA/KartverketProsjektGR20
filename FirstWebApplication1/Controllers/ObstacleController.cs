@@ -1,4 +1,4 @@
-﻿using FirstWebApplication1.Data;
+using FirstWebApplication1.Data;
 using FirstWebApplication1.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -10,28 +10,40 @@ using System.Security.Claims;
 using System.Text.Json;
 using Microsoft.AspNetCore.Identity;
 
-
 namespace FirstWebApplication1.Controllers
 {
+    /// <summary>
+    /// Core controller that drives the obstacle registration workflow (SelectType -> DataForm -> Overview)
+    /// and the CRUD/review pipeline. Uses [Authorize] to protect sensitive actions and enforces that pilots
+    /// may only edit their own obstacles. Rate limiting is enabled at the controller level.
+    /// </summary>
     [EnableRateLimiting("Fixed")]
     public class ObstacleController : Controller
     {
         private readonly ApplicationDbContext _context;
         private readonly UserManager<IdentityUser> _userManager;
 
+        /// <summary>
+        /// Injects EF Core DbContext and Identity user manager for ownership checks.
+        /// </summary>
         public ObstacleController(ApplicationDbContext context, UserManager<IdentityUser> userManager)
         {
             _context = context;
             _userManager = userManager;
         }
 
-        // Helper method to check if user is a pilot
+        /// <summary>
+        /// Helper to check if the current user belongs to the Pilot role. Used to drive UI choices and
+        /// authorization logic (e.g., editing only own obstacles).
+        /// </summary>
         private bool IsPilot()
         {
             return User.IsInRole("Pilot");
         }
 
-        // STEP 1: Select obstacle type
+        /// <summary>
+        /// Step 1: renders obstacle type selection view.
+        /// </summary>
         [Authorize]
         [HttpGet]
         public IActionResult SelectType()
@@ -39,6 +51,11 @@ namespace FirstWebApplication1.Controllers
             return View(new ObstacleTypeViewModel());
         }
 
+        /// <summary>
+        /// Handles the obstacle type selection submission. TempData is used to carry the chosen type to the
+        /// next step (DataForm) following the PRG pattern. Anti-forgery token blocks CSRF.
+        /// </summary>
+        /// <param name="model">Selected obstacle type.</param>
         [Authorize]
         [HttpPost]
         [ValidateAntiForgeryToken]
@@ -50,11 +67,14 @@ namespace FirstWebApplication1.Controllers
                 return View(model);
             }
 
-            TempData["ObstacleType"] = model.SelectedType;
+            TempData["ObstacleType"] = model.SelectedType; // Stored temporarily to survive redirect.
             return RedirectToAction(nameof(DataForm));
         }
 
-        // STEP 2: Fill in details
+        /// <summary>
+        /// Step 2: displays the obstacle data entry form pre-populated with the selected type. Includes a
+        /// JSON list of approved obstacles for map visualization. AsNoTracking used for read-only queries.
+        /// </summary>
         [Authorize]
         [HttpGet]
         public async Task<IActionResult> DataForm()
@@ -70,10 +90,10 @@ namespace FirstWebApplication1.Controllers
                 ObstacleType = obstacleType,
                 ObstacleHeight = 15 // Default minimum height in meters
             };
-            
+
             var approvedObstacles = await _context.Obstacles
                 .Where(o => o.Status == "Approved")
-                .AsNoTracking()
+                .AsNoTracking() // Avoids change tracking for read-only data and improves performance.
                 .ToListAsync();
 
             // Create serializer options to keep property names as-is (PascalCase)
@@ -93,14 +113,20 @@ namespace FirstWebApplication1.Controllers
 
             ViewBag.ApprovedObstaclesJson = approvedObstaclesJson;
 
-            // Pass user role info to view
+            // Pass user role info to view so UI can toggle feet/meters and available actions.
             ViewBag.IsPilot = IsPilot();
             ViewBag.UsesFeet = IsPilot();
 
             return View(obstacleData);
         }
 
-        // STEP 3: Submit and show overview
+        /// <summary>
+        /// Step 3: processes obstacle submission. Enforces server-side validation, captures ownership
+        /// (SubmittedBy) so pilots can edit only their own entries, and uses PRG to redirect to Overview.
+        /// Anti-forgery token mitigates CSRF; EF Core parameterizes SQL for safety.
+        /// </summary>
+        /// <param name="obstacledata">Posted obstacle data.</param>
+        /// <param name="useFeet">Optional toggle for UI unit preference.</param>
         [Authorize]
         [HttpPost]
         [ValidateAntiForgeryToken]
@@ -131,16 +157,14 @@ namespace FirstWebApplication1.Controllers
                     obstacledata.ObstacleDescription = "";
                 }
 
-                // Remove validation for optional/auto-generated fields
+                // Remove validation for optional/auto-generated fields to avoid ModelState errors.
                 ModelState.Remove("ObstacleType");
                 ModelState.Remove("ObstacleName");
                 ModelState.Remove("ObstacleDescription");
                 ModelState.Remove("Organization");
 
-
                 var isPilot = IsPilot();
                 var usesFeetPreference = useFeet ?? isPilot;
-
 
                 if (!ModelState.IsValid)
                 {
@@ -149,10 +173,10 @@ namespace FirstWebApplication1.Controllers
                     return View(obstacledata);
                 }
 
-                // Get organization from user claims
+                // Get organization from user claims for auditing/filtering.
                 var organizationClaim = User.Claims.FirstOrDefault(c => c.Type == "Organization");
 
-                // Set status to Pending
+                // Set status to Pending and capture submitter metadata.
                 obstacledata.Status = "Pending";
                 obstacledata.SubmittedBy = User.Identity?.Name ?? "Unknown";
                 obstacledata.Organization = organizationClaim?.Value;
@@ -176,14 +200,17 @@ namespace FirstWebApplication1.Controllers
             }
         }
 
-        // STEP 4: Overview
-
-
+        /// <summary>
+        /// Step 4: shows a read-only overview of the submitted obstacle. AsNoTracking prevents accidental edits
+        /// and improves performance. Uses the useFeet flag to render appropriate units.
+        /// </summary>
+        /// <param name="id">Obstacle id from route.</param>
+        /// <param name="useFeet">Optional unit preference from previous step.</param>
         [Authorize]
         [HttpGet]
         public async Task<IActionResult> Overview(int id, bool? useFeet)
         {
-            // Retrieve the obstacle by ID from the database 
+            // Retrieve the obstacle by ID from the database
             var obstacle = await _context.Obstacles
                 .AsNoTracking()
                 .FirstOrDefaultAsync(o => o.Id == id);
@@ -202,7 +229,10 @@ namespace FirstWebApplication1.Controllers
             return View(obstacle);
         }
 
-// List, Details, Edit, Approve, Decline, Revalidate, Delete actions
+        /// <summary>
+        /// Lists obstacles with optional filters. Authorization allows pilots/caseworkers/admins. Uses
+        /// IQueryable to build parameterized SQL server-side and avoid loading unnecessary rows.
+        /// </summary>
         [Authorize(Roles = "Pilot,Caseworker,Admin")]
         [HttpGet]
         public async Task<IActionResult> List(string? statusFilter = null, string? searchTerm = null, DateTime? startDate = null, DateTime? endDate = null, string? obstacleTypeFilter = null, string? organizationFilter = null, double? minHeight = null, double? maxHeight = null)
@@ -237,7 +267,7 @@ namespace FirstWebApplication1.Controllers
             {
                 obstaclesQuery = obstaclesQuery.Where(o => o.ObstacleName != null && o.ObstacleName.Contains(searchTerm));
             }
-            
+
             // Height filters
             if (minHeight.HasValue)
             {
@@ -248,14 +278,13 @@ namespace FirstWebApplication1.Controllers
                 obstaclesQuery = obstaclesQuery.Where(o => o.ObstacleHeight <= maxHeight.Value);
             }
 
-            // Date range filter
+            // Date range filter (end date inclusive by adding a day)
             if (startDate.HasValue)
             {
                 obstaclesQuery = obstaclesQuery.Where(o => o.SubmittedDate >= startDate.Value);
             }
             if (endDate.HasValue)
             {
-                // Add one day to the end date to include all of that day
                 obstaclesQuery = obstaclesQuery.Where(o => o.SubmittedDate < endDate.Value.AddDays(1));
             }
 
@@ -282,7 +311,10 @@ namespace FirstWebApplication1.Controllers
             return View(viewModel);
         }
 
-
+        /// <summary>
+        /// Shows obstacle details. Authorization ensures only authenticated roles can view. Passes role/unit
+        /// flags via ViewBag for UI adjustments.
+        /// </summary>
         [Authorize(Roles = "Pilot,Caseworker,Admin")]
         [HttpGet]
         public async Task<IActionResult> Details(int id)
@@ -294,17 +326,19 @@ namespace FirstWebApplication1.Controllers
                 return NotFound();
             }
 
-            // Pass user role info to view  
-
             ViewBag.IsPilot = IsPilot();
             ViewBag.UsesFeet = IsPilot();
 
             return View(obstacle);
         }
 
+        /// <summary>
+        /// GET edit action. Pilots can only edit their own obstacles enforced by SubmittedBy check. Others
+        /// (Caseworker/Admin) can edit any. Returns 403 when pilot tries to edit another user's entry.
+        /// </summary>
         [Authorize(Roles = "Pilot,Caseworker,Admin")]
         [HttpGet]
-        public async Task<IActionResult> Edit(int id) // 'Get' action to load the edit form
+        public async Task<IActionResult> Edit(int id)
         {
             var obstacle = await _context.Obstacles.FindAsync(id);
 
@@ -314,7 +348,7 @@ namespace FirstWebApplication1.Controllers
             }
 
             // SECURITY: Pilots can only edit their own reports.
-            if (User.IsInRole("Pilot") && obstacle.SubmittedBy != User.Identity.Name)
+            if (User.IsInRole("Pilot") && obstacle.SubmittedBy != User.Identity?.Name)
             {
                 return Forbid(); // Return 403 Access Denied
             }
@@ -325,7 +359,10 @@ namespace FirstWebApplication1.Controllers
             return View(obstacle);
         }
 
-// 'Post' action to handle form submission
+        /// <summary>
+        /// POST edit action. Uses Bind to prevent overposting. Re-validates ownership for pilots to ensure
+        /// server-side enforcement even if UI is tampered with. ModelState errors re-render view.
+        /// </summary>
         [Authorize(Roles = "Pilot,Caseworker,Admin")]
         [HttpPost]
         [ValidateAntiForgeryToken]
@@ -335,16 +372,16 @@ namespace FirstWebApplication1.Controllers
             {
                 return NotFound();
             }
-        
+
             var obstacleToUpdate = await _context.Obstacles.FindAsync(id);
-        
+
             if (obstacleToUpdate == null)
             {
                 return NotFound();
             }
-        
+
             // SECURITY: Pilots can only edit their own reports.
-            if (User.IsInRole("Pilot") && obstacleToUpdate.SubmittedBy != User.Identity.Name)
+            if (User.IsInRole("Pilot") && obstacleToUpdate.SubmittedBy != User.Identity?.Name)
             {
                 return Forbid(); // Return 403 Access Denied
             }
@@ -359,7 +396,7 @@ namespace FirstWebApplication1.Controllers
                 return View(obstacleToUpdate);
             }
 
-            try // Try to update the obstacle in the database 
+            try // Try to update the obstacle in the database
             {
                 // Apply the changes from the bound model
                 obstacleToUpdate.ObstacleName = obstacledata.ObstacleName;
@@ -369,13 +406,13 @@ namespace FirstWebApplication1.Controllers
                 obstacleToUpdate.Latitude = obstacledata.Latitude;
                 obstacleToUpdate.LineGeoJson = obstacledata.LineGeoJson;
 
-                // Set modification metadata
+                // Set modification metadata for audit trail
                 obstacleToUpdate.LastModifiedBy = User.Identity?.Name ?? "Unknown";
                 obstacleToUpdate.LastModifiedDate = DateTime.UtcNow;
 
                 await _context.SaveChangesAsync();
             }
-            catch (DbUpdateConcurrencyException) // Handle concurrency issues   
+            catch (DbUpdateConcurrencyException) // Handle concurrency issues
             {
                 if (!await ObstacleExists(id))
                 {
@@ -387,10 +424,14 @@ namespace FirstWebApplication1.Controllers
             return RedirectToAction(nameof(List));
         }
 
+        /// <summary>
+        /// Approves an obstacle. Restricted to Caseworker/Admin. TempData conveys notification styling
+        /// after redirect to the pending list.
+        /// </summary>
         [Authorize(Roles = "Caseworker,Admin")]
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Approve(int id) // 'Post' action to approve an obstacle
+        public async Task<IActionResult> Approve(int id)
         {
             var obstacle = await _context.Obstacles.FindAsync(id);
 
@@ -399,7 +440,7 @@ namespace FirstWebApplication1.Controllers
                 return NotFound();
             }
 
-            // Update obstacle status and approval metadata 
+            // Update obstacle status and approval metadata
             obstacle.Status = "Approved";
             obstacle.ApprovedBy = User.Identity?.Name ?? "Unknown";
             obstacle.ApprovedDate = DateTime.UtcNow;
@@ -412,6 +453,10 @@ namespace FirstWebApplication1.Controllers
             return RedirectToAction(nameof(List), new { statusFilter = "Pending" });
         }
 
+        /// <summary>
+        /// Declines an obstacle with an optional reason. Restricted to Caseworker/Admin. TempData used for
+        /// PRG messaging.
+        /// </summary>
         [Authorize(Roles = "Caseworker,Admin")]
         [HttpPost]
         [ValidateAntiForgeryToken]
@@ -436,7 +481,10 @@ namespace FirstWebApplication1.Controllers
 
             return RedirectToAction(nameof(List), new { statusFilter = "Pending" });
         }
-        
+
+        /// <summary>
+        /// Moves an obstacle back to Pending for re-evaluation. Restricted to Caseworker/Admin.
+        /// </summary>
         [Authorize(Roles = "Caseworker,Admin")]
         [HttpPost]
         [ValidateAntiForgeryToken]
@@ -462,6 +510,9 @@ namespace FirstWebApplication1.Controllers
             return RedirectToAction(nameof(Details), new { id });
         }
 
+        /// <summary>
+        /// Deletes an obstacle. Only Admin can perform this action. Anti-forgery protects the POST.
+        /// </summary>
         [Authorize(Roles = "Admin")]
         [HttpPost]
         [ValidateAntiForgeryToken]
@@ -480,6 +531,9 @@ namespace FirstWebApplication1.Controllers
             return RedirectToAction(nameof(List));
         }
 
+        /// <summary>
+        /// Helper to check for obstacle existence during concurrency handling.
+        /// </summary>
         private async Task<bool> ObstacleExists(int id)
         {
             return await _context.Obstacles.AnyAsync(e => e.Id == id);
