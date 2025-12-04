@@ -313,6 +313,12 @@ namespace FirstWebApplication1.Controllers
                 return NotFound();
             }
 
+            // SECURITY: Pilots can only edit their own reports.
+            if (User.IsInRole("Pilot") && obstacle.SubmittedBy != User.Identity.Name)
+            {
+                return Forbid(); // Return 403 Access Denied
+            }
+
             ViewBag.IsPilot = IsPilot();
             ViewBag.UsesFeet = IsPilot();
 
@@ -329,33 +335,32 @@ namespace FirstWebApplication1.Controllers
             {
                 return NotFound();
             }
+        
+            var obstacleToUpdate = await _context.Obstacles.FindAsync(id);
+        
+            if (obstacleToUpdate == null)
+            {
+                return NotFound();
+            }
+        
+            // SECURITY: Pilots can only edit their own reports.
+            if (User.IsInRole("Pilot") && obstacleToUpdate.SubmittedBy != User.Identity.Name)
+            {
+                return Forbid(); // Return 403 Access Denied
+            }
 
             ModelState.Remove("Organization");
 
             if (!ModelState.IsValid)
             {
-                // If model state is invalid, we must reload the full entity to pass back to the view
-                var fullObstacle = await _context.Obstacles.AsNoTracking().FirstOrDefaultAsync(o => o.Id == id);
-                if (fullObstacle == null) return NotFound();
-
-                // We update the full entity with the user's failed changes to show them back
-                fullObstacle.ObstacleName = obstacledata.ObstacleName;
-                fullObstacle.ObstacleHeight = obstacledata.ObstacleHeight;
-                // etc. for other bound properties
-
                 ViewBag.IsPilot = IsPilot();
                 ViewBag.UsesFeet = IsPilot();
-                return View(fullObstacle);
+                // Return the original entity from the database, not the invalid one from the model binder.
+                return View(obstacleToUpdate);
             }
 
             try // Try to update the obstacle in the database 
             {
-                var obstacleToUpdate = await _context.Obstacles.FindAsync(id);
-                if (obstacleToUpdate == null)
-                {
-                    return NotFound();
-                }
-
                 // Apply the changes from the bound model
                 obstacleToUpdate.ObstacleName = obstacledata.ObstacleName;
                 obstacleToUpdate.ObstacleHeight = obstacledata.ObstacleHeight;
