@@ -137,6 +137,26 @@ if (!app.Environment.IsDevelopment())
 
 app.UseStaticFiles();
 app.UseHttpsRedirection();
+
+app.Use((context, next) => //'' Middleware for å legge til sikkerhetsrelaterte HTTP-headere 
+{
+    context.Response.Headers.Add("X-Content-Type-Options", "nosniff");
+    context.Response.Headers.Add("X-Xss-Protection", "1; mode=block");
+    context.Response.Headers.Add("X-Frame-Options", "SAMEORIGIN");
+    
+    // En streng CSP som er tilpasset applikasjonen
+    context.Response.Headers.Add("Content-Security-Policy",
+        "default-src 'self'; " +
+        "script-src 'self' https://cdn.tailwindcss.com https://cdnjs.cloudflare.com https://code.jquery.com https://unpkg.com; " +
+        "style-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com https://unpkg.com; " +
+        "font-src 'self' https://cdnjs.cloudflare.com; " +
+        "img-src 'self' data: https://*.tile.openstreetmap.org; " + // Tillater bilder fra OpenStreetMap
+        "frame-ancestors 'self'; " +
+        "form-action 'self';");
+
+    return next();
+});
+
 app.UseRouting();
     
 app.UseRateLimiter();
