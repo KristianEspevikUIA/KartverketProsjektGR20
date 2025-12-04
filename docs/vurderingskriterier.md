@@ -54,17 +54,13 @@ Dette dokumentet supplerer README og øvrige fagnotater for å dekke alle vurder
   - `[Authorize(Roles = "Pilot")]` på `PilotController` begrenser kart-API-et til piloter.
 - **Seeding:** Etter migrasjoner henter koden `RoleManager` og oppretter roller dersom de mangler; deretter opprettes/roller-tilordnes admin-bruker basert på konfigurasjon.
 
-## 9. Pilot-begrensning (redigere kun egne hindre)
-
-- `ObstacleController.Edit` (GET) sjekker `if (User.IsInRole("Pilot") && obstacle.SubmittedBy != User.Identity.Name) return Forbid();` før viewet rendres. POST-varianten bruker `[Authorize(Roles = "Pilot,Caseworker,Admin")]` og samme `id`-kontroll, slik at piloter ikke kan redigere andres innsendelser.
-
-## 10. Frontend og rammeverk
+## 9. Frontend og rammeverk
 
 - **Tailwind via CDN:** `_Layout.cshtml` laster `https://cdn.tailwindcss.com` og definerer nav/knapper med Tailwind-klasser.
 - **Leaflet-integrasjon:** `Dataform.cshtml` og `Pilot/Map.cshtml` inkluderer Leaflet CSS/JS fra CDN og initialiserer kartet via lokale skript (`~/js/geolocation.js`, `~/js/pilot-map.js`).
 - **MVC-views:** Razor bruker modellbinding (`@model ObstacleData`), `ViewBag` for rolleinfo og `asp-`-taghelpers for lenker/validering, i tråd med MVC-strukturen.
 
-## 11. Database i Docker
+## 10. Database i Docker
 
 - **Compose-utdrag:**
   - MariaDB: port `3308:3306`, volum `mariadb_data:/var/lib/mysql`, miljøvariabler for root-passord og database.
