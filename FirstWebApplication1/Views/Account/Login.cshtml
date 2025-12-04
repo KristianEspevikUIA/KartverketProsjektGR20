@@ -66,6 +66,23 @@
     }
 </style>
 
+<style>
+    @media (max-width: 800px) {
+        .login-wrapper {
+            max-width: 95vw;
+        }
+
+        .login-card {
+            padding: 2.5rem;
+        }
+
+        .login-title {
+            font-size: 2rem;
+            line-height: 1.2;
+        }
+    }
+</style>
+
 @section Scripts {
     @{
         await Html.RenderPartialAsync("_ValidationScriptsPartial");
