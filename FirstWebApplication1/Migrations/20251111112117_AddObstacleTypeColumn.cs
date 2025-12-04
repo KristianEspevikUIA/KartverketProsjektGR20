@@ -4,10 +4,15 @@
 
 namespace FirstWebApplication1.Migrations
 {
-    /// <inheritdoc />
+    /// <summary>
+    /// Adds the ObstacleType column to categorize obstacles in the database.
+    /// </summary>
     public partial class AddObstacleTypeColumn : Migration
     {
-        /// <inheritdoc />
+        /// <summary>
+        /// Applies schema changes to add ObstacleType with length constraints.
+        /// </summary>
+        /// <param name="migrationBuilder">EF Core migration builder.</param>
         protected override void Up(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.AddColumn<string>(
@@ -19,7 +24,10 @@ namespace FirstWebApplication1.Migrations
                 .Annotation("MySql:CharSet", "utf8mb4");
         }
 
-        /// <inheritdoc />
+        /// <summary>
+        /// Removes the ObstacleType column when rolling back.
+        /// </summary>
+        /// <param name="migrationBuilder">EF Core migration builder.</param>
         protected override void Down(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.DropColumn(
