@@ -1,4 +1,4 @@
-# FirstWebApplication1 – IS-202 Programmeringsprosjekt (Høst 2025)
+# FirstWebApplication1 - IS-202 Programmeringsprosjekt (Høst 2025)
 
 FirstWebApplication1 er en ASP.NET Core MVC-applikasjon utviklet som del av IS-202 Programmeringsprosjekt (Høst 2025) ved Universitetet i Agder.
 
@@ -7,10 +7,10 @@ Applikasjonen lar innloggede brukere registrere luftfartshindre gjennom et totri
 Løsningen er **utelukkende tiltenkt kjøring i Visual Studio** via det medfølgende Docker Compose-oppsettet, som starter både ASP.NET Core 9-appen og MariaDB-databasen fra nedtrekket for debug-profiler. Kjøring via CLI eller andre IDE-er er ikke støttet.
 
 ## Mappe- og prosjektstruktur
-- `FirstWebApplication1/` – ASP.NET Core MVC-app (kontrollere, modeller, Razor-views, statiske ressurser).
-- `FirstWebApplication1.Tests/` – testprosjekt for enhets-/integrasjonstester.
-- `docs/` – utfyllende dokumentasjon (arkitektur, sikkerhet, testing, mobil).
-- Docker Compose-filer – starter MariaDB- og app-containere i utvikling.
+- `FirstWebApplication1/` - ASP.NET Core MVC-app (kontrollere, modeller, Razor-views, statiske ressurser).
+- `FirstWebApplication1.Tests/` - testprosjekt for enhets-/integrasjonstester.
+- `docs/` - utfyllende dokumentasjon (arkitektur, sikkerhet, testing, mobil og vurderingskriterier).
+- Docker Compose-filer - starter MariaDB- og app-containere i utvikling.
 
 ## Teknologi og nøkkelfunksjoner
 - ASP.NET Core 9 MVC med Identity og EF Core (Pomelo MariaDB-driver)
@@ -45,8 +45,8 @@ Vi har forsøkt å beskrive en CLI-basert «Kjøring og deploy»-flyt (f.eks. `d
 ### Admin-kontooppsett
 Roller (`Admin`, `Pilot`, `Caseworker`) seedes ved oppstart. En admin-bruker opprettes kun når følgende konfigurasjonsverdier er satt:
 
-- `Admin:Email` – admin-brukernavn (`admin@kartverket.no`)
-- `Admin:Password` – admin-passord (`Admin123`)
+- `Admin:Email` - admin-brukernavn (`admin@kartverket.no`)
+- `Admin:Password` - admin-passord (`Admin123`)
 
 Hvis verdiene mangler, logger applikasjonen et varsel og ingen admin-bruker opprettes. Kun den konfigurerte admin-e-posten kan bli administrator; den offentlige registreringen eksponerer kun Pilot- og Caseworker-roller.
 
@@ -73,8 +73,8 @@ Hvis verdiene mangler, logger applikasjonen et varsel og ingen admin-bruker oppr
 ## Pilot-oversikt over hindre
 Piloter har to dedikerte innganger for situasjonsforståelse:
 
-- **Pilotkart (`/Pilot/Map`)** – laster Leaflet med godkjente og ventende hindre fra `PilotController.GetApprovedObstacles`, og viser både punkter og valgfri linjegeometri. En flytende knapp linker direkte til registreringsflyten slik at piloter kan rapportere nye funn.
-- **Hinderliste (`/Obstacle/List`)** – rollebeskyttet for Pilot, Caseworker og Admin, med filtrering på status, type, fritekst, datointervall, høyde og organisasjon. Hver rad lenker til detalj- og endrehandlinger og gir piloter en tydelig, filtrerbar oversikt over alle lagrede hindre.
+- **Pilotkart (`/Pilot/Map`)** - laster Leaflet med godkjente og ventende hindre fra `PilotController.GetApprovedObstacles`, og viser både punkter og valgfri linjegeometri. En flytende knapp linker direkte til registreringsflyten slik at piloter kan rapportere nye funn.
+- **Hinderliste (`/Obstacle/List`)** - rollebeskyttet for Pilot, Caseworker og Admin, med filtrering på status, type, fritekst, datointervall, høyde og organisasjon. Hver rad lenker til detalj- og endrehandlinger og gir piloter en tydelig, filtrerbar oversikt over alle lagrede hindre.
 
 
 ## Prosjektformål og kontekst
