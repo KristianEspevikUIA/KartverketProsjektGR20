@@ -13,8 +13,6 @@ namespace FirstWebApplication1.Tests.Controllers
 {
     public class AccountControllerTests
     {
-        // ------------------ HJELPEMETODER ------------------
-
         // Lager en enkel IConfiguration med Admin:Email
         private IConfiguration CreateConfiguration(string adminEmail = "admin@kartverket.no")
         {
@@ -27,7 +25,6 @@ namespace FirstWebApplication1.Tests.Controllers
                 .AddInMemoryCollection(settings)
                 .Build();
         }
-
         // Mock av UserManager
         private Mock<UserManager<IdentityUser>> CreateUserManagerMock()
         {
@@ -84,10 +81,9 @@ namespace FirstWebApplication1.Tests.Controllers
 
             return controller;
         }
-
-        // ------------------ TEST 1 ------------------
+        // Test 1
         // Register (POST): Ønsker rollen "Admin" med ikke-godkjent e-post
-        // => Skal gi ModelState-feil og IKKE opprette bruker
+        // Skal gi ModelState-feil og IKKE opprette bruker
         [Fact]
         public async Task Register_AdminRoleWithUnauthorizedEmail_AddsModelErrorAndReturnsView()
         {
@@ -122,10 +118,9 @@ namespace FirstWebApplication1.Tests.Controllers
                 um => um.CreateAsync(It.IsAny<IdentityUser>(), It.IsAny<string>()),
                 Times.Never);
         }
-
-        // ------------------ TEST 2 ------------------
+        // Test 2
         // Register (POST): Gyldig vanlig bruker (ikke admin)
-        // => Skal opprette bruker, legge til rolle, logge inn og redirecte til Home/Index
+        // Skal opprette bruker, legge til rolle, logge inn og redirecte til Home/Index
         [Fact]
         public async Task Register_ValidNonAdminUser_CreatesUserAssignsRoleAndRedirectsHome()
         {
@@ -174,10 +169,9 @@ namespace FirstWebApplication1.Tests.Controllers
                 sm => sm.SignInAsync(It.IsAny<IdentityUser>(), false, null),
                 Times.Once);
         }
-
-        // ------------------ TEST 3 ------------------
+        // Test 3
         // Login (POST): Gyldige credentials
-        // => Skal kalle PasswordSignInAsync og redirecte til Home/Index når returnUrl er null
+        // Skal kalle PasswordSignInAsync og redirecte til Home/Index når returnUrl er null
         [Fact]
         public async Task Login_ValidCredentials_RedirectsToHomeWhenNoReturnUrl()
         {
@@ -224,10 +218,9 @@ namespace FirstWebApplication1.Tests.Controllers
                 sm => sm.PasswordSignInAsync(model.Email, model.Password, model.RememberMe, false),
                 Times.Once);
         }
-
-        // ------------------ TEST 4 ------------------
+        // Test 4
         // Login (POST): Feil passord/bruker
-        // => Skal legge til ModelState-feil og returnere View med samme model
+        // Skal legge til ModelState-feil og returnere View med samme model
         [Fact]
         public async Task Login_InvalidCredentials_AddsModelErrorAndReturnsView()
         {
@@ -264,8 +257,7 @@ namespace FirstWebApplication1.Tests.Controllers
             Assert.False(controller.ModelState.IsValid);
             Assert.True(controller.ModelState.ContainsKey(string.Empty)); // general error key
         }
-
-        // ------------------ TEST 5 ------------------
+        // Test 5
         // Logout (POST): Skal kalle SignOutAsync og redirecte til Home/Index
         [Fact]
         public async Task Logout_SignsOutAndRedirectsHome()

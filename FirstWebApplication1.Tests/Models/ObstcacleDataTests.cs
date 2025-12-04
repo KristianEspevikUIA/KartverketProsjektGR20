@@ -9,10 +9,8 @@ namespace FirstWebApplication1.Tests.Models
 {
     public class ObstacleDataTests
     {
-        
-        // Helper method:
-        // Runs standard data annotations validation on an object,
-        // similar to what ASP.NET Core model binding does at runtime.
+        // Hjelpemetode: Utfører standard validering basert på Data Annotations
+        // tilsvarende det som skjer automatisk i ASP.NET Core ved modellbinding
         private static IList<ValidationResult> ValidateModel(object model)
         {
             var results = new List<ValidationResult>();
@@ -21,19 +19,16 @@ namespace FirstWebApplication1.Tests.Models
             return results;
         }
 
-        // SECTION 1: Data annotation attribute tests
-        // These tests check [Required], [Range], [StringLength], etc.
-
-
+        // Test 1: Sjekker at høyde utenfor gyldig område feiler [Range]-attributtet
         [Fact]
         public void HeightOutsideRange_ShouldFailRangeAttribute()
         {
-            // Arrange:
+            // Arrange: Ett for lavt og ett for høyt hinder
             var tooLow = new ObstacleData
             {
                 ObstacleName = "Test",
                 ObstacleDescription = "Desc",
-                ObstacleHeight = 5,    // < 15 (invalid)
+                ObstacleHeight = 5,    // For lav verdi (ugyldig)
                 Latitude = 58,
                 Longitude = 7
             };
@@ -42,24 +37,25 @@ namespace FirstWebApplication1.Tests.Models
             {
                 ObstacleName = "Test",
                 ObstacleDescription = "Desc",
-                ObstacleHeight = 999,  // > 300 (invalid)
+                ObstacleHeight = 999,  // For høy verdi (ugyldig)
                 Latitude = 58,
                 Longitude = 7
             };
 
-            // Act:
+            // Act: Kjører validering
             var lowResults = ValidateModel(tooLow);
             var highResults = ValidateModel(tooHigh);
 
-            // Assert:
+            // Assert: Forventer valideringsfeil på ObstacleHeight
             Assert.Contains(lowResults, r => r.MemberNames.Contains(nameof(ObstacleData.ObstacleHeight)));
             Assert.Contains(highResults, r => r.MemberNames.Contains(nameof(ObstacleData.ObstacleHeight)));
         }
 
+        // Test 2: Sjekker at et gyldig objekt med punkt-posisjon består validering
         [Fact]
         public void ValidObject_WithPointLocation_ShouldPassAnnotations()
         {
-            // Arrange:
+            // Arrange: Gyldig hinder med koordinater
             var data = new ObstacleData
             {
                 ObstacleName = "Radio Tower",
@@ -69,17 +65,18 @@ namespace FirstWebApplication1.Tests.Models
                 Longitude = 7.98765
             };
 
-            // Act:
+            // Act: Kjører validering
             var results = ValidateModel(data);
 
-            // Assert:
+            // Assert: Forventer ingen valideringsfeil
             Assert.Empty(results);
         }
 
+        // Test 3: Sjekker at LineGeoJson parses korrekt til koordinater
         [Fact]
         public void LineGeoJson_ParsesIntoLineCoordinates()
         {
-            // Arrange:
+            // Arrange: Gyldig GeoJSON med tre punkter
             var json = @"{
                 ""type"": ""LineString"",
                 ""coordinates"": [
@@ -94,24 +91,24 @@ namespace FirstWebApplication1.Tests.Models
                 LineGeoJson = json
             };
 
-            // Act:
+            // Act: Henter ut beregnede koordinater
             var coords = data.LineCoordinates;
 
-            // Assert:
+            // Assert: Sjekker at riktig antall og riktige verdier er lest inn
             Assert.Equal(3, coords.Count);
-            
+
             Assert.Equal(58.0, coords[0].Latitude, 3);
             Assert.Equal(7.0, coords[0].Longitude, 3);
-            
+
             Assert.Equal(58.2, coords[^1].Latitude, 3);
             Assert.Equal(7.2, coords[^1].Longitude, 3);
         }
 
+        // Test 4: Sjekker at start, slutt, lengde og metadata beregnes korrekt
         [Fact]
         public void Start_End_HasLine_Length_Metadata_IsCalculated()
         {
-            // Arrange:
-            // A simple 2-point line. This should count as a valid line.
+            // Arrange: En linje med nøyaktig to punkter
             var json = @"{
                 ""type"": ""LineString"",
                 ""coordinates"": [
@@ -125,46 +122,43 @@ namespace FirstWebApplication1.Tests.Models
                 LineGeoJson = json
             };
 
-            // Act:
+            // Act: Leser av beregnede verdier
             var start = data.StartCoordinate;
             var end = data.EndCoordinate;
             var hasLine = data.HasLine;
             var vertexCount = data.LineVertexCount;
             var lengthMeters = data.LineLengthMeters;
 
-            // Assert:
-            // StartCoordinate and EndCoordinate should not be null.
+            // Assert: Kontrollerer at alt er korrekt beregnet
             Assert.NotNull(start);
             Assert.NotNull(end);
 
-            // Start should match first coordinate
             Assert.Equal(58.0, start!.Latitude, 3);
             Assert.Equal(7.0, start.Longitude, 3);
 
-            // End should match last coordinate
             Assert.Equal(58.001, end!.Latitude, 3);
             Assert.Equal(7.0, end.Longitude, 3);
-            
+
             Assert.True(hasLine);
             Assert.Equal(2, vertexCount);
             Assert.NotNull(lengthMeters);
             Assert.True(lengthMeters!.Value > 0);
         }
 
+        // Test 5: Sjekker at tom eller null LineGeoJson gir tom koordinatliste
         [Fact]
         public void EmptyOrNullLineGeoJson_ShouldReturnEmptyCoordinates()
         {
-            // Arrange:
-            // No line data was provided.
+            // Arrange: Ingen linje er angitt
             var data = new ObstacleData
             {
                 LineGeoJson = null
             };
 
-            // Act:
+            // Act: Leser av koordinater
             var coords = data.LineCoordinates;
 
-            // Assert:
+            // Assert: Forventer ingen linjeinformasjon
             Assert.NotNull(coords);
             Assert.Empty(coords);
             Assert.False(data.HasLine);
@@ -174,30 +168,29 @@ namespace FirstWebApplication1.Tests.Models
             Assert.Null(data.EndCoordinate);
         }
 
+        // Test 6: Sjekker at ugyldig JSON håndteres trygt uten krasj
         [Fact]
         public void InvalidJson_ShouldProduceEmptyCoordinates()
         {
-            // Arrange:
-            // LineGeoJson is not valid JSON.
+            // Arrange: Ugyldig JSON-streng
             var data = new ObstacleData
             {
                 LineGeoJson = "{ This is not valid JSON at all"
             };
 
-            // Act:
+            // Act: Forsøker å lese koordinater
             var coords = data.LineCoordinates;
 
-            // Assert:
-            // Parse should fail safely and return an empty list rather than throwing.
+            // Assert: Forventer tom liste og ingen krasj
             Assert.NotNull(coords);
             Assert.Empty(coords);
         }
 
+        // Test 7: Sjekker at LineCoordinates caches resultatet
         [Fact]
         public void LineCoordinates_CachesResults()
         {
-            // Arrange:
-            // Create a simple valid 2-point line.
+            // Arrange: Gyldig 2-punkts linje
             var json = @"{
                 ""type"": ""LineString"",
                 ""coordinates"": [
@@ -211,23 +204,19 @@ namespace FirstWebApplication1.Tests.Models
                 LineGeoJson = json
             };
 
-            // Act:
-            // First access triggers parsing and caching.
+            // Act: Henter koordinater to ganger
             var firstCall = data.LineCoordinates;
-
-            // Second access should return the cached list instance, not re-parse the JSON.
             var secondCall = data.LineCoordinates;
 
-            // Assert:
-            // Reference equality here means the cache was reused.
+            // Assert: Samme referanse brukes (cache)
             Assert.Same(firstCall, secondCall);
         }
 
+        // Test 8: Sjekker at cache nullstilles når LineGeoJson endres
         [Fact]
         public void UpdatingLineGeoJson_InvalidatesCache()
         {
-            // Arrange:
-            // First, set some LineGeoJson and access LineCoordinates to warm the cache.
+            // Arrange: Første linje
             var data = new ObstacleData
             {
                 LineGeoJson = @"{
@@ -241,7 +230,7 @@ namespace FirstWebApplication1.Tests.Models
 
             var oldCoords = data.LineCoordinates;
 
-            // Act:
+            // Act: Setter ny GeoJSON-linje
             data.LineGeoJson = @"{
                 ""type"": ""LineString"",
                 ""coordinates"": [
@@ -252,18 +241,17 @@ namespace FirstWebApplication1.Tests.Models
 
             var newCoords = data.LineCoordinates;
 
-            // Assert:
+            // Assert: Ny cache brukes og nye koordinater stemmer
             Assert.NotSame(oldCoords, newCoords);
-
-            // Verify it actually parsed the new coordinates.
             Assert.Equal(60.0, newCoords[0].Latitude, 3);
             Assert.Equal(10.0, newCoords[0].Longitude, 3);
         }
-
+        
+        // Test 9: Sjekker at manglende punkt og linje gir valideringsfeil
         [Fact]
         public void Validate_NoLine_NoPointLocation_ShouldReturnError()
         {
-            // Arrange:
+            // Arrange: Ingen punkt eller linje
             var data = new ObstacleData
             {
                 ObstacleName = "Test",
@@ -274,22 +262,22 @@ namespace FirstWebApplication1.Tests.Models
                 Longitude = null
             };
 
-            // Act:
+            // Act: Kjører egenvalidering
             var context = new ValidationContext(data, null, null);
             var results = data.Validate(context).ToList();
 
-            // Assert:
-            // Expect an error that tells the user to click on the map.
+            // Assert: Forventer én feilmelding med veiledning
             Assert.Single(results);
             Assert.Contains("Please click on the map", results[0].ErrorMessage!);
             Assert.Contains(nameof(ObstacleData.Latitude), results[0].MemberNames);
             Assert.Contains(nameof(ObstacleData.Longitude), results[0].MemberNames);
         }
 
+        // Test 10: Sjekker at punkt uten linje er gyldig
         [Fact]
         public void Validate_NoLine_ButHasPointLocation_ShouldBeValid()
         {
-            // Arrange:
+            // Arrange: Kun punkt er gitt
             var data = new ObstacleData
             {
                 ObstacleName = "Tower",
@@ -300,21 +288,19 @@ namespace FirstWebApplication1.Tests.Models
                 Longitude = 7.0
             };
 
-            // Act:
+            // Act: Kjører validering
             var context = new ValidationContext(data, null, null);
             var results = data.Validate(context).ToList();
 
-            // Assert:
-            // No validation errors expected.
+            // Assert: Forventer ingen feil
             Assert.Empty(results);
         }
 
+        // Test 11: Sjekker at ugyldig linje-JSON gir feilmelding
         [Fact]
         public void Validate_InvalidLineJson_ShouldReturnParseError()
         {
-            // Arrange:
-            // LineGeoJson is present but invalid JSON.
-            // The model will try to parse it, fail, and mark _lineParseFailed.
+            // Arrange: Ugyldig GeoJSON
             var data = new ObstacleData
             {
                 ObstacleName = "Cable",
@@ -323,23 +309,21 @@ namespace FirstWebApplication1.Tests.Models
                 LineGeoJson = "NOT VALID JSON"
             };
 
-            // Act:
+            // Act: Kjører validering
             var context = new ValidationContext(data, null, null);
             var results = data.Validate(context).ToList();
 
-            // Assert:
-            // We expect a single error about not being able to read the line.
+            // Assert: Forventer feilmelding om at linjen ikke kan leses
             Assert.Single(results);
             Assert.Contains("could not read", results[0].ErrorMessage!, StringComparison.OrdinalIgnoreCase);
             Assert.Contains(nameof(ObstacleData.LineGeoJson), results[0].MemberNames);
         }
 
+        // Test 12: Sjekker at linje med kun ett punkt gir feilmelding
         [Fact]
         public void Validate_LineWithOnlyOnePoint_ShouldReturnLineTooShortError()
         {
-            // Arrange:
-            // Valid JSON, but only one point in "coordinates".
-            // According to the model, a valid line needs at least 2 points.
+            // Arrange: Linje med kun ett punkt
             var onePointJson = @"{
                 ""type"": ""LineString"",
                 ""coordinates"": [
@@ -355,22 +339,21 @@ namespace FirstWebApplication1.Tests.Models
                 LineGeoJson = onePointJson
             };
 
-            // Act:
+            // Act: Kjører validering
             var context = new ValidationContext(data, null, null);
             var results = data.Validate(context).ToList();
 
-            // Assert:
-            // We expect a specific error saying we need at least two points.
+            // Assert: Forventer feil om for kort linje
             Assert.Single(results);
             Assert.Contains("at least two points", results[0].ErrorMessage!, StringComparison.OrdinalIgnoreCase);
             Assert.Contains(nameof(ObstacleData.LineGeoJson), results[0].MemberNames);
         }
 
+        // Test 13: Sjekker at linje med to punkter er gyldig
         [Fact]
         public void Validate_LineWithTwoPoints_ShouldBeValid()
         {
-            // Arrange:
-            // A valid line with two coordinate pairs.
+            // Arrange: Gyldig linje
             var twoPointJson = @"{
                 ""type"": ""LineString"",
                 ""coordinates"": [
@@ -387,16 +370,12 @@ namespace FirstWebApplication1.Tests.Models
                 LineGeoJson = twoPointJson
             };
 
-            // Act:
+            // Act: Kjører validering
             var context = new ValidationContext(data, null, null);
             var results = data.Validate(context).ToList();
 
-            // Assert:
-            // A 2-point line is considered valid.
+            // Assert: Forventer ingen feil
             Assert.Empty(results);
         }
-        
-
-
     }
 }
