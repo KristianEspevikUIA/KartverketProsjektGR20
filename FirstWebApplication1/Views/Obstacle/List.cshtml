@@ -6,8 +6,7 @@
         ? "inline-flex items-center rounded-xl bg-indigo-600 px-6 py-3 text-white text-base font-semibold hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
         : "inline-flex items-center rounded-lg bg-indigo-600 px-4 py-2 text-white font-medium hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500";
 }
-
-<body class="bg-cover bg-center" style="background-image: url('/images/BackgroundImageGreen.png'); background-repeat: no-repeat; background-attachment: fixed; background-size: 100% 100%;">
+<body class="bg-cover bg-center" style="background-image: url('/images/BackgroundImageGreen.png');">
     <section class="mx-auto max-w-7xl mt-8">
         <div class="bg-white rounded-2xl shadow-sm ring-1 ring-gray-200 p-8">
             <div class="flex flex-col lg:flex-row lg:justify-between lg:items-start gap-4 mb-4">
@@ -29,7 +28,6 @@
                     }
                 </div>
             </div>
-
             <!-- Filter UI -->
             <div class="bg-gray-50 p-4 rounded-lg border border-gray-200 mb-8">
                 <form asp-action="List" method="get" class="space-y-4">
@@ -48,11 +46,11 @@
                         </div>
                         <div>
                             <label for="minHeight" class="block text-sm font-medium text-gray-700">Min Height (m)</label>
-                            <input type="number" name="minHeight" id="minHeight" value="@Model.MinHeight" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm" placeholder="e.g. 15" />
+                            <input type="number" name="minHeight" id="minHeight" value="@Model.MinHeight" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
                         </div>
                         <div>
                             <label for="maxHeight" class="block text-sm font-medium text-gray-700">Max Height (m)</label>
-                            <input type="number" name="maxHeight" id="maxHeight" value="@Model.MaxHeight" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm" placeholder="e.g. 300" />
+                            <input type="number" name="maxHeight" id="maxHeight" value="@Model.MaxHeight" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
                         </div>
                         <!-- Row 2 -->
                         <div>
@@ -67,11 +65,11 @@
                         </div>
                         <div>
                             <label for="startDate" class="block text-sm font-medium text-gray-700">Registered From</label>
-                            <input type="date" name="startDate" id="startDate" value="@Model.StartDate?.ToString("yyyy-MM-dd")" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm" />
+                            <input type="date" name="startDate" id="startDate" value="@Model.StartDate?.ToString("yyyy-MM-dd")" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
                         </div>
                         <div>
                             <label for="endDate" class="block text-sm font-medium text-gray-700">Registered To</label>
-                            <input type="date" name="endDate" id="endDate" value="@Model.EndDate?.ToString("yyyy-MM-dd")" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm" />
+                            <input type="date" name="endDate" id="endDate" value="@Model.EndDate?.ToString("yyyy-MM-dd")" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
                         </div>
                     </div>
                     <div class="flex items-center pt-4">
@@ -84,7 +82,6 @@
                     </div>
                 </form>
             </div>
-
             @if (Model.Obstacles.Any())
             {
                 <div class="overflow-hidden shadow ring-1 ring-black ring-opacity-5 rounded-lg">
@@ -98,7 +95,7 @@
                                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Registered</th>
                                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Organization</th>
                                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Handled By</th>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">View</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
                             </tr>
                         </thead>
                         <tbody class="bg-white divide-y divide-gray-200">
@@ -123,9 +120,14 @@
                                     <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">@obstacle.SubmittedDate.ToString("yyyy-MM-dd HH:mm")</td>
                                     <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">@(obstacle.Organization ?? "-")</td>
                                     <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">@(obstacle.Status == "Pending" ? "-" : (obstacle.ApprovedBy ?? obstacle.DeclinedBy))</td>
-                                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium space-x-2">
                                         <a asp-action="Details" asp-route-id="@obstacle.Id"
                                            class="text-white bg-blue-600 hover:bg-blue-700 rounded-md px-3 py-1">View</a>
+                                        @if (User.IsInRole("Pilot") || User.IsInRole("Caseworker") || User.IsInRole("Admin"))
+                                        {
+                                            <a asp-action="Edit" asp-route-id="@obstacle.Id"
+                                               class="text-white bg-gray-600 hover:bg-gray-700 rounded-md px-3 py-1">Edit</a>
+                                        }
                                     </td>
                                 </tr>
                             }
@@ -140,3 +142,4 @@
         </div>
     </section>
 </body>
+
