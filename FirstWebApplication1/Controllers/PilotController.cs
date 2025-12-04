@@ -5,38 +5,23 @@ using Microsoft.AspNetCore.Authorization;
 
 namespace FirstWebApplication1.Controllers
 {
-    /// <summary>
-    /// Controller that exposes map/obstacle data endpoints for pilots. Authorization ensures only users in
-    /// the Pilot role can access these actions.
-    /// </summary>
     [Authorize(Roles = "Pilot")]
     public class PilotController : Controller
     {
         private readonly ApplicationDbContext _context;
 
-        /// <summary>
-        /// Injects the EF Core DbContext used to query approved obstacles.
-        /// </summary>
-        /// <param name="context">Application database context.</param>
         public PilotController(ApplicationDbContext context)
         {
             _context = context;
         }
 
-        /// <summary>
-        /// Displays the interactive map used by pilots to visualize obstacles.
-        /// </summary>
-        /// <returns>Map view.</returns>
+        // === View: the map page ===
         public IActionResult Map()
         {
             return View();
         }
 
-        /// <summary>
-        /// API endpoint returning Approved + Pending obstacles for mapping. Uses EF Core to project only
-        /// necessary fields (mitigating over-posting) and keeps AsNoTracking for read-only performance.
-        /// </summary>
-        /// <returns>JSON payload of obstacles.</returns>
+        // === API ENDPOINT: returns APPROVED + PENDING obstacles ===
         [HttpGet]
         public async Task<IActionResult> GetApprovedObstacles()
         {
@@ -44,8 +29,7 @@ namespace FirstWebApplication1.Controllers
                 .Where(o => o.Status == "Approved" || o.Status == "Pending")
                 .ToListAsync();
 
-            return Json(obstacles.Select(o => new
-            {
+            return Json(obstacles.Select(o => new {
                 o.Id,
                 o.ObstacleName,
                 o.ObstacleHeight,
@@ -56,10 +40,7 @@ namespace FirstWebApplication1.Controllers
             }));
         }
 
-        /// <summary>
-        /// Legacy alias for GetApprovedObstacles to maintain backward compatibility with older JS clients.
-        /// </summary>
-        /// <returns>Task wrapping the same JSON result.</returns>
+        // Backwards compatibility for older JS clients
         [HttpGet]
         public Task<IActionResult> GetPilotObstacles() => GetApprovedObstacles();
     }

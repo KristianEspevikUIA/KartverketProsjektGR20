@@ -1,38 +1,29 @@
-/// <summary>
-/// Entry point for configuring services, middleware, security features, and the HTTP pipeline before
-/// bootstrapping the ASP.NET Core MVC host. This file ties together the MVC (controllers/views) and
-/// data (EF Core + Identity) layers of the application.
-/// </summary>
 using FirstWebApplication1.Data;
 using Microsoft.AspNetCore.Localization;
 using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.EntityFrameworkCore;
 using Pomelo.EntityFrameworkCore.MySql.Infrastructure;
 using System.Globalization;
-using Microsoft.AspNetCore.Identity;
-using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.AspNetCore.Identity; 
+using Microsoft.AspNetCore.Authentication.Cookies; 
 
-// Build a host builder that wires up dependency injection, configuration, and logging.
 var builder = WebApplication.CreateBuilder(args);
 
-// Add MVC controllers and Razor views so routing/model binding can serve the UI layer.
+// Add services to the container.
 builder.Services.AddControllersWithViews();
 
-// ASP.NET Core Identity wires authentication/authorization into MVC. Cookie auth is used and the
-// antiforgery system (ValidateAntiForgeryToken) guards form posts. Identity persists users/roles
-// through ApplicationDbContext (EF Core) so SQL is parameterized and protected from injection.
 builder.Services.AddIdentity<IdentityUser, IdentityRole>(options =>
 {
-    // Configure password and sign-in policies; ModelState will reflect violations on account forms.
+    // Configure identity options
     options.SignIn.RequireConfirmedAccount = false;
     options.Password.RequireDigit = true;
     options.Password.RequiredLength = 6;
     options.Password.RequireNonAlphanumeric = false;
     options.Password.RequireUppercase = false;
 }).AddEntityFrameworkStores<ApplicationDbContext>()
-.AddDefaultTokenProviders(); // Enables secure token flows (reset, confirmation)
+.AddDefaultTokenProviders();
 
-// Rate limiter protects against brute-force/abuse by capping requests per user/IP in a time window.
+//rate limiter configuration
 builder.Services.AddRateLimiter(options =>
 {
     options.AddFixedWindowLimiter("Fixed", opt =>
@@ -44,8 +35,7 @@ builder.Services.AddRateLimiter(options =>
     });
 });
 
-// Pull the database connection string from configuration (appsettings/Secret Manager/env). EF Core will
-// generate parameterized SQL to avoid injection, and Identity tables live in this database too.
+// Henter connection string fra appsettings.json filen
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
 
 if (string.IsNullOrWhiteSpace(connectionString))
@@ -53,20 +43,18 @@ if (string.IsNullOrWhiteSpace(connectionString))
     throw new InvalidOperationException("The MariaDB connection string 'DefaultConnection' was not found.");
 }
 
-// Register ApplicationDbContext with DI using MariaDB provider so controllers/services can request it.
+// Konfigurerer Entity Framework Core med MariaDB
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseMySql(connectionString, new MySqlServerVersion(new Version(10, 6, 0))));
 
-// Build the configured web application instance (runtime pipeline).
 var app = builder.Build();
 
-// Create a service scope so we can resolve scoped services (DbContext, managers) before the app runs.
 using (var scope = app.Services.CreateScope())
 {
     var services = scope.ServiceProvider;
     try
     {
-        // Apply pending EF Core migrations (creates Identity tables if needed) at startup to keep schema up to date.
+        // Apply pending EF Core migrations (creates Identity tables if needed)
         var db = services.GetRequiredService<ApplicationDbContext>();
         await db.Database.MigrateAsync(); // Changed to async
 
@@ -76,10 +64,10 @@ using (var scope = app.Services.CreateScope())
 
         foreach (var roleName in roleNames)
         {
-            var exists = await roleManager.RoleExistsAsync(roleName); // Async check keeps DB access non-blocking
+            var exists = await roleManager.RoleExistsAsync(roleName); // Changed to await
             if (!exists)
             {
-                var createResult = await roleManager.CreateAsync(new IdentityRole(roleName)); // Create missing roles for authZ
+                var createResult = await roleManager.CreateAsync(new IdentityRole(roleName)); // Changed to await
                 if (!createResult.Succeeded)
                 {
                     var logger = services.GetRequiredService<ILogger<Program>>();
@@ -96,7 +84,7 @@ using (var scope = app.Services.CreateScope())
         if (!string.IsNullOrWhiteSpace(adminEmail) && !string.IsNullOrWhiteSpace(adminPassword))
         {
             var userManager = services.GetRequiredService<UserManager<IdentityUser>>();
-            var adminUser = await userManager.FindByEmailAsync(adminEmail); // Avoid duplicate seed
+            var adminUser = await userManager.FindByEmailAsync(adminEmail);
 
             if (adminUser == null)
             {
@@ -107,7 +95,7 @@ using (var scope = app.Services.CreateScope())
                     EmailConfirmed = true
                 };
 
-                var createAdminResult = await userManager.CreateAsync(adminUser, adminPassword); // Password hashed and stored
+                var createAdminResult = await userManager.CreateAsync(adminUser, adminPassword);
                 if (!createAdminResult.Succeeded)
                 {
                     var logger = services.GetRequiredService<ILogger<Program>>();
@@ -117,7 +105,7 @@ using (var scope = app.Services.CreateScope())
 
             if (adminUser != null && !await userManager.IsInRoleAsync(adminUser, "Admin"))
             {
-                await userManager.AddToRoleAsync(adminUser, "Admin"); // Ensure admin permissions are present
+                await userManager.AddToRoleAsync(adminUser, "Admin");
             }
         }
         else
@@ -129,7 +117,7 @@ using (var scope = app.Services.CreateScope())
     catch (Exception ex)
     {
         var logger = services.GetRequiredService<ILogger<Program>>();
-        logger.LogError(ex, "An error occurred while migrating or seeding the database."); // Bubble up startup failures
+        logger.LogError(ex, "An error occurred while migrating or seeding the database.");
         throw;
     }
 }
@@ -140,22 +128,22 @@ CultureInfo.DefaultThreadCurrentCulture = defaultCulture;
 CultureInfo.DefaultThreadCurrentUICulture = defaultCulture;
 // ------------------------------------------------------------
 
-// Configure the HTTP request pipeline (ordering matters for security/performance).
+// Configure the HTTP request pipeline.
 if (!app.Environment.IsDevelopment())
 {
     app.UseExceptionHandler("/Home/Error");
     app.UseHsts();
 }
 
-app.UseStaticFiles(); // Serves wwwroot assets with built-in XSS-safe static file middleware
-app.UseHttpsRedirection(); // Force HTTPS to protect cookies and anti-forgery tokens
-app.UseRouting(); // Enable endpoint routing for controllers
+app.UseStaticFiles();
+app.UseHttpsRedirection();
+app.UseRouting();
+    
+app.UseRateLimiter();
 
-app.UseRateLimiter(); // Enforce configured rate limits globally
+app.UseAuthentication();
 
-app.UseAuthentication(); // Issue/validate auth cookies for Identity
-
-app.UseAuthorization(); // Enforce [Authorize] attributes in controllers
+app.UseAuthorization();
 
 app.MapStaticAssets();
 app.MapControllerRoute(
