@@ -3,16 +3,13 @@ using Xunit;
 
 namespace FirstWebApplication1.Tests.Models
 {
-    /// oppsumering
-    /// Tester grunnleggende regler for gyldig geometri:
-    /// - Et hinder kan være et punkt (lat/lon)
-    /// - Et hinder kan være en linje (LineGeoJson)
-    /// - Minst én av disse må være satt
     public class GeometryTests
     {
+        // Test 1: Sjekker at geometrien er gyldig når både breddegrad og lengdegrad finnes, og ingen linje er definert
         [Fact]
         public void Geometry_IsValidPoint_WhenLatLonPresent_AndNoLine()
         {
+            // Arrange: Oppretter et hinder med gyldig punkt (Latitude og Longitude)
             var data = new ObstacleData
             {
                 Latitude = 58.0,
@@ -21,12 +18,15 @@ namespace FirstWebApplication1.Tests.Models
                 LineGeoJson = null
             };
 
+            // Act & Assert: Verifiserer at geometrien er gyldig
             Assert.True(IsValidGeometry(data));
         }
 
+        // Test 2: Sjekker at geometrien er gyldig når LineGeoJson er satt (linjegeometri)
         [Fact]
         public void Geometry_IsValidLine_WhenLineGeoJsonIsPresent()
         {
+            // Arrange: Oppretter et hinder med linjegeometri i GeoJSON-format
             var data = new ObstacleData
             {
                 Latitude = 58.0,
@@ -35,12 +35,15 @@ namespace FirstWebApplication1.Tests.Models
                 LineGeoJson = "{\"type\":\"LineString\",\"coordinates\":[[8.0,58.0],[8.1,58.1]]}"
             };
 
+            // Act & Assert: Verifiserer at geometrien er gyldig
             Assert.True(IsValidGeometry(data));
         }
 
+        // Test 3: Sjekker at geometrien er ugyldig når både punkt og linje mangler
         [Fact]
         public void Geometry_IsInvalid_WhenBothPointAndLineMissing()
         {
+            // Arrange: Oppretter et hinder uten punkt og uten linje
             var data = new ObstacleData
             {
                 Latitude = null,
@@ -49,12 +52,15 @@ namespace FirstWebApplication1.Tests.Models
                 LineGeoJson = null
             };
 
+            // Act & Assert: Verifiserer at geometrien er ugyldig
             Assert.False(IsValidGeometry(data));
         }
 
+        // Test 4: Sjekker at geometrien er gyldig når linje er tom streng, men punkt finnes
         [Fact]
         public void Geometry_IsValid_WhenLineGeoJsonIsEmpty_AndPointExists()
         {
+            // Arrange: Oppretter et hinder med punkt, men tom linjestreng
             var data = new ObstacleData
             {
                 Latitude = 58.0,
@@ -63,14 +69,11 @@ namespace FirstWebApplication1.Tests.Models
                 LineGeoJson = ""
             };
 
+            // Act & Assert: Verifiserer at geometrien er gyldig
             Assert.True(IsValidGeometry(data));
         }
 
-        /// oppsumering
-        /// Bestemmer om modellen representerer en gyldig geometri.
-        /// En hindermodell er gyldig dersom:
-        /// - LineGeoJson har innhold, eller
-        /// - Latitude og Longitude begge er satt
+        // Hjelpemetode som avgjør om geometrien er gyldig basert på punkt og/eller linje
         private bool IsValidGeometry(ObstacleData m)
         {
             bool hasPoint = m.Latitude.HasValue && m.Longitude.HasValue;

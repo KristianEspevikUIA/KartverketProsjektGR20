@@ -31,10 +31,8 @@ namespace FirstWebApplication1.Tests.Controllers
             var configuration = CreateTestConfiguration(connectionString);
             return new HomeController(configuration);
         }
-
-        // --------------------------------------------------------------------
-        // TEST 1: Konstruktøren leser connection string fra IConfiguration
-        // --------------------------------------------------------------------
+        
+        // Test 1: Konstruktøren leser connection string fra IConfiguration
         [Fact]
         public void Constructor_ReadsConnectionStringFromConfiguration()
         {
@@ -56,9 +54,7 @@ namespace FirstWebApplication1.Tests.Controllers
             Assert.Equal(expectedConnectionString, actualValue);
         }
 
-        // --------------------------------------------------------------------
-        // TEST 2: Index() returnerer en ViewResult
-        // --------------------------------------------------------------------
+        // Test 2: Index() returnerer en ViewResult
         [Fact]
         public void Index_ReturnsViewResult()
         {
@@ -72,9 +68,7 @@ namespace FirstWebApplication1.Tests.Controllers
             Assert.IsType<ViewResult>(result);
         }
 
-        // --------------------------------------------------------------------
-        // TEST 3: Privacy() returnerer en ViewResult
-        // --------------------------------------------------------------------
+        // Test 3: Privacy() returnerer en ViewResult
         [Fact]
         public void Privacy_ReturnsViewResult()
         {
@@ -88,9 +82,7 @@ namespace FirstWebApplication1.Tests.Controllers
             Assert.IsType<ViewResult>(result);
         }
 
-        // --------------------------------------------------------------------
-        // TEST 4: Error() returnerer ViewResult med ErrorViewModel og RequestId
-        // --------------------------------------------------------------------
+        // Test 4: Error() returnerer ViewResult med ErrorViewModel og RequestId
         [Fact]
         public void Error_ReturnsViewWithErrorViewModelAndRequestId()
         {

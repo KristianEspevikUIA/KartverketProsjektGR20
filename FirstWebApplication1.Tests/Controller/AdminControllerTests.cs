@@ -16,8 +16,6 @@ namespace FirstWebApplication1.Tests.Controllers
 {
     public class AdminControllerTests
     {
-        // ------------------ Helpers ------------------
-
         private Mock<UserManager<IdentityUser>> CreateUserManagerMock()
         {
             var store = new Mock<IUserStore<IdentityUser>>();
@@ -36,7 +34,7 @@ namespace FirstWebApplication1.Tests.Controllers
 
             return userManagerMock;
         }
-
+        // RoleManger Mock
         private Mock<RoleManager<IdentityRole>> CreateRoleManagerMock()
         {
             var store = new Mock<IRoleStore<IdentityRole>>();
@@ -70,9 +68,8 @@ namespace FirstWebApplication1.Tests.Controllers
 
             return controller;
         }
-
-        // ------------------ Test 1 ------------------
-        // EditUser (POST): Returns NotFound if user doesn't exist
+        // Test 1
+        // EditUser (POST): Returnerer NotFound hvis bruker ikke eksisterer
         [Fact]
         public async Task EditUser_UserNotFound_ReturnsNotFound()
         {
@@ -87,9 +84,8 @@ namespace FirstWebApplication1.Tests.Controllers
 
             Assert.IsType<NotFoundResult>(result);
         }
-
-        // ------------------ Test 2 ------------------
-        // EditUser (POST): Updates role and adds organization claim
+        // Test 2
+        // EditUser (POST): Oppdatere roller og legger til organisasjon
         [Fact]
         public async Task EditUser_UpdatesRoleAndAddsOrganizationClaim_WhenNoneExisted()
         {
@@ -97,7 +93,7 @@ namespace FirstWebApplication1.Tests.Controllers
             var userManagerMock = CreateUserManagerMock();
             userManagerMock.Setup(um => um.FindByIdAsync("123")).ReturnsAsync(user);
 
-            // User has no existing roles or claims
+            // Bruker har ingen rolle
             userManagerMock.Setup(um => um.GetRolesAsync(user)).ReturnsAsync(new List<string>());
             userManagerMock.Setup(um => um.GetClaimsAsync(user)).ReturnsAsync(new List<Claim>());
 
@@ -110,15 +106,14 @@ namespace FirstWebApplication1.Tests.Controllers
             Assert.Equal(nameof(AdminController.Users), redirect.ActionName);
             Assert.Equal("User updated successfully.", controller.TempData["SuccessMessage"]);
 
-            // Verify role was added
+            // Verifisere at rollen er lagt til
             userManagerMock.Verify(um => um.AddToRoleAsync(user, "Pilot"), Times.Once);
 
-            // Verify claim was added
+            // Verifisere at claim er lagt til
             userManagerMock.Verify(um => um.AddClaimAsync(user, It.Is<Claim>(c => c.Type == "Organization" && c.Value == "Luftforsvaret")), Times.Once);
         }
-
-        // ------------------ Test 3 ------------------
-        // EditUser (POST): Changes existing organization claim
+        // Test 3
+        // EditUser (POST): Endre eksisterende rolle claim
         [Fact]
         public async Task EditUser_ChangesExistingOrganizationClaim()
         {
@@ -126,7 +121,7 @@ namespace FirstWebApplication1.Tests.Controllers
             var userManagerMock = CreateUserManagerMock();
             userManagerMock.Setup(um => um.FindByIdAsync("123")).ReturnsAsync(user);
 
-            // User has an existing claim
+            // Bruker har en eksisterende claim
             var existingClaim = new Claim("Organization", "Old-Org");
             userManagerMock.Setup(um => um.GetClaimsAsync(user)).ReturnsAsync(new List<Claim> { existingClaim });
 
@@ -135,15 +130,14 @@ namespace FirstWebApplication1.Tests.Controllers
             await controller.EditUser("123", "Pilot", "New-Org");
 
             // Assert
-            // Verify old claim was removed
+            // Verifiser at den gamle claimen er tatt bort
             userManagerMock.Verify(um => um.RemoveClaimAsync(user, It.Is<Claim>(c => c.Type == "Organization" && c.Value == "Old-Org")), Times.Once);
 
-            // Verify new claim was added
+            // Verifisere at den nye er lagt til
             userManagerMock.Verify(um => um.AddClaimAsync(user, It.Is<Claim>(c => c.Type == "Organization" && c.Value == "New-Org")), Times.Once);
         }
-        
-        // ------------------ Test 4 ------------------
-        //Admin user cannot delete themselves
+        // Test 4
+        // Admin kan ikke slette seg selv
         [Fact]
         public async Task DeleteUser_CannotDeleteSelf_RedirectsAndDoesNotDelete()
         {

@@ -15,7 +15,7 @@ namespace FirstWebApplication1.Tests.Controllers
     public class PilotControllerTests
     {
 
-        // ------------------ Helpers ------------------
+        // Hjelpemetoder
         private ApplicationDbContext CreateDbContext()
         {
             var options = new DbContextOptionsBuilder<ApplicationDbContext>()
@@ -29,10 +29,9 @@ namespace FirstWebApplication1.Tests.Controllers
 
         private PilotController CreateController(ApplicationDbContext context)
         {
-            // The PilotController does not need UserManager, so we don't pass it in.
             return new PilotController(context);
         }
-         // this is a test method that checks if the Map action returns a ViewResult
+         // Test 1: Sjekker om Map funksjonen returnerer ViewResult
         [Fact]
         public void Map_ReturnsView()
         {
@@ -43,7 +42,7 @@ namespace FirstWebApplication1.Tests.Controllers
 
             Assert.IsType<ViewResult>(result);
         }
-        
+        // Test 2: Sjekker om GetApprovedObstacle Returnerer riktig hindring
         // this is a test method that checks if the GetApprovedObstacles action returns the correct obstacles
         [Fact]
         public async Task GetApprovedObstacles_ReturnsApprovedAndPending()
@@ -67,7 +66,6 @@ namespace FirstWebApplication1.Tests.Controllers
             var data = Assert.IsAssignableFrom<IEnumerable<object>>(json.Value).ToList();
             
             Assert.Equal(2, data.Count);
-            // Use reflection to check properties on the anonymous type
             Assert.Contains(data, d => (int)d.GetType().GetProperty("Id").GetValue(d) == 1);
             Assert.Contains(data, d => (int)d.GetType().GetProperty("Id").GetValue(d) == 2);
             Assert.DoesNotContain(data, d => (int)d.GetType().GetProperty("Id").GetValue(d) == 3);

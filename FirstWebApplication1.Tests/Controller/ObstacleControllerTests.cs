@@ -18,7 +18,7 @@ namespace FirstWebApplication1.Tests.Controller
 {
     public class ObstacleControllerTests
     {
-        // ================== HELPER METHODS ==================
+        // Hjelpemetoder
 
         private ApplicationDbContext CreateDbContext()
         {
@@ -65,10 +65,8 @@ namespace FirstWebApplication1.Tests.Controller
 
             return controller;
         }
-        // ================== TEST METHODS ==================
 
-
-        [Fact] // this is a test method that checks if the SelectType GET action returns a ViewResult with a new ObstacleTypeViewModel
+        // Test 1: Sjekker at SelectType (GET) returnerer View med ny ObstacleTypeViewModel        [Fact]
         public void SelectType_Get_ReturnsViewWithNewViewModel()
         {
             using var context = CreateDbContext();
@@ -78,7 +76,8 @@ namespace FirstWebApplication1.Tests.Controller
             Assert.IsType<ObstacleTypeViewModel>(view.Model);
         }
        
-        [Fact] // this is a test method that checks if the SelectType POST action with a valid type sets TempData and redirects to DataForm
+        // Test 2: Sjekker at SelectType (POST) med gyldig type setter TempData og redirecter til DataForm
+        [Fact] 
         public void SelectType_Post_ValidType_SetsTempDataAndRedirectsToDataForm()
         {
             using var context = CreateDbContext();
@@ -89,8 +88,9 @@ namespace FirstWebApplication1.Tests.Controller
             Assert.Equal(nameof(ObstacleController.DataForm), redirect.ActionName);
             Assert.Equal("Tower", controller.TempData["ObstacleType"]);
         }
-
-        [Fact] // this is a test method that checks if the SelectType POST action with an invalid model redisplays the form
+        
+        // Test 3: Sjekker at DataForm (GET) uten valgt type redirecter til SelectType
+        [Fact] 
         public async Task DataForm_Get_NoObstacleTypeInTempData_RedirectsToSelectType()
         {
             using var context = CreateDbContext();
@@ -99,8 +99,9 @@ namespace FirstWebApplication1.Tests.Controller
             var redirect = Assert.IsType<RedirectToActionResult>(result);
             Assert.Equal(nameof(ObstacleController.SelectType), redirect.ActionName);
         }
-
-        [Fact] // this is a test method that checks if the DataForm POST action with an invalid model redisplays the form with the same model
+        
+        // Test 4: Sjekker at DataForm (POST) med ugyldig modell returnerer skjema med samme modell
+        [Fact] 
         public async Task DataForm_Post_InvalidModel_RedisplaysFormWithSameModel()
         {
             using var context = CreateDbContext();
@@ -115,8 +116,9 @@ namespace FirstWebApplication1.Tests.Controller
             Assert.Same(model, view.Model);
             Assert.False(controller.ModelState.IsValid);
         }
-
-        [Fact] // this is a test method that checks if the Approve action changes the status of an existing obstacle and redirects to the List action
+        
+        // Test 5: Sjekker at Approve endrer status til "Approved" og lagrer hvem som godkjente
+        [Fact] 
         public async Task Approve_ExistingObstacle_ChangesStatusAndRedirectsToList()
         {
 
@@ -137,10 +139,8 @@ namespace FirstWebApplication1.Tests.Controller
             Assert.Equal("Approved", stored.Status);
             Assert.Equal("caseworker", stored.ApprovedBy);
         }
-
-
-        // this is a test method that checks if the Delete action removes an existing obstacle and redirects to the List action
-
+        
+        // Test 6: Sjekker at Delete fjerner en eksisterende hindring og redirecter til List
         [Fact]
         public async Task Delete_ExistingObstacle_RemovesItAndRedirectsToList()
         {
@@ -158,8 +158,8 @@ namespace FirstWebApplication1.Tests.Controller
             Assert.Null(stored);
         }
 
-
-        [Fact] // this is a test method that checks if the DataForm POST action saves an obstacle with the user's organization
+        // Test 7: Sjekker at DataForm (POST) lagrer hindring med brukerens organisasjon og status "Pending"
+        [Fact] 
         public async Task DataForm_Post_SavesObstacleWithUserOrganization()
         {
             // Arrange
@@ -178,8 +178,9 @@ namespace FirstWebApplication1.Tests.Controller
             Assert.Equal("Luftforsvaret", savedObstacle.Organization);
             Assert.Equal("Pending", savedObstacle.Status);
         }
-
-        [Fact] // this is a test method that checks if the List action filters obstacles by minimum and maximum height
+        
+        // Test 8: Sjekker at List filtrerer hindringer basert på minimums- og maksimumshøyde
+        [Fact] 
         public async Task List_FiltersByMinAndMaxHeight()
         {
             // Arrange
@@ -192,7 +193,7 @@ namespace FirstWebApplication1.Tests.Controller
             await context.SaveChangesAsync();
             var controller = CreateController(context);
 
-            // Act: Filter for obstacles between 50 and 150 meters
+            // Act: Filter for hindringer mellom 50 og 150 meter
             var result = await controller.List(minHeight: 50, maxHeight: 150);
 
             // Assert
@@ -201,8 +202,9 @@ namespace FirstWebApplication1.Tests.Controller
             var obstacle = Assert.Single(model.Obstacles);
             Assert.Equal("Medium", obstacle.ObstacleName);
         }
-
-        [Fact] // this is a test method that checks if the List action filters obstacles by obstacle type
+        
+        // Test 9: Sjekker at List filtrerer hindringer basert på hindringstype
+        [Fact] 
         public async Task List_FiltersByObstacleType()
         {
             // Arrange
@@ -224,8 +226,8 @@ namespace FirstWebApplication1.Tests.Controller
             Assert.Equal(2, model.Obstacles.Count());
             Assert.All(model.Obstacles, o => Assert.Equal("Crane", o.ObstacleType));
         }
-
-        [Fact] // this is a test method that checks if the List action filters obstacles by organization
+        // Test 10: Sjekker at List filtrerer hindringer basert på organisasjon
+        [Fact] 
         public async Task List_FiltersByOrganization()
         {
             // Arrange
