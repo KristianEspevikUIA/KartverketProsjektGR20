@@ -6,25 +6,27 @@ namespace FirstWebApplication1.Models
 {
     public class ObstacleListViewModel
     {
-        // collection of obstacles
+        // Samling av hindere som vises i listen etter filtrering/søk
         public IEnumerable<ObstacleData> Obstacles { get; set; } = Enumerable.Empty<ObstacleData>();
 
         public string? StatusFilter { get; set; }
 
-        // properties for filtering
+        // Inndata fra søkefilteret i UI
         public string? SearchTerm { get; set; }
-        public DateTime? StartDate { get; set; }
-        public DateTime? EndDate { get; set; }
+        public DateTime? StartDate { get; set; } // Fra-dato
+        public DateTime? EndDate { get; set; }   // Til-dato
         public double? MinHeight { get; set; }
         public double? MaxHeight { get; set; }
 
-
-        // property for type filtering
+        // Filtrering på type og organisasjon
         public string? ObstacleTypeFilter { get; set; }
         public string? OrganizationFilter { get; set; }
-        public List<string> AvailableOrganizations { get; set; } = new List<string> { "Luftforsvaret", "Norsk Luftambulanse", "Politiets helikoptertjeneste" };
 
-        // dynamic title and description based on status filter
+        // Valgbar liste i UI for å filtrere på organisasjon
+        public List<string> AvailableOrganizations { get; set; } =
+            new List<string> { "Luftforsvaret", "Norsk Luftambulanse", "Politiets helikoptertjeneste" };
+
+        // Dynamisk sidetittel basert på valgt statusfilter
         public string Title => StatusFilter switch
         {
             "Approved" => "Approved Obstacles",
@@ -33,7 +35,7 @@ namespace FirstWebApplication1.Models
             _ => "Obstacle Reports"
         };
 
-        // dynamic description based on status filter
+        // Kort beskrivelse i toppen av listen, også dynamisk
         public string Description => StatusFilter switch
         {
             "Approved" => "Obstacles that have been reviewed and approved.",
