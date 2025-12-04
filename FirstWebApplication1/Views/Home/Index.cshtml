@@ -11,8 +11,8 @@
         : "inline-flex items-center rounded-lg px-4 py-2 bg-indigo-600 text-white hover:bg-indigo-700";
 }
 
-<body class="bg-cover bg-center" style="background-image: url('/images/BackgroundImageGreen.png');">
-    <section class="mx-auto max-w-3xl mt-8">
+<body class="bg-cover bg-center" style="background-image: url('/images/BackgroundImageGreen.png'); background-repeat: no-repeat; background-attachment: fixed; background-size: 100% 100%;">
+    <section class="mx-auto max-w-5xl mt-8">
         <div class="text-center space-y-6">
             <h1 class="text-3xl sm:text-4xl font-bold tracking-tight">
                 Welcome to NRL Registration System
@@ -56,22 +56,22 @@
                         @if (User.IsInRole("Admin"))
                         {
                             <a asp-controller="Admin" asp-action="Users"
-                               class="inline-flex items-center px-4 py-2 bg-purple-300 text-black rounded-full text-sm hover:bg-purple-400 focus:outline-none focus:ring-2 focus:ring-purple-300">
+                               class="inline-flex items-center px-6 py-4 bg-purple-300 text-black rounded-full text-lg hover:bg-purple-400 focus:outline-none focus:ring-2 focus:ring-purple-300">
                                 Manage Users
                             </a>
                         }
                         @if (User.IsInRole("Admin") || User.IsInRole("Caseworker"))
                         {
                             <a asp-controller="Obstacle" asp-action="List" asp-route-statusFilter="Pending"
-                               class="inline-flex items-center px-3 py-1 bg-yellow-400 text-black rounded-full text-sm hover:bg-yellow-500">
+                               class="inline-flex items-center px-6 py-4 bg-yellow-400 text-black rounded-full text-lg hover:bg-yellow-500">
                                 Review Pending Obstacles
                             </a>
                             <a asp-controller="Obstacle" asp-action="List" asp-route-statusFilter="Approved"
-                               class="inline-flex items-center px-3 py-1 bg-green-300 text-black rounded-full text-sm hover:bg-green-400">
+                               class="inline-flex items-center px-6 py-4 bg-green-300 text-black rounded-full text-lg hover:bg-green-400">
                                 View Approved Obstacles
                             </a>
                             <a asp-controller="Obstacle" asp-action="List" asp-route-statusFilter="Declined"
-                               class="inline-flex items-center px-3 py-1 bg-red-300 text-black rounded-full text-sm hover:bg-red-400">
+                               class="inline-flex items-center px-6 py-4 bg-red-300 text-black rounded-full text-lg hover:bg-red-400">
                                 View Rejected Obstacles
                             </a>
                         }
