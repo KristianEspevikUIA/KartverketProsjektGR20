@@ -2,17 +2,14 @@
 @{ 
     ViewData["Title"] = Model.Title;
     var isPilot = ViewBag.IsPilot as bool? ?? false;
-    var containerClass = isPilot
-        ? "mx-auto max-w-screen-2xl mt-8 px-4 sm:px-6 lg:px-8"
-        : "mx-auto max-w-7xl mt-8 px-4 sm:px-6 lg:px-8";
     var heroActionClass = isPilot
         ? "inline-flex items-center rounded-xl bg-indigo-600 px-6 py-3 text-white text-base font-semibold hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
         : "inline-flex items-center rounded-lg bg-indigo-600 px-4 py-2 text-white font-medium hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500";
 }
 
 <body class="bg-cover bg-center" style="background-image: url('/images/BackgroundImageGreen.png');">
-    <section class="@containerClass">
-        <div class="bg-white rounded-2xl shadow-sm ring-1 ring-gray-200 p-8 sm:p-10 @(@isPilot ? "lg:p-12" : "")">
+    <section class="mx-auto max-w-7xl mt-8">
+        <div class="bg-white rounded-2xl shadow-sm ring-1 ring-gray-200 p-8">
             <div class="flex flex-col lg:flex-row lg:justify-between lg:items-start gap-4 mb-4">
                 <div>
                     <h1 class="text-3xl font-bold text-gray-900">@Model.Title</h1>
@@ -90,8 +87,8 @@
 
             @if (Model.Obstacles.Any())
             {
-                <div class="overflow-x-auto shadow ring-1 ring-black ring-opacity-5 rounded-lg @(isPilot ? "pilot-table-wrapper" : "")">
-                    <table class="min-w-full divide-y divide-gray-300 @(isPilot ? "text-base" : "")">
+                <div class="overflow-hidden shadow ring-1 ring-black ring-opacity-5 rounded-lg">
+                    <table class="min-w-full divide-y divide-gray-300">
                         <thead class="bg-gray-50">
                             <tr>
                                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">#</th>
@@ -143,23 +140,3 @@
         </div>
     </section>
 </body>
-
-<style>
-    @media (min-width: 1024px) {
-        .pilot-table-wrapper th,
-        .pilot-table-wrapper td {
-            padding-left: 1.75rem;
-            padding-right: 1.75rem;
-        }
-
-        .pilot-table-wrapper table {
-            width: 102%;
-        }
-    }
-
-    @media (max-width: 1023px) {
-        .pilot-table-wrapper table {
-            min-width: 920px;
-        }
-    }
-</style>
