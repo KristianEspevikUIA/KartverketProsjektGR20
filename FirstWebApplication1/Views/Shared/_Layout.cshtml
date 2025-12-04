@@ -2,6 +2,17 @@
 @inject SignInManager<IdentityUser> SignInManager
 @inject UserManager<IdentityUser> UserManager
 
+@{
+    var isPilot = User.IsInRole("Pilot");
+    var navButtonBase = "text-gray-900 hover:bg-gray-50 hover:text-gray-900 rounded-md";
+    var navButtonClass = isPilot
+        ? $"{navButtonBase} px-4 py-3 text-base font-semibold"
+        : $"{navButtonBase} px-3 py-2 text-sm font-medium";
+    var authButtonClass = isPilot
+        ? "text-gray-700 hover:text-gray-900 px-4 py-3 rounded-md text-base font-semibold"
+        : "text-gray-700 hover:text-gray-900 px-3 py-2 rounded-md text-sm font-medium";
+}
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -34,18 +45,18 @@
                     {
                         <div class="hidden md:ml-6 md:flex md:space-x-4">
                             <a asp-controller="Obstacle" asp-action="List"
-                               class="text-gray-900 hover:bg-gray-50 hover:text-gray-900 px-3 py-2 rounded-md text-sm font-medium">
+                               class="@navButtonClass">
                                 View Obstacles
                             </a>
                             <a asp-controller="Obstacle" asp-action="SelectType"
-                               class="text-gray-900 hover:bg-gray-50 hover:text-gray-900 px-3 py-2 rounded-md text-sm font-medium">
+                               class="@navButtonClass">
                                 Report Obstacle
                             </a>
-                            
+
                             @if (User.IsInRole("Pilot"))
                             {
                                 <a asp-controller="Pilot" asp-action="Map"
-                                   class="text-gray-900 hover:bg-gray-50 hover:text-gray-900 px-3 py-2 rounded-md text-sm font-medium">
+                                   class="@navButtonClass">
                                     Pilot Map
                                 </a>
                             }
@@ -91,8 +102,8 @@
                     else
                     {
                         <div class="flex space-x-4">
-                            <a asp-controller="Account" asp-action="Login" class="text-gray-700 hover:text-gray-900 px-3 py-2 rounded-md text-sm font-medium">Login</a>
-                            <a asp-controller="Account" asp-action="Register" class="text-gray-700 hover:text-gray-900 px-3 py-2 rounded-md text-sm font-medium">Register</a>
+                            <a asp-controller="Account" asp-action="Login" class="@authButtonClass">Login</a>
+                            <a asp-controller="Account" asp-action="Register" class="@authButtonClass">Register</a>
                         </div>
                     }
                 </div>
