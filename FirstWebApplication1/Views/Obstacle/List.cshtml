@@ -1,20 +1,33 @@
 ﻿@model FirstWebApplication1.Models.ObstacleListViewModel
-@{
+@{ 
     ViewData["Title"] = Model.Title;
+    var isPilot = ViewBag.IsPilot as bool? ?? false;
+    var heroActionClass = isPilot
+        ? "inline-flex items-center rounded-xl bg-indigo-600 px-6 py-3 text-white text-base font-semibold hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+        : "inline-flex items-center rounded-lg bg-indigo-600 px-4 py-2 text-white font-medium hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500";
 }
 
 <body class="bg-cover bg-center" style="background-image: url('/images/BackgroundImageGreen.png');">
     <section class="mx-auto max-w-7xl mt-8">
         <div class="bg-white rounded-2xl shadow-sm ring-1 ring-gray-200 p-8">
-            <div class="flex justify-between items-start mb-4">
+            <div class="flex flex-col lg:flex-row lg:justify-between lg:items-start gap-4 mb-4">
                 <div>
                     <h1 class="text-3xl font-bold text-gray-900">@Model.Title</h1>
                     <p class="text-gray-600 mt-2">@Model.Description</p>
                 </div>
-                <a asp-action="SelectType"
-                   class="inline-flex items-center rounded-lg bg-indigo-600 px-4 py-2 text-white font-medium hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
-                    Register New Obstacle
-                </a>
+                <div class="flex flex-wrap gap-3">
+                    <a asp-action="SelectType"
+                       class="@heroActionClass">
+                        Register New Obstacle
+                    </a>
+                    @if (!string.IsNullOrWhiteSpace(Model.StatusFilter))
+                    {
+                        <a asp-action="List"
+                           class="inline-flex items-center rounded-xl px-6 py-3 ring-2 ring-indigo-600 text-indigo-800 text-base font-semibold hover:bg-indigo-50">
+                            View All Obstacles
+                        </a>
+                    }
+                </div>
             </div>
 
             <!-- Filter UI -->
