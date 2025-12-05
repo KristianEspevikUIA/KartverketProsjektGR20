@@ -52,8 +52,7 @@ Se etter containeren som bruker mariadb:-image og kopier navnet fra kolonnen NAM
 Når du har navnet, bruk: docker exec -it <container-navn> mariadb -u root -p
 Du vil bli bedt om å skrive inn passordet som er konfigurert i docker-compose.yml.
 
-3. Velg databasen du vil jobbe med
-USE ObstacleDb;
+3. Velg databasen du vil jobbe med: USE ObstacleDb;
 
 4. Vis tabeller i databasen: SHOW TABLES;
 
