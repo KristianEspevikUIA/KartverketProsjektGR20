@@ -3,6 +3,7 @@
     ViewData["Title"] = "Obstacle Details";
 
     var geometryType = Model.HasLine ? "Line" : "Point";
+    // Bestemmer om hindringen skal behandles som linje eller punkt
 
     var verificationInfo = Model.Status switch
     {
@@ -10,6 +11,7 @@
         "Declined" => new { Label = "Verified By", User = Model.DeclinedBy, Timestamp = Model.DeclinedDate == default ? (DateTime?)null : Model.DeclinedDate },
         _ => new { Label = "Verified By", User = "", Timestamp = (DateTime?)null }
     };
+    // Lager et lite objekt med verifiseringsinformasjon basert på status
 
     string statusClass = Model.Status switch
     {
@@ -18,22 +20,23 @@
         "Pending" => "bg-yellow-100 text-yellow-800",
         _ => "bg-gray-100 text-gray-800"
     };
+    // Velger CSS-klasser for statusmerke ut fra gjeldende status
 }
 
 <body class="bg-cover bg-center" style="background-image: url('/images/BackgroundImageGreen.png'); background-repeat: no-repeat; background-attachment: fixed; background-size: 100% 100%;">
 
     <section class="mx-auto max-w-5xl mt-6">
 
-        <!-- Compact layout, fits all screens -->
+        <!-- Kompakt layout som fungerer på alle skjermstørrelser -->
         <div class="grid grid-cols-1 lg:grid-cols-[3fr_2fr] gap-3">
 
-            <!-- INFO COLUMN -->
+            <!-- INFORMASJONSKOLONNE -->
             <div class="bg-white rounded-2xl shadow-sm ring-1 ring-gray-200 p-3 space-y-4">
 
-                <!-- Header -->
+                <!-- Toppseksjon med navn og hovedinfo -->
                 <h1 class="text-2xl font-semibold text-gray-900">@Model.ObstacleName</h1>
 
-                <!-- Top info -->
+                <!-- Grunnleggende status- og innsendingsinformasjon -->
                 <div class="space-y-2">
 
                     <div class="flex justify-between">
@@ -53,7 +56,7 @@
 
                 </div>
 
-                <!-- Basic Info -->
+                <!-- Seksjon: grunnleggende hindringsinformasjon -->
                 <h2 class="text-lg font-semibold text-gray-900 mt-2">Basic Obstacle Information</h2>
 
                 <div class="space-y-2">
@@ -77,7 +80,7 @@
 
                 </div>
 
-                <!-- Location Info -->
+                <!-- Seksjon: posisjon og geometri -->
                 <h2 class="text-lg font-semibold text-gray-900 mt-2">Location Information</h2>
 
                 <div class="space-y-2">
@@ -96,10 +99,12 @@
                                 Start: @Model.StartCoordinate?.Latitude, @Model.StartCoordinate?.Longitude <br />
                                 End: @Model.EndCoordinate?.Latitude, @Model.EndCoordinate?.Longitude
                             </span>
+                            <!-- Viser start- og sluttkoordinater for linjehindring -->
                         }
                         else
                         {
                             <span class="text-sm text-gray-900">@Model.Latitude, @Model.Longitude</span>
+                            <!-- Viser enkeltpunkt-koordinat for punkt-hindring -->
                         }
                     </div>
 
@@ -112,16 +117,18 @@
                                 Vertices: @Model.LineVertexCount <br />
                                 Length: @Model.LineLengthMeters?.ToString("N0") m
                             </span>
+                            <!-- Viser informasjon om antall punkter og lengde for linjehindring -->
                         }
                         else
                         {
                             <span class="text-sm text-gray-500">N/A</span>
+                            <!-- Ikke relevant for punkt-hindringer -->
                         }
                     </div>
 
                 </div>
 
-                <!-- Status Info -->
+                <!-- Seksjon: status og verifisering -->
                 <h2 class="text-lg font-semibold text-gray-900 mt-2">Status Information</h2>
 
                 <div class="space-y-2">
@@ -144,20 +151,21 @@
                             @(verificationInfo.Timestamp?.ToString("MMM dd, yyyy HH:mm") ?? "Not verified")
                         </span>
                     </div>
-                    
+
                     @if (Model.Status == "Declined" && !string.IsNullOrWhiteSpace(Model.DeclineReason))
                     {
                         <div class="flex justify-between mt-2">
                             <span class="text-gray-600 font-medium text-sm">Rejection Reason</span>
                             <span class="text-sm text-gray-900 text-right w-64 break-words">@Model.DeclineReason</span>
                         </div>
+                        <!-- Viser begrunnelse dersom hindringen er avslått -->
                     }
 
                 </div>
 
-                <!-- Approval Actions -->
-                @if ((User.IsInRole("Caseworker") || User.IsInRole("Admin")) 
-                     && Model.Status == "Pending")
+                <!-- Godkjennings-/avslagsaksjoner for saksbehandler/admin -->
+                @if ((User.IsInRole("Caseworker") || User.IsInRole("Admin"))
+                                && Model.Status == "Pending")
                 {
                     <h2 class="text-lg font-semibold text-gray-900 mt-3">Approval Actions</h2>
 
@@ -169,33 +177,35 @@
                                 Approve
                             </button>
                         </form>
+                        <!-- Skjema/knapp for å godkjenne hindringen -->
 
                         <form asp-action="Decline" asp-route-id="@Model.Id" method="post" id="declineForm">
                             @Html.AntiForgeryToken()
 
-                            <!-- Reject button -->
+                            <!-- Knapp som viser felt for å skrive avslagsbegrunnelse -->
                             <button type="button" id="showReasonBtn"
                                     class="bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700 text-sm">
                                 Reject
                             </button>
 
-                            
-                            <!-- Reject Reason Box (HIDDEN by default) -->
+
+                            <!-- Boks for avslagsgrunn (SKJULT som standard) -->
                             <div id="reasonContainer" class="mt-3 hidden">
-                                
+
                                 <label class="block text-sm font-medium text-gray-700 mb-1">Reason for rejection</label>
-                                
+
                                 <textarea name="declineReason" rows="3" maxlength="300"
-          class="w-full rounded-lg border-2 border-red-400 bg-red-50 text-red-900 
+                                      class="w-full rounded-lg border-2 border-red-400 bg-red-50 text-red-900
                  focus:ring-2 focus:ring-red-600 focus:border-red-600 p-3 shadow-sm"></textarea>
                                 <div class="text-xs text-gray-500 mt-1">
                                     <span id="declineCount">0</span>/300 characters
                                 </div>
+                                <!-- Teller antall tegn brukt i avslagsbegrunnelsen -->
 
-                <button type="submit"
-                class="mt-2 bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700 text-sm">
-                    Confirm Rejection
-                </button>  
+                                <button type="submit"
+                                        class="mt-2 bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700 text-sm">
+                                    Confirm Rejection
+                                </button>
                             </div>
                         </form>
 
@@ -206,10 +216,11 @@
                        class="inline-flex items-center gap-2 px-3 py-2 rounded-md ring-1 ring-gray-300 text-gray-700 hover:bg-gray-50">
                         ← Back
                     </a>
+                    <!-- Tilbakeknapp til oversikt over hindringer -->
                 </div>
-                
+
                 @if ((User.IsInRole("Caseworker") || User.IsInRole("Admin"))
-                     && (Model.Status == "Approved" || Model.Status == "Declined"))
+                                && (Model.Status == "Approved" || Model.Status == "Declined"))
                 {
                     <div class="flex gap-3 mt-4">
                         <form asp-action="Revalidate" asp-route-id="@Model.Id" method="post" class="mt-4">
@@ -219,8 +230,7 @@
                                 Revalidate
                             </button>
                         </form>
-
-
+                        <!-- Lar saksbehandler/admin re-evaluere en tidligere vurdert hindring -->
                         @if (User.IsInRole("Admin") && Model.Status == "Declined")
                         {
                             <form asp-action="Delete" asp-controller="Obstacle" asp-route-id="@Model.Id" method="post" class="mt-4">
@@ -231,58 +241,62 @@
                                     Delete Report
                                 </button>
                             </form>
-
+                            <!-- Admin kan slette en avslått rapport permanent -->
                         }
                     </div>
                 }
 
             </div>
 
-            <!-- MAP COLUMN -->
+            <!-- KARTKOLONNE -->
             <div class="h-[300px] w-full rounded-2xl overflow-hidden ring-1 ring-gray-300 bg-white" id="map"></div>
+            <!-- Kart som viser plasseringen/linjen til hindringen -->
 
         </div>
-        
+
     </section>
 </body>
 
 @section Scripts {
     <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
     <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+    <!-- Leaflet brukes til å vise kartet -->
 
     <script>
         @if (Model.HasLine)
         {
-                <text>
-                const coords = [
-                    @foreach (var c in Model.LineCoordinates)
-                    {
-                            <text>[ @c.Latitude, @c.Longitude ],</text>
-                    }
-                ];
+                    <text>
+                    const coords = [
+                        @foreach (var c in Model.LineCoordinates)
+                        {
+                                    <text>[ @c.Latitude, @c.Longitude ],</text>
+                        }
+                    ];
 
-                const map = L.map('map');
-                L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
+                    const map = L.map('map');
+                    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
 
-                const poly = L.polyline(coords, { color: 'red' }).addTo(map);
-                map.fitBounds(poly.getBounds());
-                map.setZoom(map.getZoom() - 1);
-                </text>
+                    const poly = L.polyline(coords, { color: 'red' }).addTo(map);
+                    map.fitBounds(poly.getBounds());
+                    map.setZoom(map.getZoom() - 1);
+                    </text>
+                    // Tegner en rød polyline for linjehindring og zoomer kartet til å passe denne
         }
         else
         {
-                <text>
-                const map = L.map('map').setView([@Model.Latitude, @Model.Longitude], 13);
-                L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
+                    <text>
+                    const map = L.map('map').setView([@Model.Latitude, @Model.Longitude], 13);
+                    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
 
-                L.marker([@Model.Latitude, @Model.Longitude])
-                    .addTo(map)
-                    .bindPopup("@Model.ObstacleName")
-                    .openPopup();
-                </text>
+                    L.marker([@Model.Latitude, @Model.Longitude])
+                        .addTo(map)
+                        .bindPopup("@Model.ObstacleName")
+                        .openPopup();
+                    </text>
+                    // Viser et kart sentrert på punkt-hindring med markør og popup
         }
         const showBtn = document.getElementById("showReasonBtn");
-        // Character counter for decline reason
+        // Tekstområde og teller for avslagsbegrunnelse
         const declineTextarea = document.querySelector("textarea[name='declineReason']");
         const declineCounter = document.getElementById("declineCount");
 
@@ -299,5 +313,6 @@
                 showBtn.classList.add("hidden");
             });
         }
+        // Når bruker klikker "Reject", vises feltet for å skrive begrunnelse
     </script>
 }

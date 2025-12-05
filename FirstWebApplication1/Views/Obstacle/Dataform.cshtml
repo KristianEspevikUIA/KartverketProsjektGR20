@@ -5,34 +5,43 @@
     var usesFeet = ViewBag.UsesFeet ?? false;
     var isPilot = ViewBag.IsPilot ?? false;
 
-    // Calculate height ranges in both units
+    // Beregner høydeintervaller i begge enheter (meter og fot)
     var minHeightMeters = 15.0;
     var maxHeightMeters = 300.0;
-    var minHeightFeet = minHeightMeters * 3.28084; // ~49 feet
-    var maxHeightFeet = maxHeightMeters * 3.28084; // ~984 feet
+    var minHeightFeet = minHeightMeters * 3.28084; // ~49 fot
+    var maxHeightFeet = maxHeightMeters * 3.28084; // ~984 fot
     var defaultHeightMeters = 15.0;
-    var defaultHeightFeet = defaultHeightMeters * 3.28084; // ~49 feet
+    var defaultHeightFeet = defaultHeightMeters * 3.28084; // ~49 fot
 }
 
 <div class="bg-cover bg-center" style="background-image: url('/images/BackgroundImageGreen.png'); background-repeat: no-repeat; background-attachment: fixed; background-size: 100% 100%;">
+    <!-- Bakgrunnsbilde for hele siden -->
+
     <section class="mx-auto max-w-6xl px-4 pb-12">
+        <!-- Sentralt område med maks bredde for skjemaet -->
+
         <div class="bg-white rounded-2xl shadow-sm ring-1 ring-gray-200 p-8">
+            <!-- Hovedkortet som inneholder hele skjemaet for hindringer -->
+
             <header class="mb-4 text-center">
                 <h1 class="text-3xl font-semibold text-gray-900">Register Obstacle</h1>
+                <!-- Overskrift for registrering av hindring -->
                 @if (!string.IsNullOrEmpty(Model.ObstacleType))
                 {
                     <div class="mt-4 inline-flex items-center px-4 py-2 bg-indigo-100 text-indigo-800 rounded-full">
                         <i class="fa-solid fa-tag mr-2"></i>
                         <span class="font-medium">Type: @Model.ObstacleType</span>
                     </div>
+                    <!-- Viser valgt hindringstype hvis den finnes i modellen -->
                 }
             </header>
 
             <form asp-action="DataForm" method="post" class="space-y-6" id="obstacleForm">
-                @Html.AntiForgeryToken()
-                @Html.HiddenFor(m => m.ObstacleType)
+                @Html.AntiForgeryToken() @* Beskytter skjemaet mot CSRF-angrep *@
+                @Html.HiddenFor(m => m.ObstacleType) @* Skjult felt som sender valgt hindringstype tilbake *@
 
                 <div asp-validation-summary="ModelOnly" class="text-red-600 text-sm bg-red-50 p-4 rounded-lg"></div>
+                <!-- Oppsummerer valideringsfeil for modellen -->
 
                 <div class="space-y-8">
                     <div class="space-y-4">
@@ -44,6 +53,7 @@
                             <p class="text-sm text-gray-600 mb-3">
                                 Click on the map to mark a single point, or click multiple times to draw a line representing the obstacle.
                             </p>
+                            <!-- Instruksjon til brukeren om hvordan kartet brukes til å sette posisjon/linje -->
                         </div>
 
                         <div id="map"
@@ -51,6 +61,7 @@
                              class="rounded-lg shadow-sm"
                              data-approved-obstacles='@(ViewBag.ApprovedObstaclesJson ?? "[]")'>
                         </div>
+                        <!-- Leaflet-kart som viser området og lar brukeren velge punkt/linje, inkludert godkjente hindringer fra ViewBag -->
 
                         <div class="flex flex-wrap gap-3">
                             <button type="button" id="undoPoint"
@@ -58,21 +69,24 @@
                                 <i class="fa-solid fa-undo mr-2"></i>
                                 Undo Last Point
                             </button>
+                            <!-- Fjerner siste punkt brukeren satte i kartet -->
+
                             <button type="button" id="clearLine"
                                     class="inline-flex items-center justify-center rounded-lg bg-gray-100 px-8 py-4 text-sm font-medium text-gray-800 hover:bg-gray-200 transition-colors">
                                 <i class="fa-solid fa-trash mr-2"></i>
                                 Clear All
                             </button>
+                            <!-- Tømmer alle punkter/linjer som er tegnet i kartet -->
                         </div>
 
-                        <!-- HEIGHT SLIDER WITH UNIT TOGGLE -->
+                        <!-- HØYDESLIDER MED ENHETSBYTTING -->
                         <div class="bg-gradient-to-br from-indigo-50 to-purple-50 p-3 rounded-xl border-2 border-indigo-200">
                             <div class="flex justify-between items-center mb-1">
                                 <label class="block text-sm font-medium text-gray-800">
                                     <i class="fa-solid fa-ruler-vertical mr-2 text-indigo-600"></i>
                                     Obstacle Height <span class="text-red-600">*</span>
                                 </label>
-
+                                <!-- Label for høydefeltet, markert som obligatorisk -->
                                 @if (isPilot)
                                 {
                                     <div class="flex items-center space-x-2 bg-white px-3 py-1 rounded-full shadow-sm">
@@ -82,12 +96,14 @@
                                             <i class="fa-solid fa-exchange-alt ml-1 text-xs"></i>
                                         </button>
                                     </div>
+                                    <!-- Piloter kan bytte visningsenhet mellom fot og meter -->
                                 }
                                 else
                                 {
                                     <span class="text-xs font-medium text-gray-600 bg-white px-3 py-1 rounded-full shadow-sm">
                                         Unit: Meters
                                     </span>
+                                    <!-- Andre brukere ser kun meter som enhet -->
                                 }
                             </div>
 
@@ -95,29 +111,30 @@
                                 <input id="heightInputDisplay"
                                        type="number"
                                        class="text-center text-2xl font-bold text-indigo-600 border border-indigo-300 rounded-lg bg-white px-4 py-1 focus:outline-none focus:ring-2 focus:ring-indigo-400 w-28"
-                                       value="@(usesFeet ? defaultHeightFeet.ToString("F0") : defaultHeightMeters.ToString("F1"))" />
+                                       value="@(usesFeet? defaultHeightFeet.ToString("F0") : defaultHeightMeters.ToString("F1"))" />
                             </div>
-
-                            <!-- Visible slider for user interaction -->
+                            <!-- Synlig numerisk felt som viser høyden i valgt enhet -->
+                            <!-- Synlig slider som brukeren kan dra for å justere høyden -->
                             <input type="range"
                                    id="heightSlider"
-                                   min="@(usesFeet ? minHeightFeet.ToString("F0") : minHeightMeters)"
-                                   max="@(usesFeet ? maxHeightFeet.ToString("F0") : maxHeightMeters)"
+                                   min="@(usesFeet? minHeightFeet.ToString("F0") : minHeightMeters)"
+                                   max="@(usesFeet? maxHeightFeet.ToString("F0") : maxHeightMeters)"
                                    step="@(usesFeet ? "1" : "0.5")"
-                                   value="@(usesFeet ? defaultHeightFeet.ToString("F0") : defaultHeightMeters)"
+                                   value="@(usesFeet? defaultHeightFeet.ToString("F0") : defaultHeightMeters)"
                                    data-unit="@(usesFeet ? "feet" : "meters")"
                                    class="w-full h-2 bg-indigo-200 rounded-lg appearance-none cursor-pointer slider" />
 
-                            <!-- Hidden input that stores the actual meter value (NO STEP ATTRIBUTE) -->
+                            <!-- Skjult felt som lagrer selve høydeverdien i meter (uten step-attributt) -->
                             <input type="hidden" asp-for="ObstacleHeight" id="ObstacleHeight" />
 
                             <div class="flex justify-between text-xs text-gray-600 mt-2">
                                 <span id="minLabel">@(usesFeet ? $"{minHeightFeet:F0} ft" : $"{minHeightMeters:F0} m") (Min)</span>
                                 <span id="maxLabel">@(usesFeet ? $"{maxHeightFeet:F0} ft" : $"{maxHeightMeters:F0} m") (Max)</span>
                             </div>
+                            <!-- Viser min- og maksverdi for høyde i aktuell enhet -->
 
                             <span asp-validation-for="ObstacleHeight" class="text-sm text-red-600 block mt-2"></span>
-
+                            <!-- Viser valideringsfeil knyttet til høydefeltet -->
                             @if (isPilot)
                             {
                                 <div class="mt-3 text-xs text-gray-500 text-center">
@@ -125,6 +142,7 @@
                                     Value stored in meters:
                                     <span id="feetValue" class="font-mono font-semibold">@defaultHeightMeters.ToString("F2")</span> m
                                 </div>
+                                <!-- Ekstrainformasjon til piloter: faktisk lagret verdi i meter -->
                             }
                         </div>
 
@@ -134,12 +152,17 @@
                                 Obstacle Description <span class="text-gray-500 text-xs">(Optional)</span>
                             </label>
                             <textarea asp-for="ObstacleDescription" rows="3" maxlength="300"
-                                   class="block w-full rounded-lg border-2 border-gray-400 focus:border-indigo-600 focus:ring-2 focus:ring-indigo-200 px-4 py-3 text-lg shadow-sm"
-                                   placeholder="Add additional details about the obstacle (optional)"></textarea>
+                                      class="block w-full rounded-lg border-2 border-gray-400 focus:border-indigo-600 focus:ring-2 focus:ring-indigo-200 px-4 py-3 text-lg shadow-sm"
+                                      placeholder="Add additional details about the obstacle (optional)"></textarea>
+                            <!-- Valgfri tekstbeskrivelse av hindringen -->
+
                             <div class="text-xs text-gray-500 mt-1">
                                 <span id="descCount">0</span>/300 characters
                             </div>
+                            <!-- Teller hvor mange tegn brukeren har skrevet i beskrivelsen -->
+
                             <span asp-validation-for="ObstacleDescription" class="text-sm text-red-600"></span>
+                            <!-- Viser valideringsfeil for beskrivelsen -->
                         </div>
                     </div>
 
@@ -149,21 +172,26 @@
                             <input asp-for="Latitude" readonly
                                    class="block w-full rounded-lg border-gray-300 bg-gray-50 px-3 py-2 text-sm text-gray-800 font-mono" />
                             <span asp-validation-for="Latitude" class="text-xs text-red-600"></span>
+                            <!-- Viser breddegrad (leses fra kartet, ikke redigerbar) -->
                         </div>
                         <div>
                             <label asp-for="Longitude" class="block text-xs font-medium text-gray-600 mb-1">Longitude</label>
                             <input asp-for="Longitude" readonly
                                    class="block w-full rounded-lg border-gray-300 bg-gray-50 px-3 py-2 text-sm text-gray-800 font-mono" />
                             <span asp-validation-for="Longitude" class="text-xs text-red-600"></span>
+                            <!-- Viser lengdegrad (leses fra kartet, ikke redigerbar) -->
                         </div>
                     </div>
 
                     <div id="lineSummary" class="text-sm font-medium text-gray-700 bg-gray-50 p-3 rounded-lg"></div>
+                    <!-- Tekstlig oppsummering av linjen (f.eks. antall punkter eller lengde) -->
 
                     <div id="vertexList" class="rounded-lg border border-gray-200 bg-gray-50 p-3 text-sm max-h-48 overflow-y-auto"></div>
+                    <!-- Viser en liste over alle punktene (koordinater) i linjen -->
 
                     <input asp-for="LineGeoJson" type="hidden" />
                     <span asp-validation-for="LineGeoJson" class="text-sm text-red-600"></span>
+                    <!-- Skjult felt for GeoJSON-representasjon av linjen + validering -->
                 </div>
 
                 <div class="flex justify-between items-center pt-8 border-t">
@@ -172,6 +200,7 @@
                         <i class="fa-solid fa-arrow-left mr-2"></i>
                         Back
                     </a>
+                    <!-- Tilbakeknapp som sender brukeren til siden for valg av hindringstype -->
 
                     <button type="submit" id="submitBtn"
                             class="inline-flex items-center justify-center rounded-xl bg-indigo-600 px-12 py-6 text-2xl font-semibold text-white hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
@@ -179,6 +208,7 @@
                         Submit
                         <i class="fa-solid fa-arrow-right ml-2"></i>
                     </button>
+                    <!-- Innsendingsknapp for skjemaet, deaktivert inntil nødvendige data er på plass -->
                 </div>
             </form>
         </div>
@@ -186,146 +216,151 @@
 </div>
 
 @section Scripts {
-        <partial name="_ValidationScriptsPartial" />
+    <partial name="_ValidationScriptsPartial" />
+    <!-- Inkluderer standard klientsidevalideringsscript fra ASP.NET -->
 
-        <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-        <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <!-- Leaflet-biblioteket for kartvisning -->
 
-        <script src="~/js/geolocation.js?v=1.2"></script>
+    <script src="~/js/geolocation.js?v=1.2"></script>
+    <!-- Egendefinert JavaScript for kart og geolokasjon -->
 
-        <script>
-            // Constants
-            const METERS_TO_FEET = 3.28084;
-            const FEET_TO_METERS = 1 / METERS_TO_FEET;
-            const MIN_METERS = 15;
-            const MAX_METERS = 300;
-            const MIN_FEET = MIN_METERS * METERS_TO_FEET;
-            const MAX_FEET = MAX_METERS * METERS_TO_FEET;
+    <script>
+        // Konstanter for omregning mellom meter og fot, samt min/max grenser
+        const METERS_TO_FEET = 3.28084;
+        const FEET_TO_METERS = 1 / METERS_TO_FEET;
+        const MIN_METERS = 15;
+        const MAX_METERS = 300;
+        const MIN_FEET = MIN_METERS * METERS_TO_FEET;
+        const MAX_FEET = MAX_METERS * METERS_TO_FEET;
 
-            // Initial unit from backend
-            let currentUnit = '@(usesFeet ? "feet" : "meters")';
-            const isPilot = @isPilot.ToString().ToLower();
+        // Startenhet fra backend (avgjør om slideren starter i meter eller fot)
+        let currentUnit = '@(usesFeet ? "feet" : "meters")';
+        const isPilot = @isPilot.ToString().ToLower();
 
-            // Elements
-            const heightSlider = document.getElementById('heightSlider');
-            const heightInputDisplay = document.getElementById('heightInputDisplay'); // main visible number input
-            const heightInput = document.getElementById('ObstacleHeight'); // hidden (always meters)
-            const unitToggle = document.getElementById('unitToggle');
-            const currentUnitSpan = document.getElementById('currentUnit');
-            const minLabel = document.getElementById('minLabel');
-            const maxLabel = document.getElementById('maxLabel');
-            const metersValueSpan = document.getElementById('feetValue'); // FIXED: correct ID
+        // Henter HTML-elementene som brukes til høydevalg
+        const heightSlider = document.getElementById('heightSlider');
+        const heightInputDisplay = document.getElementById('heightInputDisplay'); // Synlig numerisk inputfelt
+        const heightInput = document.getElementById('ObstacleHeight'); // Skjult felt (lagrer alltid meter)
+        const unitToggle = document.getElementById('unitToggle');
+        const currentUnitSpan = document.getElementById('currentUnit');
+        const minLabel = document.getElementById('minLabel');
+        const maxLabel = document.getElementById('maxLabel');
+        const metersValueSpan = document.getElementById('feetValue'); // Riktig ID for elementet som viser meterverdi
 
-            //------------------------------------------------------------
-            // Update display from slider
-            //------------------------------------------------------------
-            function updateHeightDisplay() {
-                let sliderValue = parseFloat(heightSlider.value);
-                let metersValue;
+        //------------------------------------------------------------
+        // Oppdater visningen basert på sliderens verdi
+        //------------------------------------------------------------
+        function updateHeightDisplay() {
+            let sliderValue = parseFloat(heightSlider.value);
+            let metersValue;
 
-                if (currentUnit === 'feet') {
-                    sliderValue = Math.round(sliderValue);
-                    heightInputDisplay.value = sliderValue.toFixed(0);
-                    metersValue = sliderValue * FEET_TO_METERS;
-                } else {
-                    heightInputDisplay.value = sliderValue.toFixed(1);
-                    metersValue = sliderValue;
-                }
+            if (currentUnit === 'feet') {
+                sliderValue = Math.round(sliderValue);
+                heightInputDisplay.value = sliderValue.toFixed(0);
+                metersValue = sliderValue * FEET_TO_METERS;
+            } else {
+                heightInputDisplay.value = sliderValue.toFixed(1);
+                metersValue = sliderValue;
+            }
 
-                // Always store meters
-                heightInput.value = metersValue.toFixed(2);
+            // Lagrer alltid verdien i meter i det skjulte feltet
+            heightInput.value = metersValue.toFixed(2);
 
-                // Pilot debug text
+            // Viser lagret verdi i meter (spesielt nyttig for piloter)
+            if (metersValueSpan && isPilot) {
+                metersValueSpan.textContent = metersValue.toFixed(2);
+            }
+        }
+
+        //------------------------------------------------------------
+        // Manuell inntasting i inputfelt → oppdater slider og skjult felt
+        //------------------------------------------------------------
+        heightInputDisplay.addEventListener('input', () => {
+            let typedValue = parseFloat(heightInputDisplay.value);
+            if (isNaN(typedValue)) return;
+
+            if (currentUnit === 'feet') {
+                // Sørger for at verdien holder seg innenfor gyldig intervall i fot
+                typedValue = Math.min(Math.max(typedValue, MIN_FEET), MAX_FEET);
+                heightSlider.value = typedValue;
+                heightInput.value = (typedValue * FEET_TO_METERS).toFixed(2);
+
                 if (metersValueSpan && isPilot) {
-                    metersValueSpan.textContent = metersValue.toFixed(2);
+                    metersValueSpan.textContent = (typedValue * FEET_TO_METERS).toFixed(2);
+                }
+            } else {
+                // Sørger for at verdien holder seg innenfor gyldig intervall i meter
+                typedValue = Math.min(Math.max(typedValue, MIN_METERS), MAX_METERS);
+                heightSlider.value = typedValue;
+                heightInput.value = typedValue.toFixed(2);
+
+                if (metersValueSpan && isPilot) {
+                    metersValueSpan.textContent = typedValue.toFixed(2);
                 }
             }
+        });
 
-            //------------------------------------------------------------
-            // Manual input → slider + hidden input
-            //------------------------------------------------------------
-            heightInputDisplay.addEventListener('input', () => {
-                let typedValue = parseFloat(heightInputDisplay.value);
-                if (isNaN(typedValue)) return;
+        //------------------------------------------------------------
+        // Endring på slider → oppdater visningen
+        //------------------------------------------------------------
+        heightSlider.addEventListener('input', updateHeightDisplay);
 
-                if (currentUnit === 'feet') {
-                    typedValue = Math.min(Math.max(typedValue, MIN_FEET), MAX_FEET);
-                    heightSlider.value = typedValue;
-                    heightInput.value = (typedValue * FEET_TO_METERS).toFixed(2);
+        //------------------------------------------------------------
+        // Bytte mellom meter ↔ fot (kun for piloter)
+        //------------------------------------------------------------
+        function toggleUnit() {
+            if (!isPilot) return;
 
-                    if (metersValueSpan && isPilot) {
-                        metersValueSpan.textContent = (typedValue * FEET_TO_METERS).toFixed(2);
-                    }
-                } else {
-                    typedValue = Math.min(Math.max(typedValue, MIN_METERS), MAX_METERS);
-                    heightSlider.value = typedValue;
-                    heightInput.value = typedValue.toFixed(2);
+            const metersValueCurrent = parseFloat(heightInput.value) || MIN_METERS;
 
-                    if (metersValueSpan && isPilot) {
-                        metersValueSpan.textContent = typedValue.toFixed(2);
-                    }
-                }
-            });
+            if (currentUnit === 'meters') {
+                //----------------------------------------------------------
+                // Bytter fra meter → fot
+                //----------------------------------------------------------
+                currentUnit = 'feet';
+                const feetValue = metersValueCurrent * METERS_TO_FEET;
 
-            //------------------------------------------------------------
-            // Slider input → update display
-            //------------------------------------------------------------
-            heightSlider.addEventListener('input', updateHeightDisplay);
+                heightSlider.min = MIN_FEET.toFixed(0);
+                heightSlider.max = MAX_FEET.toFixed(0);
+                heightSlider.step = "1";
+                heightSlider.value = Math.round(feetValue);
 
-            //------------------------------------------------------------
-            // Toggle between meters ↔ feet
-            //------------------------------------------------------------
-            function toggleUnit() {
-                if (!isPilot) return;
+                currentUnitSpan.textContent = "Feet";
+                minLabel.textContent = `${MIN_FEET.toFixed(0)} ft (Min)`;
+                maxLabel.textContent = `${MAX_FEET.toFixed(0)} ft (Max)`;
+            }
+            else {
+                //----------------------------------------------------------
+                // Bytter fra fot → meter
+                //----------------------------------------------------------
+                currentUnit = 'meters';
 
-                const metersValueCurrent = parseFloat(heightInput.value) || MIN_METERS;
+                heightSlider.min = MIN_METERS.toFixed(1);
+                heightSlider.max = MAX_METERS.toFixed(1);
+                heightSlider.step = "0.5";
+                heightSlider.value = metersValueCurrent.toFixed(1);
 
-                if (currentUnit === 'meters') {
-                    //----------------------------------------------------------
-                    // Switch → FEET
-                    //----------------------------------------------------------
-                    currentUnit = 'feet';
-                    const feetValue = metersValueCurrent * METERS_TO_FEET;
-
-                    heightSlider.min = MIN_FEET.toFixed(0);
-                    heightSlider.max = MAX_FEET.toFixed(0);
-                    heightSlider.step = "1";
-                    heightSlider.value = Math.round(feetValue);
-
-                    currentUnitSpan.textContent = "Feet";
-                    minLabel.textContent = `${MIN_FEET.toFixed(0)} ft (Min)`;
-                    maxLabel.textContent = `${MAX_FEET.toFixed(0)} ft (Max)`;
-                }
-                else {
-                    //----------------------------------------------------------
-                    // Switch → METERS
-                    //----------------------------------------------------------
-                    currentUnit = 'meters';
-
-                    heightSlider.min = MIN_METERS.toFixed(1);
-                    heightSlider.max = MAX_METERS.toFixed(1);
-                    heightSlider.step = "0.5";
-                    heightSlider.value = metersValueCurrent.toFixed(1);
-
-                    currentUnitSpan.textContent = "Meters";
-                    minLabel.textContent = `${MIN_METERS.toFixed(0)} m (Min)`;
-                    maxLabel.textContent = `${MAX_METERS.toFixed(0)} m (Max)`;
-                }
-
-                updateHeightDisplay();
+                currentUnitSpan.textContent = "Meters";
+                minLabel.textContent = `${MIN_METERS.toFixed(0)} m (Min)`;
+                maxLabel.textContent = `${MAX_METERS.toFixed(0)} m (Max)`;
             }
 
-            if (unitToggle && isPilot) {
-                unitToggle.addEventListener('click', (e) => {
-                    e.preventDefault();
-                    toggleUnit();
-                });
-            }
-
-            //------------------------------------------------------------
-            // Initialize display on load
-            //------------------------------------------------------------
             updateHeightDisplay();
-        </script>
+        }
 
-    }
+        if (unitToggle && isPilot) {
+            unitToggle.addEventListener('click', (e) => {
+                e.preventDefault();
+                toggleUnit();
+            });
+        }
+
+        //------------------------------------------------------------
+        // Initierer visning ved sideinnlasting
+        //------------------------------------------------------------
+        updateHeightDisplay();
+    </script>
+
+}

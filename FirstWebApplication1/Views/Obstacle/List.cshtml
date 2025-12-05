@@ -1,20 +1,40 @@
 ﻿@model FirstWebApplication1.Models.ObstacleListViewModel
-@{ 
+@* Viewet bruker en viewmodell som representerer en filtrerbar liste over hindringer *@
+
+@{
+    @* Setter sidetittel basert på titteltekst fra modellen *@
     ViewData["Title"] = Model.Title;
+
+    @* Leser ut om brukeren er pilot fra ViewBag og faller tilbake til false dersom ikke satt *@
     var isPilot = ViewBag.IsPilot as bool? ?? false;
+
+    @* Velger ulike CSS-klasser for hovedknappen avhengig av om brukeren er pilot eller ikke *@
     var heroActionClass = isPilot
         ? "inline-flex items-center rounded-xl bg-indigo-600 px-6 py-3 text-white text-base font-semibold hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
         : "inline-flex items-center rounded-lg bg-indigo-600 px-4 py-2 text-white font-medium hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500";
 }
+
 <body class="bg-cover bg-center" style="background-image: url('/images/BackgroundImageGreen.png');">
+    <!-- Setter bakgrunnsbilde og skalerer det til å dekke hele visningsflaten -->
+
     <section class="mx-auto max-w-7xl mt-8">
+        <!-- Hovedseksjon som sentrer innholdet og begrenser bredden på tabell og filter -->
+
         <div class="bg-white rounded-2xl shadow-sm ring-1 ring-gray-200 p-8">
+            <!-- Kort/container som omslutter overskrifter, filter og tabell -->
+
             <div class="flex flex-col lg:flex-row lg:justify-between lg:items-start gap-4 mb-4">
+                <!-- Toppseksjon med tittel, beskrivelse og handlingsknapper -->
+
                 <div>
                     <h1 class="text-3xl font-bold text-gray-900">@Model.Title</h1>
                     <p class="text-gray-600 mt-2">@Model.Description</p>
+                    <!-- Viser dynamisk tittel og beskrivelse for listen -->
                 </div>
+
                 <div class="flex flex-wrap gap-3">
+                    <!-- Handlingsknapper: registrer ny hindring og eventuelt "vis alle" -->
+
                     <a asp-action="SelectType"
                        class="@heroActionClass">
                         Register New Obstacle
@@ -25,14 +45,23 @@
                            class="inline-flex items-center rounded-xl px-6 py-3 ring-2 ring-indigo-600 text-indigo-800 text-base font-semibold hover:bg-indigo-50">
                             View All Obstacles
                         </a>
+                        @* Viser knapp for å fjerne statusfilter hvis et filter er aktivt *@
                     }
                 </div>
             </div>
+
             <!-- Filter UI -->
             <div class="bg-gray-50 p-4 rounded-lg border border-gray-200 mb-8">
+                <!-- Panel med filter for å snevre inn listen med hindringer -->
+
                 <form asp-action="List" method="get" class="space-y-4">
+                    @* Filtreringsskjema som sender GET-parametere til List-aksjonen *@
+
                     <input type="hidden" name="statusFilter" value="@Model.StatusFilter" />
+                    @* Beholder gjeldende statusfilter når andre filterverdier oppdateres *@
+
                     <div class="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-3 gap-4">
+                        <!-- Grid med to rader filter (type/høyde på rad 1, organisasjon/dato på rad 2) -->
                         <!-- Row 1 -->
                         <div>
                             <label for="obstacleTypeFilter" class="block text-sm font-medium text-gray-700">Obstacle Type</label>
@@ -41,17 +70,23 @@
                                 @foreach (var type in FirstWebApplication1.Models.ObstacleTypes.Types)
                                 {
                                     <option value="@type.Value" selected="@(Model.ObstacleTypeFilter == type.Value)">@type.DisplayName</option>
+                                    @* Genererer valg for hver hindringstype og markerer valgt type ut fra filteret *@
                                 }
                             </select>
                         </div>
+
                         <div>
                             <label for="minHeight" class="block text-sm font-medium text-gray-700">Min Height (m)</label>
                             <input type="number" name="minHeight" id="minHeight" value="@Model.MinHeight" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
+                            <!-- Filtrerer etter minimumshøyde i meter -->
                         </div>
+
                         <div>
                             <label for="maxHeight" class="block text-sm font-medium text-gray-700">Max Height (m)</label>
                             <input type="number" name="maxHeight" id="maxHeight" value="@Model.MaxHeight" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
+                            <!-- Filtrerer etter maksimumshøyde i meter -->
                         </div>
+
                         <!-- Row 2 -->
                         <div>
                             <label for="organizationFilter" class="block text-sm font-medium text-gray-700">Organization</label>
@@ -60,32 +95,47 @@
                                 @foreach (var org in Model.AvailableOrganizations)
                                 {
                                     <option value="@org" selected="@(Model.OrganizationFilter == org)">@org</option>
+                                    @* Genererer organisasjonsfiltre og markerer valgt organisasjon *@
                                 }
                             </select>
                         </div>
+
                         <div>
                             <label for="startDate" class="block text-sm font-medium text-gray-700">Registered From</label>
                             <input type="date" name="startDate" id="startDate" value="@Model.StartDate?.ToString("yyyy-MM-dd")" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
+                            <!-- Startdato for registrerte hindringer (fra og med) -->
                         </div>
+
                         <div>
                             <label for="endDate" class="block text-sm font-medium text-gray-700">Registered To</label>
                             <input type="date" name="endDate" id="endDate" value="@Model.EndDate?.ToString("yyyy-MM-dd")" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
+                            <!-- Sluttdato for registrerte hindringer (til og med) -->
                         </div>
                     </div>
+
                     <div class="flex items-center pt-4">
+                        <!-- Handlingsknapper for å kjøre filter eller tilbakestille -->
+
                         <button type="submit" class="inline-flex items-center px-6 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-indigo-600 hover:bg-indigo-700">
                             Filter
                         </button>
                         <a asp-action="List" asp-route-statusFilter="@Model.StatusFilter" class="ml-3 text-sm text-gray-600 hover:text-gray-900">
                             Reset
                         </a>
+                        <!-- Reset-lenken fjerner andre filter, men beholder statusfilteret som route-parameter -->
                     </div>
                 </form>
             </div>
+
             @if (Model.Obstacles.Any())
             {
+                @* Viser tabell dersom det finnes hindringer som matcher filterkriteriene *@
                 <div class="overflow-hidden shadow ring-1 ring-black ring-opacity-5 rounded-lg">
+                    <!-- Tabellcontainer med ramme og avrundede hjørner -->
+
                     <table class="min-w-full divide-y divide-gray-300">
+                        <!-- Hovedtabell for oversikt over alle hindringer -->
+
                         <thead class="bg-gray-50">
                             <tr>
                                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">#</th>
@@ -98,16 +148,20 @@
                                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
                             </tr>
                         </thead>
+
                         <tbody class="bg-white divide-y divide-gray-200">
                             @foreach (var obstacle in Model.Obstacles)
                             {
+                                @* Rader genereres dynamisk for hver hindring i listen *@
                                 <tr class="hover:bg-gray-50">
                                     <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">@obstacle.Id</td>
                                     <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">@obstacle.ObstacleName</td>
                                     <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">@obstacle.ObstacleHeight</td>
                                     <td class="px-6 py-4 whitespace-nowrap">
                                         @{
-                                            var statusClass = obstacle.Status switch {
+                                            @* Velger CSS-klasser for statusmerke basert på statusverdi *@
+                                            var statusClass = obstacle.Status switch
+                                            {
                                                 "Approved" => "bg-green-100 text-green-800",
                                                 "Declined" => "bg-red-100 text-red-800",
                                                 _ => "bg-yellow-100 text-yellow-800"
@@ -116,17 +170,22 @@
                                         <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium @statusClass">
                                             @(obstacle.Status == "Declined" ? "Rejected" : obstacle.Status)
                                         </span>
+                                        @* Viser "Rejected" i stedet for "Declined" for å gjøre status mer forståelig for bruker *@
                                     </td>
                                     <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">@obstacle.SubmittedDate.ToString("yyyy-MM-dd HH:mm")</td>
                                     <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">@(obstacle.Organization ?? "-")</td>
                                     <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">@(obstacle.Status == "Pending" ? "-" : (obstacle.ApprovedBy ?? obstacle.DeclinedBy))</td>
                                     <td class="px-6 py-4 whitespace-nowrap text-sm font-medium space-x-2">
+                                        <!-- Handlingskolonne: se detaljer og eventuelt redigere -->
+
                                         <a asp-action="Details" asp-route-id="@obstacle.Id"
                                            class="text-white bg-blue-600 hover:bg-blue-700 rounded-md px-3 py-1">View</a>
+
                                         @if (User.IsInRole("Pilot") || User.IsInRole("Caseworker") || User.IsInRole("Admin"))
                                         {
                                             <a asp-action="Edit" asp-route-id="@obstacle.Id"
                                                class="text-white bg-gray-600 hover:bg-gray-700 rounded-md px-3 py-1">Edit</a>
+                                            @* Redigeringslenke kun synlig for autoriserte roller *@
                                         }
                                     </td>
                                 </tr>
@@ -137,9 +196,9 @@
             }
             else
             {
+                <!-- Fallback-tekst dersom ingen hindringer matcher filtrene -->
                 <p class="text-center py-10 text-gray-500">No obstacles found matching the criteria.</p>
             }
         </div>
     </section>
 </body>
-

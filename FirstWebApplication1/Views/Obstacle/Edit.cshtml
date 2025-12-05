@@ -1,18 +1,28 @@
-﻿@model FirstWebApplication1.Models.ObstacleData
+﻿@* Modellen som representerer hindringen som skal redigeres *@
+@model FirstWebApplication1.Models.ObstacleData 
 ﻿@{
-ViewData["Title"] = "Edit Obstacle";
+ViewData["Title"] = "Edit Obstacle"; // Setter sidetittelen som vises i layouten
 }
 
 <body class="bg-cover bg-center" style="background-image: url('/images/BackgroundImageGreen.png'); background-repeat: no-repeat; background-attachment: fixed; background-size: 100% 100%;">
+    <!-- Bakgrunnsbilde for hele redigeringssiden -->
+
     <section class="mx-auto max-w-2xl pb-12">
+        <!-- Sentrerer redigeringsskjemaet og begrenser bredden -->
+
         <div class="bg-white rounded-2xl shadow-sm ring-1 ring-gray-200 p-6">
+            <!-- Kort/container som inneholder hele redigeringsskjemaet -->
+
             <header class="mb-6">
                 <h1 class="text-2xl font-semibold">Edit Obstacle Report</h1>
                 <p class="text-gray-600">Update obstacle information</p>
+                <!-- Overskrift og kort beskrivelse av hva brukeren gjør på siden -->
             </header>
 
             <form asp-action="Edit" asp-route-id="@Model.Id" method="post" class="space-y-5">
-                @Html.AntiForgeryToken()
+                <!-- Skjema som sender oppdaterte hindringsdata til Edit-action med riktig Id -->
+                @Html.AntiForgeryToken() @* Beskytter skjemaet mot CSRF-angrep *@
+
                 <input type="hidden" asp-for="Id" />
                 <input type="hidden" asp-for="ObstacleType" />
                 <input type="hidden" asp-for="Status" />
@@ -23,6 +33,7 @@ ViewData["Title"] = "Edit Obstacle";
                 <input type="hidden" asp-for="DeclinedBy" />
                 <input type="hidden" asp-for="DeclinedDate" />
                 <input type="hidden" asp-for="DeclineReason" />
+                <!-- Skjulte felt som bevarer original metadata (status, hvem som har behandlet osv.) ved lagring -->
 
                 <div class="sm:col-span-2">
                     <label asp-for="ObstacleName" class="block text-sm font-medium text-gray-800 mb-1">Obstacle Name</label>
@@ -30,6 +41,7 @@ ViewData["Title"] = "Edit Obstacle";
                            class="block w-full rounded-lg border-gray-300 focus:border-indigo-600 focus:ring-indigo-600 px-3 py-2"
                            placeholder="Radio tower, Mast, etc." />
                     <span asp-validation-for="ObstacleName" class="text-sm text-red-600"></span>
+                    <!-- Felt og validering for navn på hindringen -->
                 </div>
 
                 <div>
@@ -40,6 +52,7 @@ ViewData["Title"] = "Edit Obstacle";
                            class="block w-full rounded-lg border-gray-300 focus:border-indigo-600 focus:ring-indigo-600 px-3 py-2"
                            placeholder="e.g. 25" />
                     <span asp-validation-for="ObstacleHeight" class="text-sm text-red-600"></span>
+                    <!-- Felt for å endre høyde (meter), med minimumsgrense og validering -->
                 </div>
 
                 <div class="sm:col-span-2">
@@ -50,6 +63,7 @@ ViewData["Title"] = "Edit Obstacle";
                               class="block w-full rounded-lg border-gray-300 focus:border-indigo-600 focus:ring-indigo-600 px-3 py-2"
                               placeholder="Short description of the obstacle"></textarea>
                     <span asp-validation-for="ObstacleDescription" class="text-sm text-red-600"></span>
+                    <!-- Felt for å oppdatere beskrivelsen av hindringen -->
                 </div>
 
                 <div class="sm:col-span-2 space-y-4">
@@ -58,19 +72,24 @@ ViewData["Title"] = "Edit Obstacle";
                         <p class="text-sm text-gray-600">
                             Click on the map to update the location or draw a new line.
                         </p>
+                        <!-- Instruksjon for hvordan kartet brukes til å oppdatere posisjon eller linje -->
                     </div>
 
                     <div id="map" style="height: 300px; border: 1px solid #ccc;" class="rounded-lg"></div>
+                    <!-- Kartkomponent (Leaflet) der brukeren kan oppdatere plassering/linje for hindringen -->
 
                     <div class="flex flex-wrap gap-2">
                         <button type="button" id="undoPoint"
                                 class="inline-flex items-center justify-center rounded-lg bg-gray-100 px-3 py-2 text-sm text-gray-800 hover:bg-gray-200">
                             Undo last point
                         </button>
+                        <!-- Fjerner siste punkt som ble lagt til i kartet -->
+
                         <button type="button" id="clearLine"
                                 class="inline-flex items-center justify-center rounded-lg bg-gray-100 px-3 py-2 text-sm text-gray-800 hover:bg-gray-200">
                             Clear drawing
                         </button>
+                        <!-- Tømmer hele tegningen (linje/punkter) i kartet -->
                     </div>
 
                     <div class="grid grid-cols-1 gap-3 sm:grid-cols-2">
@@ -79,29 +98,36 @@ ViewData["Title"] = "Edit Obstacle";
                             <input asp-for="Latitude" readonly
                                    class="block w-full rounded-lg border-gray-300 bg-gray-100 px-3 py-2 text-gray-800" />
                             <span asp-validation-for="Latitude" class="text-sm text-red-600"></span>
+                            <!-- Viser oppdatert breddegrad (kun lesbar, settes via kartet) -->
                         </div>
                         <div>
                             <label asp-for="Longitude" class="block text-sm font-medium text-gray-800 mb-1">Longitude</label>
                             <input asp-for="Longitude" readonly
                                    class="block w-full rounded-lg border-gray-300 bg-gray-100 px-3 py-2 text-gray-800" />
                             <span asp-validation-for="Longitude" class="text-sm text-red-600"></span>
+                            <!-- Viser oppdatert lengdegrad (kun lesbar, settes via kartet) -->
                         </div>
                     </div>
 
                     <input asp-for="LineGeoJson" type="hidden" />
                     <span asp-validation-for="LineGeoJson" class="text-sm text-red-600"></span>
+                    <!-- Skjult felt som holder linjegeometri i GeoJSON-format + validering -->
 
                     <div class="flex gap-3 pt-4">
                         <button type="submit"
                                 class="inline-flex items-center justify-center rounded-lg bg-indigo-600 px-4 py-2 text-white hover:bg-indigo-700">
                             Save Changes
                         </button>
+                        <!-- Knapp for å lagre endringene på hindringen -->
+
                         <a asp-action="Details" asp-route-id="@Model.Id"
                            class="inline-flex items-center justify-center rounded-lg px-4 py-2 ring-1 ring-gray-300 text-gray-700 hover:bg-gray-50">
                             Cancel
                         </a>
+                        <!-- Avbryt-knapp som sender brukeren tilbake til detaljsiden for hindringen -->
                     </div>
                 </div>
+
                 <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-4">
                     <button type="button"
                             class="inline-flex items-center gap-2 px-3 py-2 rounded-md ring-1 ring-gray-300 text-gray-700 hover:bg-gray-50"
@@ -110,6 +136,7 @@ ViewData["Title"] = "Edit Obstacle";
                         <i class="fa-solid fa-arrow-left"></i>
                         Go back
                     </button>
+                    <!-- Tilbakeknapp: går til forrige side hvis mulig, ellers til detaljer for denne hindringen -->
                 </div>
             </form>
         </div>
@@ -117,9 +144,11 @@ ViewData["Title"] = "Edit Obstacle";
 
     @section Scripts {
         <partial name="_ValidationScriptsPartial" />
+        <!-- Laster standard klientsidevalideringsscript -->
 
         <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
         <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
         <script src="~/js/geolocation.js"></script>
+        <!-- Leaflet og egendefinert geolocation-script for å håndtere kartet -->
     }
 </body>

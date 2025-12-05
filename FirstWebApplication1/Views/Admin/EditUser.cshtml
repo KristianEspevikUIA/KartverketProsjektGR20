@@ -1,24 +1,43 @@
-﻿@model FirstWebApplication1.Models.Admin.EditUserViewModel
+﻿@* Modellen som brukes for å redigere en bruker *@
+@model FirstWebApplication1.Models.Admin.EditUserViewModel 
+
 
 @{
-    ViewData["Title"] = "Edit User";
+    ViewData["Title"] = "Edit User"; @* Setter sidetittel som vises i layouten *@
+
 }
 
 <body class="bg-cover bg-center" style="background-image: url('/images/BackgroundImageGreen.png'); background-repeat: no-repeat; background-attachment: fixed; background-size: 100% 100%;">
+    <!-- Bakgrunnsbilde for hele siden -->
+
     <section class="mx-auto max-w-2xl mt-8">
+        <!-- Sentrerer innholdet og setter maks bredde -->
+
         <div class="bg-white rounded-2xl shadow-sm ring-1 ring-gray-200 p-8">
+            <!-- Hovedkortet som holder brukerredigeringsskjemaet -->
+
             <div class="mb-8">
+                <!-- Overskrift og info om hvilken bruker som redigeres -->
+
                 <h1 class="text-3xl font-bold text-gray-900">Edit User</h1>
                 <p class="text-gray-600 mt-2">Manage role and organization for @Model.Email</p>
             </div>
 
             <form asp-action="EditUser" asp-route-id="@Model.Id" method="post" class="space-y-6">
-                @Html.AntiForgeryToken()
-                <input type="hidden" asp-for="Id" />
-                <input type="hidden" asp-for="Email" />
+                <!-- Form som sender oppdatert brukerinfo til EditUser-action -->
+                @Html.AntiForgeryToken() @* Beskytter mot CSRF-angrep *@
+
+                <input type="hidden" asp-for="Id" /> <!-- Skjult felt som holder brukerens Id -->
+
+                <input type="hidden" asp-for="Email" /> <!-- Skjult felt som holder brukerens e-post -->
+
 
                 <div class="grid grid-cols-2 gap-6">
+                    <!-- To-kolonne layout for rolle og organisasjon -->
+
                     <div>
+                        <!-- Felt for å velge brukerens rolle -->
+
                         <label for="selectedRole" class="block text-sm font-medium text-gray-700 mb-2">Role</label>
                         <select name="selectedRole" class="w-full rounded-lg border-gray-300 focus:border-indigo-600 focus:ring-indigo-600 px-3 py-2 border">
                             <option value="" selected="@(string.IsNullOrEmpty(Model.SelectedRole))">(ingen)</option>
@@ -29,6 +48,8 @@
                         </select>
                     </div>
                     <div>
+                        <!-- Felt for å velge brukerens organisasjon -->
+
                         <label for="organization" class="block text-sm font-medium text-gray-700 mb-2">Organization</label>
                         <select name="organization" class="w-full rounded-lg border-gray-300 focus:border-indigo-600 focus:ring-indigo-600 px-3 py-2 border">
                             <option value="" selected="@(string.IsNullOrEmpty(Model.Organization))">(ingen)</option>
@@ -41,11 +62,17 @@
                 </div>
 
                 <div class="flex justify-end space-x-3 pt-6 border-t mt-8">
-                    <a href="@Url.Action("Users", "Admin")"
+                    <!-- Knapper for å avbryte eller oppdatere bruker -->
+
+                    <!-- Avbryt og gå tilbake til brukerlisten -->
+                    <a href="@Url.Action("Users", "Admin")" 
+
                        class="inline-flex items-center rounded-lg bg-white px-4 py-2 text-sm font-medium text-gray-700 ring-1 ring-gray-300 hover:bg-gray-50">
                         Cancel
-                    </a>
-                    <button type="submit"
+                    </a> 
+                    <!-- Knapp for å oppdatere brukerens informasjon -->
+                    <button type="submit" 
+
                             class="inline-flex items-center rounded-lg bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700">
                         Update
                     </button>
