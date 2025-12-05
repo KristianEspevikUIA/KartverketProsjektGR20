@@ -41,7 +41,7 @@ Pilot forsøker å redigere et hinder noen andre har registrert. Blir vist til a
 ## Videre testarbeid
 - Automatisere scenariene over i integrasjonstester for hinderflyt og rollebegrensninger.
 - Legge til lastertest mot rate limiter og database under realistisk volum.
-- UX-test med 1–2 brukere for navigasjon, spesielt mobilnav og kartinteraksjon.
+- UX-test med 1-2 brukere for navigasjon, spesielt mobilnav og kartinteraksjon.
 
 # UX-test gjennomført av pilot fra luftambulansen
 Resultat:
