@@ -19,5 +19,5 @@ Vi har ikke testet dette direkte på enhetene, men gjennom developer tools i chr
 ## Videre forbedringer
 - Legge til eksplisitte `lg`-tilpasninger for avanserte rapporttabeller for å utnytte bredde på store nettbrett.
 - Vurdere tilpasset zoomnivå og kontrollstørrelse i Leaflet for nettbrett for bedre ergonomi.
-- Dokumentere kort brukertest med 1–2 nettbrettbrukere for å bekrefte flyt og tydelighet.
+- Dokumentere kort brukertest med 1-2 nettbrettbrukere for å bekrefte flyt og tydelighet.
 - Legge til eventuelle skjermbilder 
