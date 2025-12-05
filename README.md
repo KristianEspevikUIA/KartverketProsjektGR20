@@ -6,6 +6,11 @@ Applikasjonen lar innloggede brukere registrere luftfartshindre gjennom et totri
 
 Løsningen er **utelukkende tiltenkt kjøring i Visual Studio** via det medfølgende Docker Compose-oppsettet, som starter både ASP.NET Core 9-appen og MariaDB-databasen fra nedtrekket for debug-profiler. Kjøring via CLI eller andre IDE-er er ikke støttet.
 
+## Prosjektformål og kontekst
+Prosjektet ble utviklet for IS-202 Programmeringsprosjekt, der studentene skal bygge en fungerende programvareløsning basert på gitte krav. Gruppen implementerte et hinder-rapporteringssystem inspirert av prosesser hos Kartverket og Norsk Luftambulanse. Applikasjonen støtter opprettelse av nye hinderrapporter, forvaltning av dem og visning av data i dynamiske grensesnitt som tabeller og kart.
+
+Alle funksjoner er utviklet i fellesskap av gruppen, inkludert skjemavalidering, datahåndtering, UI-tilpasninger, statushistorikk og kartintegrasjon. Tilgjengelighetsforbedringene på landingssider ble lagt til etter brukertesting med pilotbruker.
+
 ## Mappe- og prosjektstruktur
 - `FirstWebApplication1/` - ASP.NET Core MVC-app (kontrollere, modeller, Razor-views, statiske ressurser).
 - `FirstWebApplication1.Tests/` - testprosjekt for enhets-/integrasjonstester.
@@ -78,11 +83,6 @@ Hvis verdiene mangler, logger applikasjonen et varsel og ingen admin-bruker oppr
 - **Passord og secrets er sjekket inn midlertidig:** Admin- og databasepassord ligger i repoet for sensur. Disse må flyttes til User Secrets/miljøvariabler og roteres i etterkant, men det er ikke gjort nå.
 - **Manglende automatisert testdekning:** Testplanen er kun kjørt manuelt. Integrasjonstester for hinderflyt/roller og last-/ytelsestester er ikke implementert, og det finnes ingen CI-jobber som kjører testene automatisk.
 - **Ufullstendig dokumentasjon for mobil/UX-verifisering:** Vi mangler skjermbilder og kort brukertestlogg for nettbrett/mobil i `docs/`, og forbedringspunkter (f.eks. justert Leaflet-zoom/knappestørrelse) er ikke utført.
-
-## Prosjektformål og kontekst
-Prosjektet ble utviklet for IS-202 Programmeringsprosjekt, der studentene skal bygge en fungerende programvareløsning basert på gitte krav. Gruppen implementerte et hinder-rapporteringssystem inspirert av prosesser hos Kartverket og Norsk Luftambulanse. Applikasjonen støtter opprettelse av nye hinderrapporter, forvaltning av dem og visning av data i dynamiske grensesnitt som tabeller og kart.
-
-Alle funksjoner er utviklet i fellesskap av gruppen, inkludert skjemavalidering, datahåndtering, UI-tilpasninger, statushistorikk og kartintegrasjon. Tilgjengelighetsforbedringene på landingssider ble lagt til etter brukertesting med pilotbruker.
 
 ## 📄 Dokumentasjon
 - [Systemarkitektur](docs/architecture.md)
