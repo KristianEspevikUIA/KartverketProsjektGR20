@@ -40,6 +40,25 @@ Trinn:
 **Merk om CLI-oppsett:** Enkelte brukere har rapportert at `docker compose up --build` kjører byggeprosessen, men at én av containerne avslutter med kode **139**. For å komme videre må containeren startes manuelt etterpå. Dette er hovedårsaken til at vi foreløpig kun støtter Visual Studio-profilen, slik at applikasjonen alltid starter skikkelig for sensur/evaluering.
 
  **Ikke støttet:** Vi tilbyr ikke CLI-basert oppstart (`dotnet run`/`docker compose up`) eller kjøring fra andre IDE-er. Eventuelle avvik fra Visual Studio-arbeidsflyten er på egen risiko og dokumenteres ikke.
+
+# Hvordan åpne og sjekke databasen i MariaDB-containeren
+
+1. Finn navnet på MariaDB-containeren
+Kjør i PowerShell: docker ps
+Se etter containeren som bruker mariadb:-image og kopier navnet fra kolonnen NAMES.
+
+2. Koble til MariaDB i containeren
+Når du har navnet, bruk: docker exec -it <container-navn> mariadb -u root -p
+Du vil bli bedt om å skrive inn passordet som er konfigurert i docker-compose.yml.
+
+3. Velg databasen du vil jobbe med
+USE ObstacleDb;
+
+4. Vis tabeller i databasen: SHOW TABLES;
+
+5. Se innholdet i en tabell: SELECT * FROM <tabellnavn>;
+
+6. Avslutt MariaDB-klienten: EXIT;
  
 ## Kjøring og deploy 
 Vi har forsøkt å beskrive en CLI-basert «Kjøring og deploy»-flyt (f.eks. `dotnet ef database update`, `docker compose up --build`, miljøvariabler og helse-sjekker, samt en kort produksjonsguide med reverse proxy, logging og HSTS/CSP-konfigurasjon). Dette ble satt på vent fordi kombinasjonen av Leaflet via CDN og strengere sikkerhetshoder skapte kompatibilitetsutfordringer som vi ikke rakk å løse. Seksjonen legges til ved en senere oppdatering når vi har avklart anbefalt oppstart utenfor Visual Studio og kan gi verifiserte kommandoer og sikkerhetsoppsett.
