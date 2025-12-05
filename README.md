@@ -52,7 +52,7 @@ Roller (`Admin`, `Pilot`, `Caseworker`) seedes ved oppstart. En admin-bruker opp
 
 Hvis verdiene mangler, logger applikasjonen et varsel og ingen admin-bruker opprettes. Kun den konfigurerte admin-e-posten kan bli administrator; den offentlige registreringen eksponerer kun Pilot- og Caseworker-roller.
 
-## Hvordan systemet fungerer (høyt nivå)
+## Hvordan systemet fungerer
 - Brukere registrerer/logger inn via ASP.NET Identity. Kun forhåndskonfigurert e-post kan bli Admin; andre brukere velger Pilot/Caseworker.
 - Hinderflyt: velg hindertype → fyll ut skjema (inkludert karttegning) → innsending lagres som `Pending` → kvittering vises.
 - Behandling: Caseworker/Admin filtrerer hindre, oppdaterer status (Approved/Declined/Pending) og ser endringsmetadata.
