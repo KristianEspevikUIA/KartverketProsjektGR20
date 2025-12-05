@@ -1,9 +1,8 @@
-﻿@* Modellen som brukes til innlogging *@
-@model FirstWebApplication1.Models.Account.LoginViewModel 
+﻿@model FirstWebApplication1.Models.Account.LoginViewModel 
 
 
 @{
-    ViewData["Title"] = "Login"; @* Setter sidetittel som vises i layouten *@
+    ViewData["Title"] = "Login";
 
 }
 
@@ -69,7 +68,6 @@
 
                 <div class="text-center">
                     <a asp-action="Register" class="font-medium text-indigo-600 text-lg hover:text-indigo-500">
-                        <!-- Lenke for registrering av ny bruker -->
                         Don't have an account? Register here
                     </a>
                 </div>
@@ -80,7 +78,7 @@
 
 @section Scripts {
     @{
-        await Html.RenderPartialAsync("_ValidationScriptsPartial"); @* Laster scripts for klient-validering *@
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
 
     }
 }
