@@ -70,7 +70,7 @@ Hvis verdiene mangler, logger applikasjonen et varsel og ingen admin-bruker oppr
 - Et Leaflet-basert interaktivt kart som viser posisjoner (punkt eller tegnet linje) for godkjente og ventende hindre
 - Støtte for konvertering mellom feet/meter basert på brukerrolle
 - Tilgjengelighetsjusterte (WCAG) primærknapper på landingssider med tydelig fokuslinje og fargekontrast
-- En enkel og utvidbar arkitektur for videre utvikling gjennom IS-202-kurset
+- En enkel og utvidbar arkitektur for videre utvikling
 
 ## Kjente mangler og ønskede forbedringer
 - **Mangler dokumentert CLI/produksjonsoppsett:** Vi har bevisst utelatt en verifisert «Kjøring og deploy»-guide utenfor Visual Studio. Leaflet via CDN og behovet for strenge sikkerhetshoder (HSTS/CSP) skapte problemer vi ikke har løst, så alternative oppstartsstier (`dotnet run`, `docker compose up` med miljøvariabler) er utestet og udokumentert.
