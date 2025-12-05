@@ -15,7 +15,7 @@ Løsningen er **utelukkende tiltenkt kjøring i Visual Studio** via det medfølg
 ## Teknologi og nøkkelfunksjoner
 - ASP.NET Core 9 MVC med Identity og EF Core (Pomelo MariaDB-driver)
 - Tailwind CSS via CDN og Leaflet-kart (viser godkjente **og** ventende hindre)
-- Rollebasert tilgang (`Admin`, `Caseworker`, `Pilot`) med rate limiting på `ObstacleController`
+- Rollebasert tilgang (`Admin`, `Caseworker`, `Pilot`) 
 - HTTPS/HSTS utenfor utvikling, standard antiforgery på POST-aksjoner, Razor-encoding mot XSS og EF Core-parameterisering mot SQL-injection; ingen ekstra sikkerhetshoder er satt i koden
 - WCAG-godkjente primærknapper på landingssider etter brukertesting (tilstrekkelig kontrast, fokusmarkering og god treffflate)
 
