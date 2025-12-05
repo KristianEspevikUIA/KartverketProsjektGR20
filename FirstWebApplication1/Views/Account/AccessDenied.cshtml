@@ -1,5 +1,5 @@
 ﻿@{
-    ViewData["Title"] = "Access Denied"; @* Setter sidetittelen som brukes av layouten *@
+    ViewData["Title"] = "Access Denied";
 
 }
 
@@ -20,16 +20,15 @@
                 </svg>
             </div>
 
-            <h1 class="text-3xl font-bold text-gray-900 mb-4">Access Denied</h1> <!-- Overskrift som viser tilgangsfeil -->
+            <h1 class="text-3xl font-bold text-gray-900 mb-4">Access Denied</h1>
 
-            <p class="text-gray-600 text-lg mb-2">You don't have permission to access this resource.</p> <!-- Informerer om manglende tilgang -->
+            <p class="text-gray-600 text-lg mb-2">You don't have permission to access this resource.</p>
 
-            <p class="text-gray-500 mb-8">If you believe this is an error, please contact your administrator.</p> <!-- Ekstrainformasjon til brukeren -->
+            <p class="text-gray-500 mb-8">If you believe this is an error, please contact your administrator.</p>
 
 
             <a asp-controller="Home" asp-action="Index"
                class="inline-flex items-center rounded-lg px-6 py-3 bg-indigo-600 text-white font-medium hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
-                <!-- Knapp som navigerer tilbake til forsiden -->
                 Return to Home Page
             </a>
         </div>
