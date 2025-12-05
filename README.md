@@ -79,13 +79,6 @@ Hvis verdiene mangler, logger applikasjonen et varsel og ingen admin-bruker oppr
 - **Manglende automatisert testdekning:** Testplanen er kun kjørt manuelt. Integrasjonstester for hinderflyt/roller og last-/ytelsestester er ikke implementert, og det finnes ingen CI-jobber som kjører testene automatisk.
 - **Ufullstendig dokumentasjon for mobil/UX-verifisering:** Vi mangler skjermbilder og kort brukertestlogg for nettbrett/mobil i `docs/`, og forbedringspunkter (f.eks. justert Leaflet-zoom/knappestørrelse) er ikke utført.
 
-## Pilot-oversikt over hindre
-Piloter har to dedikerte innganger for situasjonsforståelse:
-
-- **Pilotkart (`/Pilot/Map`)** - laster Leaflet med godkjente og ventende hindre fra `PilotController.GetApprovedObstacles`, og viser både punkter og valgfri linjegeometri. En flytende knapp linker direkte til registreringsflyten slik at piloter kan rapportere nye funn.
-- **Hinderliste (`/Obstacle/List`)** - rollebeskyttet med filtrering på status, type, fritekst, datointervall, høyde og organisasjon. Hver rad lenker til detalj- og endrehandlinger og gir piloter en tydelig, filtrerbar oversikt over alle lagrede hindre.
-
-
 ## Prosjektformål og kontekst
 Prosjektet ble utviklet for IS-202 Programmeringsprosjekt, der studentene skal bygge en fungerende programvareløsning basert på gitte krav. Gruppen implementerte et hinder-rapporteringssystem inspirert av prosesser hos Kartverket og Norsk Luftambulanse. Applikasjonen støtter opprettelse av nye hinderrapporter, forvaltning av dem og visning av data i dynamiske grensesnitt som tabeller og kart.
 
