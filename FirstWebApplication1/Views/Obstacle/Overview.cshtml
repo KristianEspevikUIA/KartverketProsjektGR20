@@ -1,12 +1,12 @@
 ﻿@using System.Globalization
-@* Importerer System.Globalization for å kunne formatere tall/koordinater med riktig kultur *@
+
 
 @model FirstWebApplication1.Models.ObstacleData
-@* Viewet bruker ObstacleData-modellen som inneholder informasjon om den registrerte hindringen *@
+
 
 @{
     ViewData["Title"] = "Obstacle Registered";
-    @* Setter sidetittelen som vises i layouten *@
+    
 
     var vertices = Model.LineCoordinates;
     @* Lagrer alle verteks-punkter dersom hindringen er en linje *@
@@ -35,16 +35,16 @@
 }
 
 <body class="bg-cover bg-center" style="background-image: url('/images/BackgroundImageGreen.png'); background-repeat: no-repeat; background-attachment: fixed; background-size: 100% 100%;">
-    <!-- Setter helsidebakgrunn med tilpasset bilde og full dekning -->
+    
 
     <section class="mx-auto max-w-6xl px-4 mb-16">
-        <!-- Hovedseksjon som sentrerer og begrenser bredden på innholdet -->
+        
 
         <div class="bg-white rounded-2xl shadow-sm ring-1 ring-gray-200 p-8 space-y-6">
-            <!-- Kort/container som inneholder hele bekreftelsessiden -->
+            
 
             <header class="text-center border-b pb-6">
-                <!-- Toppseksjon med ikon, tittel og introduksjonstekst -->
+                
 
                 <div class="inline-flex items-center justify-center w-16 h-16 bg-green-100 rounded-full mb-4">
                     <i class="fa-solid fa-check text-3xl text-green-600"></i>
@@ -107,7 +107,6 @@
                     </div>
                 </div>
 
-                <!-- Right Column: Map & Coordinates -->
                 <!-- Høyre kolonne: kart og detaljerte koordinater/geometriinformasjon -->
                 <div class="space-y-6">
                     <div>
@@ -326,7 +325,7 @@
                 .bindPopup("@Model.ObstacleName").openPopup();
         }
 
-        // Justerer kartstørrelsen når siden er ferdig med layout, slik at kartet vises riktig
+        
         setTimeout(() => {
             map.invalidateSize();
         }, 100);

@@ -1,22 +1,22 @@
 ﻿@model FirstWebApplication1.Models.ObstacleData
-@* Viewet bruker ObstacleData-modellen for å hente og sende inn hindringsdata *@
+
 
 @{
     ViewData["Title"] = "Enter Obstacle Details";
-    @* Setter sidetittel som brukes av layouten *@
+    
 }
 
 <body class="bg-cover bg-center" style="background-image: url('/images/BackgroundImageGreen.png'); background-repeat: no-repeat; background-attachment: fixed; background-size: 100% 100%;">
-    <!-- Bakgrunnsbilde og fullskjerms bakgrunnsoppsett for siden -->
+    
 
     <section class="mx-auto max-w-xl pb-12">
-        <!-- Sentralisert hovedseksjon med maks bredde for skjemaet -->
+        
 
         <div class="bg-white rounded-2xl shadow-sm p-6">
-            <!-- Hovedkort/container som inneholder hele skjemaet -->
+            
 
             <header class="mb-6 text-center">
-                <!-- Toppseksjon med tittel og kort instruksjon -->
+                
                 <h1 class="text-2xl font-semibold">Enter Obstacle Details</h1>
                 <p class="text-gray-600">Complete the fields below for <b>@ViewBag.ObstacleType</b>:</p>
                 <!-- Viser hvilken type hindring brukeren fyller ut, hentet fra ViewBag -->
@@ -56,13 +56,12 @@
                     <!-- Plassholder for kart hvor bruker kan se og/eller velge posisjon -->
                     <div id="map" style="height: 300px;" class="rounded-lg border border-gray-300"></div>
                     <script>
-                        // Add Leaflet map logic here
                         // Her kan du initialisere Leaflet-kartet og håndtere valg/oppdatering av koordinater
                     </script>
                 </div>
 
                 <button type="submit" class="bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg px-4 py-2">Next</button>
-                <!-- Sender inn de registrerte hindringsdetaljene og går videre til neste steg -->
+                
             </form>
         </div>
     </section>
