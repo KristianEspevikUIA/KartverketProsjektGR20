@@ -24,7 +24,7 @@
 8. **Kart og koordinater**
    - Godkjente hinder vises med korrekte koordinater og GeoJSON-linje når tilgjengelig.
 9. **Pilot-begrensning (redigere kun egne hindre)**
-- `ObstacleController.Edit` (GET) sjekker `if (User.IsInRole("Pilot") && obstacle.SubmittedBy != User.Identity.Name) return Forbid();` før viewet rendres. POST-varianten bruker `[Authorize(Roles = "Pilot,Caseworker,Admin")]` og samme `id`-kontroll, slik at piloter ikke kan redigere andres innsendelser.
+Pilot forsøker å redigere et hinder noen andre har registrert. Blir vist til access denied siden. 
 
 ## Testlogg og resultater
 | Dato | Scenario | Rolle | Resultat |
