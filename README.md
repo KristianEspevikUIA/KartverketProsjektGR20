@@ -45,6 +45,7 @@ Trinn:
 
 1. Finn navnet på MariaDB-containeren
 Kjør i PowerShell: docker ps
+
 Se etter containeren som bruker mariadb:-image og kopier navnet fra kolonnen NAMES.
 
 2. Koble til MariaDB i containeren
