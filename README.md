@@ -85,7 +85,6 @@ Hvis verdiene mangler, logger applikasjonen et varsel og ingen admin-bruker oppr
 - **Ufullstendig dokumentasjon for mobil/UX-verifisering:** Vi mangler skjermbilder og kort brukertestlogg for nettbrett/mobil i `docs/`, og forbedringspunkter (f.eks. justert Leaflet-zoom/knappestørrelse) er ikke utført.
 
 ## 📄 Dokumentasjon
-- [Systemarkitektur](docs/architecture.md)
 - [Mobiltilpasning](docs/mobile.md)
 - [Testing og testresultater](docs/testing.md)
 - [Vurderingskriterier](docs/vurderingskriterier.md)
