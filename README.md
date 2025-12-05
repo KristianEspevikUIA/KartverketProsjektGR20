@@ -83,7 +83,7 @@ Hvis verdiene mangler, logger applikasjonen et varsel og ingen admin-bruker oppr
 Piloter har to dedikerte innganger for situasjonsforståelse:
 
 - **Pilotkart (`/Pilot/Map`)** - laster Leaflet med godkjente og ventende hindre fra `PilotController.GetApprovedObstacles`, og viser både punkter og valgfri linjegeometri. En flytende knapp linker direkte til registreringsflyten slik at piloter kan rapportere nye funn.
-- **Hinderliste (`/Obstacle/List`)** - rollebeskyttet for Pilot, Caseworker og Admin, med filtrering på status, type, fritekst, datointervall, høyde og organisasjon. Hver rad lenker til detalj- og endrehandlinger og gir piloter en tydelig, filtrerbar oversikt over alle lagrede hindre.
+- **Hinderliste (`/Obstacle/List`)** - rollebeskyttet med filtrering på status, type, fritekst, datointervall, høyde og organisasjon. Hver rad lenker til detalj- og endrehandlinger og gir piloter en tydelig, filtrerbar oversikt over alle lagrede hindre.
 
 
 ## Prosjektformål og kontekst
