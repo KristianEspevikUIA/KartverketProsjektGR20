@@ -1,19 +1,33 @@
-﻿@model IEnumerable<FirstWebApplication1.Models.UsersViewModel>
+﻿@* Modellen som inneholder listen av brukere *@
+@model IEnumerable<FirstWebApplication1.Models.UsersViewModel> 
+
 @{
-    ViewData["Title"] = "User Management";
+    ViewData["Title"] = "User Management"; @* Setter sidetittelen som vises i layouten *@
+
 }
 
 <body class="bg-cover bg-center" style="background-image: url('/images/BackgroundImageGreen.png'); background-repeat: no-repeat; background-attachment: fixed; background-size: 100% 100%;">
+    <!-- Bakgrunnsbilde for hele siden -->
+
     <section class="mx-auto max-w-6xl mt-8">
+        <!-- Sentrerer innholdet og setter maks bredde for tabellen -->
+
         <div class="bg-white rounded-2xl shadow-sm ring-1 ring-gray-200 p-8">
+            <!-- Hovedkortet som holder brukeroversikten -->
+
             <div class="mb-8">
+                <!-- Overskrift og introduksjonstekst -->
+
                 <h1 class="text-3xl font-bold text-gray-900">User Management</h1>
                 <p class="text-gray-600 mt-2">Manage system users and their permissions</p>
             </div>
+            @* Vises hvis det finnes brukere i systemet *@
+            @if (Model.Any()) 
 
-            @if (Model.Any())
             {
                 <div class="overflow-hidden shadow ring-1 ring-black ring-opacity-5 rounded-lg">
+                    <!-- Container for tabellen med brukere -->
+
                     <table class="min-w-full divide-y divide-gray-300">
                         <thead class="bg-gray-50">
                             <tr>
@@ -24,17 +38,26 @@
                             </tr>
                         </thead>
                         <tbody class="bg-white divide-y divide-gray-200">
+                            <!-- Oppretter én tabellrad per bruker i modellen -->
                             @foreach (var user in Model)
                             {
                                 <tr>
-                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">@user.Email</td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">@user.Email</td> <!-- Viser e-postadressen til brukeren -->
+
                                     <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">@string.Join(", ", user.Roles)</td>
-                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">@(user.Organization ?? "Ingen satt")</td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">@(user.Organization ?? "Ingen satt")</td> <!-- Viser organisasjonen eller "Ingen satt" hvis null -->
                                     <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                                        <a asp-action="EditUser" asp-route-id="@user.Id" class="text-indigo-600 hover:text-indigo-900 mr-4">Edit</a>
+                                        <!-- Handlingsknapper for valgt bruker -->
+
+                                        <a asp-action="EditUser" asp-route-id="@user.Id" class="text-indigo-600 hover:text-indigo-900 mr-4">Edit</a> 
+                                        <!-- Lenke for å redigere brukeren -->
+
                                         <form asp-action="DeleteUser" asp-route-id="@user.Id" method="post" class="inline" onsubmit="return confirm('Remove this user? This action cannot be undone.');">
-                                            @Html.AntiForgeryToken()
-                                            <button type="submit" class="text-red-600 hover:text-red-900">Remove</button>
+                                            <!-- Form som sender forespørsel om å slette brukeren -->
+                                            @Html.AntiForgeryToken() @* Beskytter slettingen mot CSRF *@
+
+                                            <button type="submit" class="text-red-600 hover:text-red-900">Remove</button> <!-- Knapp for å fjerne brukeren etter bekreftelse -->
+
                                         </form>
                                     </td>
                                 </tr>
@@ -43,7 +66,8 @@
                     </table>
                 </div>
             }
-            else
+            @* Vises hvis det ikke finnes noen brukere i systemet *@
+            else 
             {
                 <div class="text-center py-12">
                     <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -55,7 +79,10 @@
             }
 
             <div class="mt-8">
-                <button type="button"
+                <!-- Tilbakeknapp som navigerer til Home-siden -->
+                    <!-- Navigerer brukeren tilbake til forsiden -->
+                <button type="button" 
+
                         class="inline-flex items-center gap-2 px-4 py-2 rounded-md ring-1 ring-gray-300 text-gray-700 hover:bg-gray-50"
                         onclick="window.location.href='@Url.Action("Index", "Home")'"
                         aria-label="Go back to Home">

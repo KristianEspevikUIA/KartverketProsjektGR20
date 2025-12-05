@@ -1,96 +1,139 @@
-﻿@model string
+﻿@* Modellen inneholder en eventuell melding som kan vises på forsiden *@
+@model string 
 
 @{ 
-    ViewData["Title"] = "Home Page";
-    var isPilot = User.IsInRole("Pilot");
+    ViewData["Title"] = "Home Page"; @* Setter sidetittelen som brukes i layouten *@
+    var isPilot = User.IsInRole("Pilot"); @* Sjekker om innlogget bruker har rollen Pilot *@
+
     var primaryActionClass = isPilot
         ? "inline-flex items-center rounded-lg px-6 py-3 ring-2 ring-indigo-600 text-indigo-800 bg-indigo-50 text-lg font-semibold hover:bg-indigo-100"
         : "inline-flex items-center rounded-lg px-4 py-2 ring-1 ring-indigo-600 text-indigo-700 hover:bg-indigo-50";
+    @* CSS-klasser for primærknapp, tilpasset om brukeren er Pilot *@
+
     var secondaryActionClass = isPilot
         ? "inline-flex items-center rounded-lg px-6 py-3 bg-indigo-700 text-white text-lg font-semibold hover:bg-indigo-800"
         : "inline-flex items-center rounded-lg px-4 py-2 bg-indigo-600 text-white hover:bg-indigo-700";
+    @* CSS-klasser for sekundærknapp, også rollebasert *@
 }
 
 <body class="bg-cover bg-center" style="background-image: url('/images/BackgroundImageGreen.png'); background-repeat: no-repeat; background-attachment: fixed; background-size: 100% 100%;">
+    <!-- Bakgrunnsbilde som dekker hele forsiden -->
+
     <section class="mx-auto max-w-5xl mt-8">
+        <!-- Sentrerer hovedinnholdet og setter maksimal bredde -->
+
         <div class="text-center space-y-6">
+            <!-- Hovedcontainer for overskrift, bilde og knapper -->
+
             <h1 class="text-3xl sm:text-4xl font-bold tracking-tight">
                 Welcome to NRL Registration System
             </h1>
+            <!-- Tittel som introduserer systemet -->
 
             <!-- here is the image -->
             <img src="~/images/standard_kartverket.png"
                  alt="kartverket logo"
                  class="mx-auto w-96 h-auto rounded-lg" />
+            <!-- Viser Kartverket-logoen -->
 
             @if (!string.IsNullOrWhiteSpace(Model))
+            @* Viser melding fra backend hvis den ikke er tom *@
             {
                 <p class="text-gray-800">@Model</p>
+                <!-- Viser en dynamisk tekst til brukeren -->
             }
 
             @if (User.Identity.IsAuthenticated)
+            @* Viser innhold kun for brukere som er logget inn *@
             {
                 <div class="flex flex-wrap justify-center gap-4">
+                    <!-- Primære handlinger for innloggede brukere -->
+
                     <a asp-action="SelectType" asp-controller="Obstacle"
                        class="@primaryActionClass">
                         Report New Obstacle
                     </a>
+                    <!-- Knapp for å registrere en ny hindring -->
+
                     <a asp-action="List" asp-controller="Obstacle"
                        class="@secondaryActionClass">
                         View All Obstacles
                     </a>
+                    <!-- Knapp for å vise alle hindringer -->
                 </div>
 
                 <!-- Role-based quick actions -->
                 <div class="mt-6 p-4 bg-white rounded-lg shadow-sm">
+                    <!-- Seksjon for rollebaserte snarveier -->
+
                     <h3 class="text-lg font-semibold mb-3">Quick Actions</h3>
+
                     <div class="flex flex-wrap justify-center gap-2">
+
                         @if (User.IsInRole("Pilot"))
+                        @* Viser pilot-relatert snarvei hvis brukeren er Pilot *@
                         {
                             <a asp-controller="Pilot" asp-action="Map"
                                class="inline-flex items-center px-5 py-3 bg-green-600 text-white rounded-full text-base font-semibold hover:bg-green-700">
                                 Pilot Map
                             </a>
+                            <!-- Lenke til kartvisning tilpasset piloter -->
                         }
                         
                         @if (User.IsInRole("Admin"))
+                        @* Viser admin-funksjonalitet hvis brukeren har rollen Admin *@
                         {
                             <a asp-controller="Admin" asp-action="Users"
                                class="inline-flex items-center px-6 py-4 bg-purple-300 text-black rounded-full text-lg hover:bg-purple-400 focus:outline-none focus:ring-2 focus:ring-purple-300">
                                 Manage Users
                             </a>
+                            <!-- Lenke til administrasjon av brukere -->
                         }
+
                         @if (User.IsInRole("Admin") || User.IsInRole("Caseworker"))
+                        @* Viser saksbehandler-/admin-aksjoner for å behandle hindringer *@
                         {
                             <a asp-controller="Obstacle" asp-action="List" asp-route-statusFilter="Pending"
                                class="inline-flex items-center px-6 py-4 bg-yellow-400 text-black rounded-full text-lg hover:bg-yellow-500">
                                 Review Pending Obstacles
                             </a>
+                            <!-- Viser liste over hindringer som venter på behandling -->
+
                             <a asp-controller="Obstacle" asp-action="List" asp-route-statusFilter="Approved"
                                class="inline-flex items-center px-6 py-4 bg-green-300 text-black rounded-full text-lg hover:bg-green-400">
                                 View Approved Obstacles
                             </a>
+                            <!-- Viser liste over godkjente hindringer -->
+
                             <a asp-controller="Obstacle" asp-action="List" asp-route-statusFilter="Declined"
                                class="inline-flex items-center px-6 py-4 bg-red-300 text-black rounded-full text-lg hover:bg-red-400">
                                 View Rejected Obstacles
                             </a>
+                            <!-- Viser liste over avviste hindringer -->
                         }
                     </div>
                 </div>
             }
             else
+            @* Innhold for brukere som ikke er logget inn *@
             {
                 <div class="space-y-4">
                     <p class="text-gray-600">Please log in to access the obstacle reporting system.</p>
+                    <!-- Informasjon om at innlogging kreves for å bruke systemet -->
+
                     <div class="flex flex-wrap justify-center gap-4">
+
                         <a asp-controller="Account" asp-action="Login"
                            class="inline-flex items-center rounded-lg px-6 py-3 bg-indigo-600 text-white text-lg font-semibold hover:bg-indigo-700">
                             Login
                         </a>
+                        <!-- Knapp som sender brukeren til innloggingssiden -->
+
                         <a asp-controller="Account" asp-action="Register"
                            class="inline-flex items-center rounded-lg px-6 py-3 ring-2 ring-indigo-600 text-indigo-800 text-lg font-semibold hover:bg-indigo-100">
                             Register
                         </a>
+                        <!-- Knapp som sender brukeren til registreringssiden -->
                     </div>
                 </div>
             }

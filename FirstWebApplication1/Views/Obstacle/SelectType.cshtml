@@ -1,39 +1,60 @@
 ﻿@model FirstWebApplication1.Models.ObstacleTypeViewModel
+@* Viewet bruker en viewmodell som inneholder informasjon om tilgjengelige hindringstyper og valgt type *@
 
 @{
     ViewData["Title"] = "Select Obstacle Type";
+    @* Setter sidetittelen som brukes av layouten *@
 }
 
 <body class="bg-cover bg-center" style="background-image: url('/images/BackgroundImageGreen.png'); background-repeat: no-repeat; background-attachment: fixed; background-size: 100% 100%;">
+    <!-- Setter bakgrunnsbilde på hele siden med fast og strukket bakgrunn -->
+
     <section class="mx-auto max-w-6xl mt-8 px-4 pb-12">
+        <!-- Hovedseksjon som sentrer innholdet og begrenser maksimal bredde -->
+
         <div class="bg-white rounded-2xl shadow-sm ring-1 ring-gray-200 p-8">
+            <!-- Kort/container som omslutter hele innholdet for valg av hindringstype -->
+
             <header class="mb-8 text-center">
+                <!-- Toppseksjon med tittel for registrering av ny hindring -->
                 <h1 class="text-3xl font-semibold text-gray-900">Register New Obstacle</h1>
             </header>
 
             <form asp-action="SelectType" method="post">
                 @Html.AntiForgeryToken()
+                @* Skjema som poster valgt hindringstype til SelectType-aksjonen med CSRF-beskyttelse *@
+
                 <div asp-validation-summary="ModelOnly" class="text-red-600 text-sm mb-6"></div>
+                @* Viser eventuelle modellvalideringsfeil øverst i skjemaet *@
 
                 <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
+                    @* Grid med "kort" der brukeren kan velge hindringstype ved å klikke *@
+
                     @foreach (var type in FirstWebApplication1.Models.ObstacleTypes.Types)
                     {
                         <label class="relative cursor-pointer">
+                            <!-- Ett valgkort per hindringstype, label gjør hele kortet klikkbart -->
+
                             <input type="radio"
                                    name="SelectedType"
                                    value="@type.Value"
                                    class="peer sr-only"
                                    required />
+                            @* Radioknapp som binder valgt verdi til SelectedType i viewmodellen *@
 
                             <div class="h-full p-6 bg-white border-2 border-gray-200 rounded-xl hover:border-indigo-300 hover:shadow-md transition-all peer-checked:border-indigo-600 peer-checked:bg-indigo-50 peer-checked:shadow-lg">
+                                <!-- Visuelt kort som endrer stil når radioknappen er valgt (peer-checked) -->
+
                                 <div class="flex flex-col items-center text-center space-y-4">
                                     <div class="w-20 h-20 flex items-center justify-center bg-indigo-100 rounded-full peer-checked:bg-indigo-600 transition-colors">
                                         <i class="@type.Icon text-4xl text-indigo-600 peer-checked:text-white"></i>
                                     </div>
+                                    <!-- Ikon for hindringstypen, med fargeendring når valgt -->
 
                                     <div>
                                         <h3 class="text-xl font-semibold text-gray-900 mb-2">@type.DisplayName</h3>
                                         <p class="text-sm text-gray-600">@type.Description</p>
+                                        <!-- Viser visningsnavn og beskrivende tekst for hver hindringstype -->
                                     </div>
 
                                     <div class="absolute top-4 right-4 opacity-0 peer-checked:opacity-100 transition-opacity">
@@ -41,6 +62,7 @@
                                             <i class="fa-solid fa-check text-white"></i>
                                         </div>
                                     </div>
+                                    <!-- Lite "check"-ikon som kun vises når denne typen er valgt -->
                                 </div>
                             </div>
                         </label>
@@ -48,19 +70,24 @@
                 </div>
 
                 <span asp-validation-for="SelectedType" class="text-red-600 text-sm block mb-4"></span>
+                @* Viser valideringsfeil spesifikt knyttet til SelectedType dersom ingen type er valgt *@
 
                 <div class="flex justify-between items-center pt-6 border-t">
+                    <!-- Nederste handlingslinje med avbryt- og fortsett-knapper -->
+
                     <a asp-controller="Home" asp-action="Index"
                        class="inline-flex items-center rounded-lg px-12 py-6 bg-white text-gray-700 text-lg ring-1 ring-gray-300 hover:bg-gray-50 font-medium">
                         <i class="fa-solid fa-arrow-left mr-2"></i>
                         Cancel
                     </a>
+                    <!-- Avbryt-knapp som tar brukeren tilbake til forsiden uten å lagre valg -->
 
                     <button type="submit"
                             class="inline-flex items-center rounded-lg px-12 py-6 bg-indigo-600 text-white text-lg font-medium hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
                         Continue to Details
                         <i class="fa-solid fa-arrow-right ml-2"></i>
                     </button>
+                    <!-- Sender inn valgt hindringstype og navigerer videre til detaljskjema -->
                 </div>
             </form>
         </div>
@@ -69,6 +96,7 @@
 
 @section Scripts {
     @{
+        @* Laster inn standard valideringsskript for klient-sidevalidering *@
         await Html.RenderPartialAsync("_ValidationScriptsPartial");
     }
 }

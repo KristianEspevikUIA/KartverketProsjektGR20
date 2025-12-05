@@ -1,26 +1,51 @@
 ﻿@using System.Globalization
+@* Importerer System.Globalization for å kunne formatere tall/koordinater med riktig kultur *@
+
 @model FirstWebApplication1.Models.ObstacleData
+@* Viewet bruker ObstacleData-modellen som inneholder informasjon om den registrerte hindringen *@
 
 @{
     ViewData["Title"] = "Obstacle Registered";
+    @* Setter sidetittelen som vises i layouten *@
+
     var vertices = Model.LineCoordinates;
+    @* Lagrer alle verteks-punkter dersom hindringen er en linje *@
+
     var start = Model.StartCoordinate;
     var end = Model.EndCoordinate;
+    @* Start- og sluttkoordinat for linjehindringer (null for punkt) *@
+
     var hasLine = Model.HasLine;
+    @* Indikerer om geometrien er linje (true) eller punkt (false) *@
+
     var lineLength = Model.LineLengthMeters;
+    @* Linjelengde i meter dersom hindringen består av en linje *@
+
     var fallbackLat = start?.Latitude ?? Model.Latitude ?? 59.91;
     var fallbackLng = start?.Longitude ?? Model.Longitude ?? 10.75;
+    @* Fallback-koordinater som brukes til å sentrere kartet hvis mer spesifikke verdier mangler *@
 
     var usesFeet = ViewBag.UsesFeet ?? false;
+    @* Angir om høyden skal vises i fot (true) eller meter (false) basert på bruker/konfigurasjon *@
+
     var heightDisplay = usesFeet
         ? $"{Model.ObstacleHeightInFeet:F1} feet ({Model.ObstacleHeight:F1} meters)"
         : $"{Model.ObstacleHeight:F1} meters";
+    @* Forbereder ferdigformatert tekst for høydevisning, avhengig av om fot brukes eller ikke *@
 }
 
 <body class="bg-cover bg-center" style="background-image: url('/images/BackgroundImageGreen.png'); background-repeat: no-repeat; background-attachment: fixed; background-size: 100% 100%;">
+    <!-- Setter helsidebakgrunn med tilpasset bilde og full dekning -->
+
     <section class="mx-auto max-w-6xl px-4 mb-16">
+        <!-- Hovedseksjon som sentrerer og begrenser bredden på innholdet -->
+
         <div class="bg-white rounded-2xl shadow-sm ring-1 ring-gray-200 p-8 space-y-6">
+            <!-- Kort/container som inneholder hele bekreftelsessiden -->
+
             <header class="text-center border-b pb-6">
+                <!-- Toppseksjon med ikon, tittel og introduksjonstekst -->
+
                 <div class="inline-flex items-center justify-center w-16 h-16 bg-green-100 rounded-full mb-4">
                     <i class="fa-solid fa-check text-3xl text-green-600"></i>
                 </div>
@@ -29,7 +54,9 @@
             </header>
 
             <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                <!-- Grid-oppsett: venstre kolonne for detaljer, høyre kolonne for kart og koordinater -->
                 <!-- Left Column: Details -->
+                <!-- Venstre kolonne: detaljinformasjon om hindringen -->
                 <div class="space-y-6">
                     <div>
                         <h2 class="text-xl font-semibold text-gray-900 mb-4 flex items-center">
@@ -43,6 +70,7 @@
                                 <dd class="mt-1 text-lg font-semibold text-gray-900">
                                     <i class="fa-solid fa-tag mr-2 text-indigo-600"></i>
                                     @Html.DisplayFor(m => m.ObstacleType)
+                                    @* Viser typen hindring (kategori) med DisplayFor for å følge displayformatregler *@
                                 </dd>
                             </div>
 
@@ -50,6 +78,7 @@
                                 <dt class="text-sm font-medium text-gray-600">Height</dt>
                                 <dd class="mt-1 text-lg font-semibold text-gray-900">
                                     @heightDisplay
+                                    @* Viser høyden i fot og meter, eller kun meter, basert på heightDisplay-strengen *@
                                 </dd>
                             </div>
 
@@ -57,7 +86,10 @@
                             {
                                 <div class="bg-gray-50 p-4 rounded-lg">
                                     <dt class="text-sm font-medium text-gray-600">Description</dt>
-                                    <dd class="mt-1 text-base text-gray-900 whitespace-pre-wrap w-96 break-words">@Html.DisplayFor(m => m.ObstacleDescription)</dd>
+                                    <dd class="mt-1 text-base text-gray-900 whitespace-pre-wrap w-96 break-words">
+                                        @Html.DisplayFor(m => m.ObstacleDescription)
+                                        @* Viser eventuell beskrivelse av hindringen med linjeskift bevart *@
+                                    </dd>
                                 </div>
                             }
 
@@ -68,6 +100,7 @@
                                         <i class="fa-solid fa-clock mr-2"></i>
                                         Pending Review
                                     </span>
+                                    @* Statusmerke som viser at hindringen venter på vurdering *@
                                 </dd>
                             </div>
                         </dl>
@@ -75,6 +108,7 @@
                 </div>
 
                 <!-- Right Column: Map & Coordinates -->
+                <!-- Høyre kolonne: kart og detaljerte koordinater/geometriinformasjon -->
                 <div class="space-y-6">
                     <div>
                         <h2 class="text-xl font-semibold text-gray-900 mb-4 flex items-center">
@@ -83,7 +117,10 @@
                         </h2>
 
                         <div id="map" class="rounded-lg border-2 border-gray-200 shadow-sm" style="height: 400px;"></div>
+                        <!-- Leaflet-kartcontainer hvor hindringens posisjon/linje vises -->
+
                         <pre id="line-geojson-data" class="hidden">@Model.LineGeoJson</pre>
+                        <!-- Skjult element som inneholder GeoJSON-representasjon av linjegeometrien -->
                     </div>
 
                     <div class="bg-gray-50 p-4 rounded-lg">
@@ -92,13 +129,18 @@
                             <div class="grid grid-cols-2 gap-4">
                                 <div>
                                     <dt class="text-xs font-medium text-gray-600">Latitude</dt>
-                                    <dd class="mt-1 text-sm font-mono text-gray-900">@Model.Latitude.Value.ToString("F6", CultureInfo.InvariantCulture)</dd>
+                                    <dd class="mt-1 text-sm font-mono text-gray-900">
+                                        @Model.Latitude.Value.ToString("F6", CultureInfo.InvariantCulture)
+                                    </dd>
                                 </div>
                                 <div>
                                     <dt class="text-xs font-medium text-gray-600">Longitude</dt>
-                                    <dd class="mt-1 text-sm font-mono text-gray-900">@Model.Longitude.Value.ToString("F6", CultureInfo.InvariantCulture)</dd>
+                                    <dd class="mt-1 text-sm font-mono text-gray-900">
+                                        @Model.Longitude.Value.ToString("F6", CultureInfo.InvariantCulture)
+                                    </dd>
                                 </div>
                             </div>
+                            @* Viser punktkoordinater dersom hindringen er et punkt med gyldige lat/long *@
                         }
 
                         @if (start is not null)
@@ -106,13 +148,18 @@
                             <div class="grid grid-cols-2 gap-4 mb-3">
                                 <div>
                                     <dt class="text-xs font-medium text-gray-600">Start Latitude</dt>
-                                    <dd class="mt-1 text-sm font-mono text-gray-900">@start.Latitude.ToString("F6", CultureInfo.InvariantCulture)</dd>
+                                    <dd class="mt-1 text-sm font-mono text-gray-900">
+                                        @start.Latitude.ToString("F6", CultureInfo.InvariantCulture)
+                                    </dd>
                                 </div>
                                 <div>
                                     <dt class="text-xs font-medium text-gray-600">Start Longitude</dt>
-                                    <dd class="mt-1 text-sm font-mono text-gray-900">@start.Longitude.ToString("F6", CultureInfo.InvariantCulture)</dd>
+                                    <dd class="mt-1 text-sm font-mono text-gray-900">
+                                        @start.Longitude.ToString("F6", CultureInfo.InvariantCulture)
+                                    </dd>
                                 </div>
                             </div>
+                            @* Viser startkoordinat for linjegeometrien dersom tilgjengelig *@
                         }
 
                         @if (end is not null)
@@ -120,13 +167,18 @@
                             <div class="grid grid-cols-2 gap-4">
                                 <div>
                                     <dt class="text-xs font-medium text-gray-600">End Latitude</dt>
-                                    <dd class="mt-1 text-sm font-mono text-gray-900">@end.Latitude.ToString("F6", CultureInfo.InvariantCulture)</dd>
+                                    <dd class="mt-1 text-sm font-mono text-gray-900">
+                                        @end.Latitude.ToString("F6", CultureInfo.InvariantCulture)
+                                    </dd>
                                 </div>
                                 <div>
                                     <dt class="text-xs font-medium text-gray-600">End Longitude</dt>
-                                    <dd class="mt-1 text-sm font-mono text-gray-900">@end.Longitude.ToString("F6", CultureInfo.InvariantCulture)</dd>
+                                    <dd class="mt-1 text-sm font-mono text-gray-900">
+                                        @end.Longitude.ToString("F6", CultureInfo.InvariantCulture)
+                                    </dd>
                                 </div>
                             </div>
+                            @* Viser sluttkoordinat for linjegeometrien dersom tilgjengelig *@
                         }
 
                         @if (Model.LineVertexCount > 0)
@@ -136,6 +188,7 @@
                                     <i class="fa-solid fa-map-pin mr-2 text-indigo-600"></i>
                                     <strong>Vertices:</strong>&nbsp;@Model.LineVertexCount
                                 </span>
+                                @* Viser hvor mange verteks-punkter linjen består av *@
                             </div>
                         }
 
@@ -145,6 +198,7 @@
                             var formatted = meters >= 1000
                             ? $"{meters / 1000:0.00} km"
                             : $"{meters:0.0} m";
+                            @* Formatterer linjelengden som meter eller kilometer avhengig av total lengde *@
 
                             <div class="mt-2">
                                 <span class="inline-flex items-center text-sm text-gray-700">
@@ -162,6 +216,8 @@
                                 <i class="fa-solid fa-list mr-2"></i>
                                 View All Vertices (@vertices.Count points)
                             </summary>
+                            <!-- Utvidbar seksjon som viser alle verteks-punkter i tabellform -->
+
                             <div class="mt-4 overflow-x-auto rounded-lg border border-gray-200">
                                 <table class="min-w-full text-left text-sm">
                                     <thead class="bg-gray-100 text-gray-600">
@@ -176,8 +232,12 @@
                                         {
                                             <tr class="border-b last:border-0 @(i % 2 == 0 ? "bg-white" : "bg-gray-50")">
                                                 <td class="px-3 py-2 text-gray-700">@(i + 1)</td>
-                                                <td class="px-3 py-2 font-mono text-gray-900">@vertices[i].Latitude.ToString("F6", CultureInfo.InvariantCulture)</td>
-                                                <td class="px-3 py-2 font-mono text-gray-900">@vertices[i].Longitude.ToString("F6", CultureInfo.InvariantCulture)</td>
+                                                <td class="px-3 py-2 font-mono text-gray-900">
+                                                    @vertices[i].Latitude.ToString("F6", CultureInfo.InvariantCulture)
+                                                </td>
+                                                <td class="px-3 py-2 font-mono text-gray-900">
+                                                    @vertices[i].Longitude.ToString("F6", CultureInfo.InvariantCulture)
+                                                </td>
                                             </tr>
                                         }
                                     </tbody>
@@ -189,6 +249,8 @@
             </div>
 
             <div class="flex flex-col sm:flex-row justify-between items-center gap-4 pt-8 border-t">
+                <!-- Navigasjonsknapper for å gå tilbake til hjem eller se alle hindringer -->
+
                 <a asp-controller="Home" asp-action="Index"
                    class="w-full sm:w-auto inline-flex items-center justify-center rounded-lg px-12 py-6 bg-white text-gray-700 text-lg ring-1 ring-gray-300 hover:bg-gray-50 font-medium">
                     <i class="fa-solid fa-home mr-2"></i>
@@ -211,7 +273,7 @@
         const fallbackLat = "@fallbackLat.ToString(CultureInfo.InvariantCulture)";
         const fallbackLng = "@fallbackLng.ToString(CultureInfo.InvariantCulture)";
 
-        // Do ALL the C# string/boolean work server-side, so JS just gets "true" / "false"
+        // Gjør all streng-/boolsk behandling i C# på server, slik at JS kun mottar "true" / "false"
         const hasPointGeometry = @((!hasLine && Model.Latitude.HasValue && Model.Longitude.HasValue).ToString().ToLowerInvariant());
 
         const map = L.map('map').setView(
@@ -222,7 +284,6 @@
         L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
             attribution: '© OpenStreetMap contributors'
         }).addTo(map);
-
 
         const lineGeoJsonElement = document.getElementById('line-geojson-data');
         const rawLineGeoJson = lineGeoJsonElement?.textContent?.trim();
@@ -265,7 +326,7 @@
                 .bindPopup("@Model.ObstacleName").openPopup();
         }
 
-        // Fix map sizing when the page finishes layout
+        // Justerer kartstørrelsen når siden er ferdig med layout, slik at kartet vises riktig
         setTimeout(() => {
             map.invalidateSize();
         }, 100);
