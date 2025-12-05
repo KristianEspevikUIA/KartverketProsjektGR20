@@ -109,6 +109,9 @@ Hvis verdiene mangler, logger applikasjonen et varsel og ingen admin-bruker oppr
 - [Testing og testresultater](docs/testing.md)
 - [Vurderingskriterier](docs/vurderingskriterier.md)
 
+## Bruk av KI-assistanse
+ChatGPT (inkludert Codex), DeepSeek AI og GitHub Copilot er brukt gjennomgående i prosjektet for hjelp til formuleringer i README og øvrig dokumentasjon, forslag til feilretting og kodeforbedringer, samt generell teknisk feilsøking og avklaringer underveis.
+
 ## Team
 Dette prosjektet ble utviklet av Gruppe 20:
 - Nicolai Stephansen
