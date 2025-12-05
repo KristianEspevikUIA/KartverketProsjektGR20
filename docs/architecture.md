@@ -1,8 +1,5 @@
 # Systemarkitektur
 
-## Oversikt
-Denne applikasjonen er en ASP.NET Core MVC-løsning for rapportering og behandling av luftfartshindre. Løsningen kjører i to containere under utvikling: en MariaDB-database og webapplikasjonen (ASP.NET Core 9) med Identity for autentisering/autorisasjon.
-
 ## Komponenter
 - **Webapplikasjon (ASP.NET Core MVC)**
   - Razor Views med Tailwind CSS og noen få JavaScript-biblioteker (Leaflet for kart, jQuery for validering).
