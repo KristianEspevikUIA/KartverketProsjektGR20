@@ -13,12 +13,11 @@
 - **Galaxy Tab S7 (Android/Chrome 1280x800, landscape/portrait):**
   - Kartet skalerer og beholder interaktive kontroller i synlig område.
   - Tabeller kan scrolles horisontalt i portrait for å se alle kolonner.
-- **Berøring/UX:** Klikkeflater er minst 44 px, med luft rundt interaktive elementer slik at de treffer godt på berøringsskjerm.
 
-## Skjermbilder
-Skjermbilder fra nettbrett-emulatorer (768–1280 px bredde) kan legges til ved behov i `docs/images/` når nye tester utføres.
+Vi har ikke testet dette direkte på enhetene, men gjennom developer tools i chrome. Etter tilbakemelding fra piloter testet vi også for portrett modus, da vi fikk beskjed at det var dette pilotene bruker. 
 
 ## Videre forbedringer
 - Legge til eksplisitte `lg`-tilpasninger for avanserte rapporttabeller for å utnytte bredde på store nettbrett.
 - Vurdere tilpasset zoomnivå og kontrollstørrelse i Leaflet for nettbrett for bedre ergonomi.
 - Dokumentere kort brukertest med 1–2 nettbrettbrukere for å bekrefte flyt og tydelighet.
+- Legge til eventuelle skjermbilder 
