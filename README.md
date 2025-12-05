@@ -49,7 +49,7 @@ Kjør i PowerShell: docker ps
 Se etter containeren som bruker mariadb:-image og kopier navnet fra kolonnen NAMES.
 
 2. Koble til MariaDB i containeren
-Når du har navnet, bruk: docker exec -it <container-navn> mariadb -u root -p
+Når du har navnet, bruk: docker exec -it (container-navn) mariadb -u root -p;
 
 Du vil bli bedt om å skrive inn passordet som er konfigurert i docker-compose.yml.
 
