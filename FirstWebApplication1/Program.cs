@@ -77,32 +77,50 @@ using (var scope = app.Services.CreateScope())
         }
 
         // Seed admin user from configuration when credentials are provided
+        // ---------------------------------------------------------------
+
+        // Henter config (appsettings / secrets.json / miljøvariabler)
         var configuration = services.GetRequiredService<IConfiguration>();
+
+       
         var adminEmail = configuration["Admin:Email"];
         var adminPassword = configuration["Admin:Password"];
 
+        // Sjekker om admin-verdiene faktisk er satt
         if (!string.IsNullOrWhiteSpace(adminEmail) && !string.IsNullOrWhiteSpace(adminPassword))
         {
+            // Henter UserManager for å jobbe med Identity-brukere
             var userManager = services.GetRequiredService<UserManager<IdentityUser>>();
+
+            // Sjekker om admin-brukeren allerede finnes
             var adminUser = await userManager.FindByEmailAsync(adminEmail);
 
             if (adminUser == null)
             {
+                // Oppretter en ny admin-bruker med oppgitt epost
                 adminUser = new IdentityUser
                 {
                     UserName = adminEmail,
                     Email = adminEmail,
-                    EmailConfirmed = true
+                    EmailConfirmed = true // hopper over epostbekreftelse
                 };
 
+                // Forsøker å opprette brukeren med passordet fra config
                 var createAdminResult = await userManager.CreateAsync(adminUser, adminPassword);
+
+                // Hvis opprettelsen feilet ? logg alle feil
                 if (!createAdminResult.Succeeded)
                 {
                     var logger = services.GetRequiredService<ILogger<Program>>();
-                    logger.LogWarning("Failed to create admin user {Email}: {Errors}", adminEmail, string.Join(", ", createAdminResult.Errors.Select(e => e.Description)));
+                    logger.LogWarning(
+                        "Failed to create admin user {Email}: {Errors}",
+                        adminEmail,
+                        string.Join(", ", createAdminResult.Errors.Select(e => e.Description))
+                    );
                 }
             }
 
+            // Hvis admin-brukeren finnes, men ikke har admin-rollen ? legg til rollen
             if (adminUser != null && !await userManager.IsInRoleAsync(adminUser, "Admin"))
             {
                 await userManager.AddToRoleAsync(adminUser, "Admin");
@@ -110,15 +128,17 @@ using (var scope = app.Services.CreateScope())
         }
         else
         {
+            // Hvis admin-kredentialer mangler ? logg varsel
             var logger = services.GetRequiredService<ILogger<Program>>();
             logger.LogWarning("Admin credentials not configured; admin user was not created.");
         }
     }
     catch (Exception ex)
     {
+        // Logger eventuelle feil som oppstår under migrate/seed
         var logger = services.GetRequiredService<ILogger<Program>>();
         logger.LogError(ex, "An error occurred while migrating or seeding the database.");
-        throw;
+        throw; // kaster videre så appen stopper hvis noe er alvorlig galt
     }
 }
 
